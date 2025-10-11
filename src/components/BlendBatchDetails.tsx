@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Wine, Save, Edit, X } from "lucide-react";
+import { Wine, Save, Edit, X, Minus } from "lucide-react";
 import { ImageUpload } from "./ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -60,6 +60,40 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
       setIsEditing(false);
     }
   }, [blend]);
+
+  const handleReduceBottle = async (bottleType: '75cl' | '150cl') => {
+    if (!blend) return;
+    
+    const current75 = blend.bottles_75cl || 0;
+    const current150 = blend.bottles_150cl || 0;
+    
+    if (bottleType === '75cl' && current75 <= 0) {
+      toast.error("No 75cl bottles available");
+      return;
+    }
+    
+    if (bottleType === '150cl' && current150 <= 0) {
+      toast.error("No 150cl bottles available");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from("blend_batches")
+        .update({
+          bottles_75cl: bottleType === '75cl' ? current75 - 1 : current75,
+          bottles_150cl: bottleType === '150cl' ? current150 - 1 : current150,
+        })
+        .eq("id", blend.id);
+
+      if (error) throw error;
+
+      toast.success(`Removed 1 bottle (${bottleType})`);
+      onBlendUpdated();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
 
   const handleSave = async () => {
     if (!blend) return;
@@ -236,14 +270,36 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
                   <p className="text-2xl font-bold mt-1">{blend.total_volume}L</p>
                 </div>
                 <div className="border border-border rounded-lg p-4">
-                  <Label className="text-sm text-muted-foreground">Bottles 75cl</Label>
-                  <p className="text-2xl font-bold mt-1">{blend.bottles_75cl || 0}</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-sm text-muted-foreground">Bottles 75cl</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleReduceBottle('75cl')}
+                      disabled={(blend.bottles_75cl || 0) === 0}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-2xl font-bold">{blend.bottles_75cl || 0}</p>
                 </div>
               </div>
 
               <div className="border border-border rounded-lg p-4">
-                <Label className="text-sm text-muted-foreground">Bottles 150cl</Label>
-                <p className="text-2xl font-bold mt-1">{blend.bottles_150cl || 0}</p>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-sm text-muted-foreground">Bottles 150cl</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleReduceBottle('150cl')}
+                    disabled={(blend.bottles_150cl || 0) === 0}
+                    className="h-7 w-7 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-2xl font-bold">{blend.bottles_150cl || 0}</p>
               </div>
             </>
           )}
