@@ -83,7 +83,10 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
     try {
       const { error } = await supabase
         .from("batch_logs")
-        .update(validation.data)
+        .update({
+          ...validation.data,
+          attachments: attachments.length > 0 ? attachments : null
+        })
         .eq("id", log.id);
 
       if (error) {
@@ -95,7 +98,7 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
     } finally {
       setIsUpdating(false);
     }
-  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, log.id, onUpdate, isUpdating]);
+  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, attachments, log.id, onUpdate, isUpdating]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this log entry?")) return;

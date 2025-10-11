@@ -104,7 +104,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     try {
       const { error } = await supabase
         .from("batches")
-        .update({ notes: notes.trim() || null })
+        .update({ 
+          notes: notes.trim() || null,
+          attachments: attachments.length > 0 ? attachments : null
+        })
         .eq("id", batch.id);
 
       if (error) throw error;
