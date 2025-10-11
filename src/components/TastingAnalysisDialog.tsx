@@ -42,6 +42,7 @@ const tastingSchema = z.object({
   palate: z.string().max(500, "Palate must be less than 500 characters").optional(),
   overall_score: z.number().min(0).max(100).optional(),
   notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
+  attachments: z.array(z.string()).optional(),
 });
 
 interface BlendBatch {
@@ -57,6 +58,7 @@ interface TastingAnalysis {
   palate: string | null;
   overall_score: number | null;
   notes: string | null;
+  attachments?: string[];
 }
 
 interface TastingAnalysisDialogProps {
@@ -80,6 +82,7 @@ export function TastingAnalysisDialog({
   const [palate, setPalate] = useState("");
   const [overallScore, setOverallScore] = useState("");
   const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -90,6 +93,7 @@ export function TastingAnalysisDialog({
       setPalate(existingAnalysis.palate || "");
       setOverallScore(existingAnalysis.overall_score?.toString() || "");
       setNotes(existingAnalysis.notes || "");
+      setAttachments(existingAnalysis.attachments || []);
     } else {
       resetForm();
     }
@@ -102,6 +106,7 @@ export function TastingAnalysisDialog({
     setPalate("");
     setOverallScore("");
     setNotes("");
+    setAttachments([]);
     setErrors([]);
   };
 
@@ -126,6 +131,7 @@ export function TastingAnalysisDialog({
       palate: palate.trim() || undefined,
       overall_score: overallScore ? parseFloat(overallScore) : undefined,
       notes: notes.trim() || undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     if (!validation.success) {
@@ -271,6 +277,14 @@ export function TastingAnalysisDialog({
               placeholder="Any other observations or comments..."
               rows={3}
               maxLength={1000}
+            />
+          </div>
+
+          <div>
+            <Label>Images</Label>
+            <ImageUpload
+              images={attachments}
+              onImagesChange={setAttachments}
             />
           </div>
 

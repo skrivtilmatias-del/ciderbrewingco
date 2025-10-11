@@ -557,6 +557,7 @@ const Index = () => {
             palate: data.palate || null,
             overall_score: data.overall_score || null,
             notes: data.notes || null,
+            attachments: data.attachments || null,
           })
           .eq("id", analysisId);
 
@@ -574,6 +575,7 @@ const Index = () => {
             palate: data.palate || null,
             overall_score: data.overall_score || null,
             notes: data.notes || null,
+            attachments: data.attachments || null,
           }]);
 
         if (error) throw error;

@@ -29,6 +29,7 @@ interface BlendBatch {
   components: BlendComponent[];
   bottles_75cl?: number;
   bottles_150cl?: number;
+  attachments?: string[];
 }
 
 interface BlendBatchDetailsProps {
@@ -45,6 +46,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
   const [bottles75cl, setBottles75cl] = useState("");
   const [bottles150cl, setBottles150cl] = useState("");
   const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
       setBottles75cl((blend.bottles_75cl || 0).toString());
       setBottles150cl((blend.bottles_150cl || 0).toString());
       setNotes(blend.notes || "");
+      setAttachments(blend.attachments || []);
       setIsEditing(false);
     }
   }, [blend]);
@@ -84,7 +87,8 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
           total_volume: volumeNum,
           bottles_75cl: bottles75,
           bottles_150cl: bottles150,
-          notes: notes.trim() || null 
+          notes: notes.trim() || null,
+          attachments: attachments.length > 0 ? attachments : null
         })
         .eq("id", blend.id);
 
@@ -187,6 +191,14 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
                 />
               </div>
 
+              <div>
+                <Label>Images</Label>
+                <ImageUpload
+                  images={attachments}
+                  onImagesChange={setAttachments}
+                />
+              </div>
+
               <div className="flex gap-2 justify-end">
                 <Button
                   variant="outline"
@@ -270,6 +282,18 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
                   {blend.notes || "No notes added yet."}
                 </p>
               </div>
+              {attachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                  {attachments.map((imageUrl, index) => (
+                    <img
+                      key={index}
+                      src={imageUrl}
+                      alt={`Attachment ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg border border-border"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
