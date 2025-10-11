@@ -328,7 +328,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Apple className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Cider Brewing Co Notepad</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">{user.email}</span>

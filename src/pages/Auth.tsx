@@ -107,7 +107,7 @@ const Auth = () => {
       <Card className="w-full max-w-md p-8">
         <div className="flex items-center justify-center gap-3 mb-8">
           <Apple className="w-10 h-10 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">CiderTrack</h1>
+          <h1 className="text-3xl font-bold text-foreground">Cider Brewing Co</h1>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
