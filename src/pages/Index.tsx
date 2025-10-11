@@ -68,11 +68,8 @@ const Index = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (user && batches.length > 0) {
+    if (user) {
       fetchBatches();
-      if (batches[0]) {
-        fetchLogs(batches[0].id);
-      }
     }
   }, [user]);
 
