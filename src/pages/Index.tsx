@@ -702,6 +702,10 @@ const Index = () => {
               <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Blending
             </TabsTrigger>
+            <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap">
+              <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Tasting
+            </TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Analytics
@@ -709,10 +713,6 @@ const Index = () => {
             <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
               <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Calculators
-            </TabsTrigger>
-            <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap">
-              <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Tasting
             </TabsTrigger>
           </TabsList>
 
