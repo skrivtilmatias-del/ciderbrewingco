@@ -185,6 +185,78 @@ export type Database = {
           },
         ]
       }
+      blend_batches: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          total_volume: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          total_volume: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          total_volume?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      blend_components: {
+        Row: {
+          blend_batch_id: string
+          created_at: string
+          id: string
+          percentage: number | null
+          source_batch_id: string
+          volume_liters: number | null
+        }
+        Insert: {
+          blend_batch_id: string
+          created_at?: string
+          id?: string
+          percentage?: number | null
+          source_batch_id: string
+          volume_liters?: number | null
+        }
+        Update: {
+          blend_batch_id?: string
+          created_at?: string
+          id?: string
+          percentage?: number | null
+          source_batch_id?: string
+          volume_liters?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blend_components_blend_batch_id_fkey"
+            columns: ["blend_batch_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blend_components_source_batch_id_fkey"
+            columns: ["source_batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

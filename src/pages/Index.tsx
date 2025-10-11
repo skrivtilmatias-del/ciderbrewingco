@@ -6,10 +6,13 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
+import { NewBlendDialog } from "@/components/NewBlendDialog";
+import { BlendBatchCard } from "@/components/BlendBatchCard";
+import { BlendBatchDetails } from "@/components/BlendBatchDetails";
 import { BatchDetails } from "@/components/BatchDetails";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2 } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +37,9 @@ const Index = () => {
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
+  const [blendBatches, setBlendBatches] = useState<any[]>([]);
+  const [selectedBlend, setSelectedBlend] = useState<any>(null);
+  const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
   
   // Get allowed stages based on current batch stage
   const getAllowedStages = (currentStage: string): string[] => {
@@ -93,6 +99,7 @@ const Index = () => {
   useEffect(() => {
     if (user) {
       fetchBatches();
+      fetchBlendBatches();
     }
   }, [user]);
 
@@ -134,6 +141,54 @@ const Index = () => {
       toast.error(getUserFriendlyError(error));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBlendBatches = async () => {
+    try {
+      const { data: blendsData, error: blendsError } = await supabase
+        .from("blend_batches")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (blendsError) throw blendsError;
+
+      // Fetch components for each blend
+      const blendsWithComponents = await Promise.all(
+        blendsData.map(async (blend) => {
+          const { data: componentsData, error: componentsError } = await supabase
+            .from("blend_components")
+            .select(`
+              id,
+              source_batch_id,
+              percentage,
+              volume_liters,
+              batches:source_batch_id (
+                name,
+                variety
+              )
+            `)
+            .eq("blend_batch_id", blend.id);
+
+          if (componentsError) throw componentsError;
+
+          return {
+            ...blend,
+            components: componentsData.map((comp: any) => ({
+              id: comp.id,
+              source_batch_id: comp.source_batch_id,
+              batch_name: comp.batches?.name || "Unknown",
+              batch_variety: comp.batches?.variety || "",
+              percentage: comp.percentage,
+              volume_liters: comp.volume_liters,
+            })),
+          };
+        })
+      );
+
+      setBlendBatches(blendsWithComponents);
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -353,6 +408,73 @@ const Index = () => {
     navigate("/auth");
   };
 
+  const handleBlendCreated = async (blendData: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Session expired. Please log in again');
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      // Create blend batch
+      const { data: blendBatch, error: blendError } = await supabase
+        .from("blend_batches")
+        .insert([{
+          user_id: user.id,
+          name: blendData.name,
+          total_volume: blendData.total_volume,
+          notes: blendData.notes || null,
+        }])
+        .select()
+        .single();
+
+      if (blendError) throw blendError;
+
+      // Insert components
+      const componentsToInsert = blendData.components.map((comp: any) => ({
+        blend_batch_id: blendBatch.id,
+        source_batch_id: comp.source_batch_id,
+        percentage: comp.percentage,
+        volume_liters: comp.volume_liters,
+      }));
+
+      const { error: componentsError } = await supabase
+        .from("blend_components")
+        .insert(componentsToInsert);
+
+      if (componentsError) throw componentsError;
+
+      toast.success("Blend batch created");
+      fetchBlendBatches();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
+
+  const handleDeleteBlend = async (blendId: string) => {
+    if (!confirm("Delete this blend batch?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("blend_batches")
+        .delete()
+        .eq("id", blendId);
+
+      if (error) throw error;
+
+      toast.success("Blend batch deleted");
+      fetchBlendBatches();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
+
+  const handleBlendClick = (blend: any) => {
+    setSelectedBlend(blend);
+    setBlendDetailsOpen(true);
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -470,6 +592,10 @@ const Index = () => {
               <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Calculators
             </TabsTrigger>
+            <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
+              <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Blending
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="batches" className="mt-4 sm:mt-6">
@@ -572,6 +698,35 @@ const Index = () => {
               <SO2Calculator />
             </div>
           </TabsContent>
+
+          <TabsContent value="blending" className="mt-4 sm:mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Blend Batches</h2>
+              <NewBlendDialog 
+                availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
+                onBlendCreated={handleBlendCreated}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+              {blendBatches.length === 0 ? (
+                <Card className="col-span-full p-12 text-center border-dashed">
+                  <p className="text-muted-foreground">
+                    No blend batches yet. Click "New Blend" to get started.
+                  </p>
+                </Card>
+              ) : (
+                blendBatches.map((blend) => (
+                  <BlendBatchCard
+                    key={blend.id}
+                    blend={blend}
+                    onDelete={handleDeleteBlend}
+                    onClick={handleBlendClick}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -581,6 +736,13 @@ const Index = () => {
         onOpenChange={setDetailsOpen}
         onUpdateStage={handleUpdateStage}
         onBatchUpdated={fetchBatches}
+      />
+      
+      <BlendBatchDetails
+        blend={selectedBlend}
+        open={blendDetailsOpen}
+        onOpenChange={setBlendDetailsOpen}
+        onBlendUpdated={fetchBlendBatches}
       />
     </div>
   );
