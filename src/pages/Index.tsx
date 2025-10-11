@@ -410,13 +410,9 @@ const Index = () => {
               <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               All Batches
             </TabsTrigger>
-            <TabsTrigger value="stages" className="text-xs sm:text-sm whitespace-nowrap">
+            <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">
               <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Stage Progress
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="text-xs sm:text-sm whitespace-nowrap">
-              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Timeline
+              Production
             </TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -448,69 +444,71 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="stages" className="mt-4 sm:mt-6">
+          <TabsContent value="production" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
             {selectedBatch ? (
-              <StageProgressionUI
-                currentStage={selectedBatch.currentStage}
-                batchId={selectedBatch.id}
-                batchName={selectedBatch.name}
-                onAdvanceStage={handleUpdateStage}
-              />
+              <>
+                <StageProgressionUI
+                  currentStage={selectedBatch.currentStage}
+                  batchId={selectedBatch.id}
+                  batchName={selectedBatch.name}
+                  onAdvanceStage={handleUpdateStage}
+                />
+                
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search notes, tags..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 sm:pl-10 text-sm"
+                      />
+                    </div>
+                    <Select value={stageFilter} onValueChange={setStageFilter}>
+                      <SelectTrigger className="w-full sm:w-[200px] text-sm">
+                        <SelectValue placeholder="All stages" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border z-50 max-h-[300px]">
+                        <SelectItem value="All">All stages</SelectItem>
+                        {STAGES.map((stage) => (
+                          <SelectItem key={stage} value={stage} className="text-sm">
+                            {stage}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Add Note</span>
+                      <span className="sm:hidden">Add</span>
+                    </Button>
+                  </div>
+
+                  {filteredLogs.length === 0 ? (
+                    <Card className="p-8 sm:p-12 text-center border-dashed">
+                      <p className="text-sm sm:text-base text-muted-foreground">
+                        No notes yet. Click "Add Note" to get started.
+                      </p>
+                    </Card>
+                  ) : (
+                    filteredLogs.map((log) => (
+                      <BatchLogCard
+                        key={log.id}
+                        log={log}
+                        onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                        onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
             ) : (
               <Card className="p-8 sm:p-12 text-center border-dashed">
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Select a batch to view stage progression
+                  Select a batch to view production progress and notes
                 </p>
               </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="timeline" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search notes, tags..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 sm:pl-10 text-sm"
-                />
-              </div>
-              <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className="w-full sm:w-[200px] text-sm">
-                  <SelectValue placeholder="All stages" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border z-50 max-h-[300px]">
-                  <SelectItem value="All">All stages</SelectItem>
-                  {STAGES.map((stage) => (
-                    <SelectItem key={stage} value={stage} className="text-sm">
-                      {stage}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Add Note</span>
-                <span className="sm:hidden">Add</span>
-              </Button>
-            </div>
-
-            {filteredLogs.length === 0 ? (
-              <Card className="p-8 sm:p-12 text-center border-dashed">
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  No notes yet. Click "Add Note" to get started.
-                </p>
-              </Card>
-            ) : (
-              filteredLogs.map((log) => (
-                <BatchLogCard
-                  key={log.id}
-                  log={log}
-                  onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                  onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                />
-              ))
             )}
           </TabsContent>
 
