@@ -14,7 +14,7 @@ interface StageProgressionUIProps {
 const KEY_STAGES = [
   { name: 'Pressing', icon: Apple },
   { name: 'Fermentation', icon: Droplets },
-  { name: 'Aging', icon: Clock },
+  { name: 'Ageing', icon: Clock },
   { name: 'Bottling', icon: Wine },
   { name: 'Complete', icon: CheckCircle }
 ] as const;
@@ -54,7 +54,7 @@ export const StageProgressionUI = ({
       let targetStage: CiderStage | 'Complete';
       if (keyStage === 'Pressing') targetStage = 'Pressing';
       else if (keyStage === 'Fermentation') targetStage = 'Pitching & Fermentation';
-      else if (keyStage === 'Aging') targetStage = 'Racking';
+      else if (keyStage === 'Ageing') targetStage = 'Racking';
       else if (keyStage === 'Bottling') targetStage = 'Bottling';
       else targetStage = 'Complete';
 

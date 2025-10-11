@@ -35,12 +35,12 @@ const getDisplayStageName = (stage: string) => {
   // Map technical stage names to display names matching the production stage buttons
   const pressingStages = ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'];
   const fermentationStages = ['Pitching & Fermentation', 'Cold Crash'];
-  const agingStages = ['Malolactic', 'Stabilisation/Finings', 'Racking'];
+  const ageingStages = ['Malolactic', 'Stabilisation/Finings', 'Racking'];
   const bottlingStages = ['Blending', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'];
   
   if (pressingStages.includes(stage)) return 'Pressing';
   if (fermentationStages.includes(stage)) return 'Fermentation';
-  if (agingStages.includes(stage)) return 'Aging';
+  if (ageingStages.includes(stage)) return 'Ageing';
   if (bottlingStages.includes(stage)) return 'Bottling';
   
   return stage; // Keep original for 'Complete' and any other stages
