@@ -1,49 +1,115 @@
-import { useState } from "react";
-import { BatchCard, Batch } from "@/components/BatchCard";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { BatchDetails } from "@/components/BatchDetails";
-import { Apple, TrendingUp, Package, Activity } from "lucide-react";
+import { ProductionAnalytics } from "@/components/ProductionAnalytics";
+import { Apple, TrendingUp, Package, Activity, LogOut } from "lucide-react";
 import { Card } from "@/components/ui/card";
-
-const initialBatches: Batch[] = [
-  {
-    id: "1",
-    name: "Autumn Harvest 2024",
-    variety: "Kingston Black",
-    volume: 150,
-    startDate: "2024-09-15",
-    currentStage: "fermentation",
-    progress: 45,
-    notes: "Strong apple aroma, fermentation proceeding well",
-  },
-  {
-    id: "2",
-    name: "Summer Blend",
-    variety: "Dabinett Mix",
-    volume: 100,
-    startDate: "2024-08-01",
-    currentStage: "aging",
-    progress: 75,
-    notes: "Complex flavor profile developing",
-  },
-  {
-    id: "3",
-    name: "Winter Reserve",
-    variety: "Yarlington Mill",
-    volume: 200,
-    startDate: "2024-10-01",
-    currentStage: "pressing",
-    progress: 15,
-  },
-];
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import type { Batch } from "@/components/BatchCard";
 
 const Index = () => {
-  const [batches, setBatches] = useState<Batch[]>(initialBatches);
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleBatchCreated = (newBatch: Batch) => {
-    setBatches([newBatch, ...batches]);
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchBatches();
+    }
+  }, [user]);
+
+  const fetchBatches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("batches")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedBatches: Batch[] = data.map((batch) => ({
+        id: batch.id,
+        name: batch.name,
+        variety: batch.variety,
+        volume: parseFloat(batch.volume.toString()),
+        startDate: batch.started_at,
+        currentStage: batch.current_stage as Batch["currentStage"],
+        progress: batch.progress,
+        notes: batch.notes || undefined,
+      }));
+
+      setBatches(formattedBatches);
+    } catch (error: any) {
+      toast.error("Error loading batches: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBatchCreated = async (newBatch: Omit<Batch, "id">) => {
+    try {
+      const { data, error } = await supabase
+        .from("batches")
+        .insert([
+          {
+            name: newBatch.name,
+            variety: newBatch.variety,
+            volume: newBatch.volume,
+            current_stage: newBatch.currentStage,
+            progress: newBatch.progress,
+            notes: newBatch.notes,
+            started_at: newBatch.startDate,
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const formattedBatch: Batch = {
+        id: data.id,
+        name: data.name,
+        variety: data.variety,
+        volume: parseFloat(data.volume.toString()),
+        startDate: data.started_at,
+        currentStage: data.current_stage as Batch["currentStage"],
+        progress: data.progress,
+        notes: data.notes || undefined,
+      };
+
+      setBatches([formattedBatch, ...batches]);
+    } catch (error: any) {
+      toast.error("Error creating batch: " + error.message);
+    }
   };
 
   const handleBatchClick = (batch: Batch) => {
@@ -51,7 +117,7 @@ const Index = () => {
     setDetailsOpen(true);
   };
 
-  const handleUpdateStage = (batchId: string, newStage: Batch["currentStage"]) => {
+  const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
     const stageProgress = {
       pressing: 20,
       fermentation: 45,
@@ -60,20 +126,50 @@ const Index = () => {
       complete: 100,
     };
 
-    setBatches(
-      batches.map((batch) =>
-        batch.id === batchId
-          ? { ...batch, currentStage: newStage, progress: stageProgress[newStage] }
-          : batch
-      )
-    );
+    try {
+      const { error } = await supabase
+        .from("batches")
+        .update({
+          current_stage: newStage,
+          progress: stageProgress[newStage],
+          completed_at: newStage === "complete" ? new Date().toISOString() : null,
+        })
+        .eq("id", batchId);
 
-    setSelectedBatch((prev) =>
-      prev?.id === batchId
-        ? { ...prev, currentStage: newStage, progress: stageProgress[newStage] }
-        : prev
-    );
+      if (error) throw error;
+
+      setBatches(
+        batches.map((batch) =>
+          batch.id === batchId
+            ? { ...batch, currentStage: newStage, progress: stageProgress[newStage] }
+            : batch
+        )
+      );
+
+      setSelectedBatch((prev) =>
+        prev?.id === batchId
+          ? { ...prev, currentStage: newStage, progress: stageProgress[newStage] }
+          : prev
+      );
+
+      toast.success(`Batch advanced to ${newStage}`);
+    } catch (error: any) {
+      toast.error("Error updating batch: " + error.message);
+    }
   };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   const activeBatches = batches.filter((b) => b.currentStage !== "complete").length;
   const totalVolume = batches.reduce((sum, b) => sum + b.volume, 0);
@@ -92,7 +188,20 @@ const Index = () => {
               <Apple className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">CiderTrack</h1>
             </div>
-            <NewBatchDialog onBatchCreated={handleBatchCreated} />
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">
+                {user.email}
+              </span>
+              <NewBatchDialog onBatchCreated={handleBatchCreated} />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleSignOut}
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -136,6 +245,13 @@ const Index = () => {
             </div>
           </Card>
         </div>
+
+        {/* Analytics */}
+        {batches.length > 0 && (
+          <div className="mb-8">
+            <ProductionAnalytics batches={batches} />
+          </div>
+        )}
 
         {/* Batches Grid */}
         <div>

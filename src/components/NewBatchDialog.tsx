@@ -24,7 +24,6 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     e.preventDefault();
     
     const newBatch = {
-      id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
       variety: formData.variety,
       volume: parseFloat(formData.volume),
@@ -34,7 +33,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       notes: formData.notes,
     };
 
-    onBatchCreated(newBatch);
+    onBatchCreated(newBatch as any);
     toast.success("Batch created successfully!");
     setOpen(false);
     setFormData({ name: "", variety: "", volume: "", notes: "" });
