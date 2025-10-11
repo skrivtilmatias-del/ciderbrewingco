@@ -94,6 +94,19 @@ const Index = () => {
       }));
 
       setBatches(formattedBatches);
+
+      // Auto-select first batch on initial load and fetch its logs
+      if (!selectedBatch && formattedBatches.length > 0) {
+        setSelectedBatch(formattedBatches[0]);
+        fetchLogs(formattedBatches[0].id);
+      }
+
+      // If no batches, clear logs and details
+      if (formattedBatches.length === 0) {
+        setLogs([]);
+        setSelectedBatch(null);
+        setDetailsOpen(false);
+      }
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
