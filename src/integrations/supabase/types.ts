@@ -281,6 +281,53 @@ export type Database = {
         }
         Relationships: []
       }
+      tasting_analysis: {
+        Row: {
+          blend_batch_id: string
+          colour: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          overall_score: number | null
+          palate: string | null
+          taste: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blend_batch_id: string
+          colour?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          overall_score?: number | null
+          palate?: string | null
+          taste?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blend_batch_id?: string
+          colour?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          overall_score?: number | null
+          palate?: string | null
+          taste?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasting_analysis_blend_batch_id_fkey"
+            columns: ["blend_batch_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

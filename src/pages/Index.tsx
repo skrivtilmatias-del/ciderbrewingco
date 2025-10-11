@@ -9,10 +9,12 @@ import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { NewBlendDialog } from "@/components/NewBlendDialog";
 import { BlendBatchCard } from "@/components/BlendBatchCard";
 import { BlendBatchDetails } from "@/components/BlendBatchDetails";
+import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
+import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,9 @@ const Index = () => {
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
+  const [tastingAnalyses, setTastingAnalyses] = useState<any[]>([]);
+  const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
+  const [editingTasting, setEditingTasting] = useState<any>(null);
   
   // Get allowed stages based on current batch stage
   const getAllowedStages = (currentStage: string): string[] => {
@@ -100,6 +105,7 @@ const Index = () => {
     if (user) {
       fetchBatches();
       fetchBlendBatches();
+      fetchTastingAnalyses();
     }
   }, [user]);
 
@@ -187,6 +193,38 @@ const Index = () => {
       );
 
       setBlendBatches(blendsWithComponents);
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
+
+  const fetchTastingAnalyses = async () => {
+    try {
+      const { data: tastingData, error: tastingError } = await supabase
+        .from("tasting_analysis")
+        .select(`
+          id,
+          blend_batch_id,
+          taste,
+          colour,
+          palate,
+          overall_score,
+          notes,
+          created_at,
+          blend_batches:blend_batch_id (
+            name
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (tastingError) throw tastingError;
+
+      const formattedAnalyses = tastingData.map((analysis: any) => ({
+        ...analysis,
+        blend_name: analysis.blend_batches?.name || "Unknown Blend",
+      }));
+
+      setTastingAnalyses(formattedAnalyses);
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     }
@@ -475,6 +513,82 @@ const Index = () => {
     setBlendDetailsOpen(true);
   };
 
+  const handleSaveTasting = async (data: any, analysisId?: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Session expired. Please log in again");
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      if (analysisId) {
+        // Update existing analysis
+        const { error } = await supabase
+          .from("tasting_analysis")
+          .update({
+            taste: data.taste || null,
+            colour: data.colour || null,
+            palate: data.palate || null,
+            overall_score: data.overall_score || null,
+            notes: data.notes || null,
+          })
+          .eq("id", analysisId);
+
+        if (error) throw error;
+        toast.success("Tasting analysis updated");
+      } else {
+        // Create new analysis
+        const { error } = await supabase
+          .from("tasting_analysis")
+          .insert([{
+            user_id: user.id,
+            blend_batch_id: data.blend_batch_id,
+            taste: data.taste || null,
+            colour: data.colour || null,
+            palate: data.palate || null,
+            overall_score: data.overall_score || null,
+            notes: data.notes || null,
+          }]);
+
+        if (error) throw error;
+        toast.success("Tasting analysis created");
+      }
+
+      fetchTastingAnalyses();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
+
+  const handleDeleteTasting = async (analysisId: string) => {
+    if (!confirm("Delete this tasting analysis?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("tasting_analysis")
+        .delete()
+        .eq("id", analysisId);
+
+      if (error) throw error;
+
+      toast.success("Tasting analysis deleted");
+      fetchTastingAnalyses();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    }
+  };
+
+  const handleEditTasting = (analysis: any) => {
+    setEditingTasting(analysis);
+    setTastingDialogOpen(true);
+  };
+
+  const handleNewTasting = () => {
+    setEditingTasting(null);
+    setTastingDialogOpen(true);
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -595,6 +709,10 @@ const Index = () => {
             <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
               <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Calculators
+            </TabsTrigger>
+            <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap">
+              <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Tasting
             </TabsTrigger>
           </TabsList>
 
@@ -727,6 +845,35 @@ const Index = () => {
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="tasting" className="mt-4 sm:mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Tasting Analysis</h2>
+              <Button size="sm" onClick={handleNewTasting}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Tasting
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+              {tastingAnalyses.length === 0 ? (
+                <Card className="col-span-full p-12 text-center border-dashed">
+                  <p className="text-muted-foreground">
+                    No tasting analyses yet. Click "New Tasting" to get started.
+                  </p>
+                </Card>
+              ) : (
+                tastingAnalyses.map((analysis) => (
+                  <TastingAnalysisCard
+                    key={analysis.id}
+                    analysis={analysis}
+                    onDelete={handleDeleteTasting}
+                    onEdit={handleEditTasting}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -743,6 +890,14 @@ const Index = () => {
         open={blendDetailsOpen}
         onOpenChange={setBlendDetailsOpen}
         onBlendUpdated={fetchBlendBatches}
+      />
+
+      <TastingAnalysisDialog
+        open={tastingDialogOpen}
+        onOpenChange={setTastingDialogOpen}
+        blendBatches={blendBatches.map(b => ({ id: b.id, name: b.name }))}
+        existingAnalysis={editingTasting}
+        onSave={handleSaveTasting}
       />
     </div>
   );
