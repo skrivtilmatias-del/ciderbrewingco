@@ -14,13 +14,18 @@ export const signUpSchema = z.object({
     .max(255, { message: 'Email must be less than 255 characters' }),
   password: z
     .string()
-    .min(6, { message: 'Password must be at least 6 characters' })
-    .max(100, { message: 'Password must be less than 100 characters' }),
+    .min(12, { message: 'Password must be at least 12 characters for security' })
+    .max(128, { message: 'Password must be less than 128 characters' })
+    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
+    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
+    .regex(/[0-9]/, { message: 'Password must contain at least one number' })
+    .regex(/[^A-Za-z0-9]/, { message: 'Password must contain at least one special character' }),
   fullName: z
     .string()
     .trim()
     .min(1, { message: 'Full name is required' })
-    .max(100, { message: 'Full name must be less than 100 characters' }),
+    .max(100, { message: 'Full name must be less than 100 characters' })
+    .regex(/^[a-zA-Z\s'-]+$/, { message: 'Full name can only contain letters, spaces, hyphens, and apostrophes' }),
 });
 
 export const signInSchema = z.object({

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,8 +48,12 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
   const [ph, setPh] = useState(log.ph?.toString() || "");
   const [ta, setTa] = useState(log.ta_gpl?.toString() || "");
   const [tempC, setTempC] = useState(log.temp_c?.toString() || "");
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleUpdate = async () => {
+  // Debounced update to prevent excessive API calls
+  const handleUpdate = useCallback(async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
     // Validate input using Zod
     const validation = batchLogSchema.safeParse({
       stage,
@@ -67,21 +71,26 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
     if (!validation.success) {
       const firstError = validation.error.errors[0];
       toast.error(firstError.message);
+      setIsUpdating(false);
       return;
     }
 
-    const { error } = await supabase
-      .from("batch_logs")
-      .update(validation.data)
-      .eq("id", log.id);
+    try {
+      const { error } = await supabase
+        .from("batch_logs")
+        .update(validation.data)
+        .eq("id", log.id);
 
-    if (error) {
-      toast.error(getUserFriendlyError(error));
-    } else {
-      toast.success("Log updated");
-      onUpdate();
+      if (error) {
+        toast.error(getUserFriendlyError(error));
+      } else {
+        toast.success("Log updated");
+        onUpdate();
+      }
+    } finally {
+      setIsUpdating(false);
     }
-  };
+  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, log.id, onUpdate, isUpdating]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this log entry?")) return;
@@ -157,8 +166,8 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleUpdate}>
-              Save
+            <Button variant="outline" size="sm" onClick={handleUpdate} disabled={isUpdating}>
+              {isUpdating ? "Saving..." : "Save"}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4" />

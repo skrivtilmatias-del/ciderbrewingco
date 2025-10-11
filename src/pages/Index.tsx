@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { BatchDetails } from "@/components/BatchDetails";
@@ -31,6 +33,12 @@ const Index = () => {
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
+  
+  // Debounce search query to prevent excessive filtering
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
+  // Monitor session timeout
+  useSessionTimeout(5);
 
   useEffect(() => {
     // Check authentication
@@ -174,10 +182,10 @@ const Index = () => {
   };
 
   const filteredLogs = logs.filter(log => {
-    const matchesSearch = searchQuery === "" || 
-      log.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = debouncedSearchQuery === "" || 
+      log.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      log.content?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      log.tags?.some(tag => tag.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
     
     const matchesStage = stageFilter === "All" || log.stage === stageFilter;
     
