@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Trash2, Tag } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2, Tag, Upload, X } from "lucide-react";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ export interface BatchLog {
   ph: number | null;
   ta_gpl: number | null;
   temp_c: number | null;
+  attachments: string[] | null;
 }
 
 interface BatchLogCardProps {
@@ -50,6 +51,9 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
   const [ta, setTa] = useState(log.ta_gpl?.toString() || "");
   const [tempC, setTempC] = useState(log.temp_c?.toString() || "");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [attachments, setAttachments] = useState<string[]>(log.attachments || []);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debounced update to prevent excessive API calls
   const handleUpdate = useCallback(async () => {
@@ -106,6 +110,83 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
     } else {
       toast.success("Log deleted");
       onDelete();
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${log.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('batch-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('batch-images')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(data.publicUrl);
+      }
+
+      const newAttachments = [...attachments, ...uploadedUrls];
+      setAttachments(newAttachments);
+
+      const { error: updateError } = await supabase
+        .from('batch_logs')
+        .update({ attachments: newAttachments })
+        .eq('id', log.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Images uploaded");
+      onUpdate();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeImage = async (imageUrl: string) => {
+    const newAttachments = attachments.filter(url => url !== imageUrl);
+    setAttachments(newAttachments);
+
+    try {
+      const { error } = await supabase
+        .from('batch_logs')
+        .update({ attachments: newAttachments })
+        .eq('id', log.id);
+
+      if (error) throw error;
+
+      // Delete from storage
+      const fileName = imageUrl.split('/batch-images/')[1];
+      if (fileName) {
+        await supabase.storage
+          .from('batch-images')
+          .remove([fileName]);
+      }
+
+      toast.success("Image removed");
+      onUpdate();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -273,6 +354,54 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
                 onChange={(e) => setTempC(e.target.value)}
                 placeholder="14"
               />
+            </div>
+          </div>
+        )}
+        
+        {/* Image Attachments */}
+        {isExpanded && (
+          <div className="space-y-2">
+            <Label>Images</Label>
+            {attachments.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {attachments.map((imageUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img 
+                      src={imageUrl} 
+                      alt={`Attachment ${index + 1}`}
+                      className="w-full h-24 object-cover rounded border"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(imageUrl)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {uploading ? "Uploading..." : "Upload Images"}
+              </Button>
             </div>
           </div>
         )}
