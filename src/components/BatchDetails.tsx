@@ -31,6 +31,12 @@ const getStageColor = (stage: string) => {
   return 'bg-primary';
 };
 
+const getDisplayStageName = (stage: string) => {
+  // Map technical stage names to display names
+  if (stage === 'Pitching & Fermentation') return 'Fermentation';
+  return stage;
+};
+
 const allStages = [...STAGES, 'Complete'];
 
 interface BatchDetailsProps {
@@ -98,7 +104,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
             </div>
             <Badge className={`${stageColor} text-white`}>
               <StageIcon className="w-4 h-4 mr-1" />
-              {batch.currentStage}
+              {getDisplayStageName(batch.currentStage)}
             </Badge>
           </div>
 
