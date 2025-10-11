@@ -58,11 +58,7 @@ export const StageProgressionUI = ({
       else if (keyStage === 'Bottling') targetStage = 'Bottling';
       else targetStage = 'Complete';
 
-      const action = index < currentKeyStageIndex ? 'Go back' : 'Skip';
-      const confirmed = confirm(`${action} to "${keyStage}"?`);
-      if (confirmed) {
-        onAdvanceStage(batchId, targetStage);
-      }
+      onAdvanceStage(batchId, targetStage);
     }
   };
 

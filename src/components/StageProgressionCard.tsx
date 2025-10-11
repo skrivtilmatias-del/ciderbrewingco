@@ -55,11 +55,7 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
       else if (keyStage === 'Bottling') targetStage = 'Bottling';
       else targetStage = 'Complete';
 
-      const action = index < currentKeyStageIndex ? 'Go back' : 'Skip';
-      const confirmed = confirm(`${action} to "${keyStage}"?`);
-      if (confirmed) {
-        onSkipToStage(targetStage);
-      }
+      onSkipToStage(targetStage);
     }
   };
 
