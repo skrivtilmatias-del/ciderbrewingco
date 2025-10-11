@@ -367,9 +367,8 @@ const Index = () => {
 
       if (error) throw error;
 
-      // Refresh and prepend
+      // Refresh logs from backend to ensure visibility
       await fetchLogs(freshSelected.id);
-      setLogs([data as BatchLog, ...logs]);
       toast.success('Log entry created');
     } catch (error: any) {
       if (error?.code === '42501') {
