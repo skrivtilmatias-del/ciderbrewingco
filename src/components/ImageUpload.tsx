@@ -33,6 +33,9 @@ export function ImageUpload({
     const uploadedUrls: string[] = [];
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) {
           toast.error(`${file.name} is not an image file`);
@@ -46,9 +49,9 @@ export function ImageUpload({
 
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-        const filePath = fileName;
+        const filePath = `${user.id}/${fileName}`;
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from(bucketName)
           .upload(filePath, file);
 
@@ -75,13 +78,12 @@ export function ImageUpload({
 
   const handleRemoveImage = async (imageUrl: string) => {
     try {
-      // Extract file path from URL
-      const urlParts = imageUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      const path = imageUrl.split('/batch-images/')[1];
+      if (!path) throw new Error('Invalid image URL');
 
       await supabase.storage
         .from(bucketName)
-        .remove([fileName]);
+        .remove([path]);
 
       onImagesChange(images.filter(url => url !== imageUrl));
       toast.success("Image removed");

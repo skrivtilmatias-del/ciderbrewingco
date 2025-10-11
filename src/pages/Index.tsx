@@ -153,6 +153,7 @@ const Index = () => {
         currentStage: batch.current_stage as Batch["currentStage"],
         progress: batch.progress,
         notes: batch.notes || undefined,
+        attachments: batch.attachments || undefined,
       }));
 
       setBatches(formattedBatches);
