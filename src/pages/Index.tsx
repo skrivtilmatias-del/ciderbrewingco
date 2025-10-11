@@ -438,7 +438,7 @@ const Index = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddLog}>
+              <Button onClick={handleAddLog} disabled={!selectedBatch}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Note
               </Button>
