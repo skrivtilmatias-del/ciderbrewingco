@@ -325,11 +325,18 @@ const Index = () => {
       return;
     }
 
-    // Sanity check: ensure selected batch still exists and belongs to user (avoids RLS errors)
+    // Re-resolve the selected batch from latest state to avoid stale IDs
+    const freshSelected = batches.find(b => b.id === selectedBatch.id) || batches[0];
+    if (!freshSelected) {
+      toast.error('No batch available. Create a batch first.');
+      return;
+    }
+
+    // Sanity check against backend (prevents RLS 42501 on stale/foreign batch)
     const { data: batchRow, error: batchCheckError } = await supabase
       .from('batches')
-      .select('id, user_id')
-      .eq('id', selectedBatch.id)
+      .select('id, user_id, current_stage')
+      .eq('id', freshSelected.id)
       .single();
 
     if (batchCheckError || !batchRow || batchRow.user_id !== session.user.id) {
@@ -338,38 +345,15 @@ const Index = () => {
       return;
     }
 
-    // Determine which stages are allowed based on current stage
-    const stageMapping: Record<string, string[]> = {
-      // Pressing stages
-      'Harvest': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Sorting & Washing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Milling': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Pressing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Settling/Enzymes': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      // Fermentation stages
-      'Pitching & Fermentation': ['Pitching & Fermentation', 'Cold Crash'],
-      'Cold Crash': ['Pitching & Fermentation', 'Cold Crash'],
-      // Aging stages
-      'Malolactic': ['Malolactic', 'Stabilisation/Finings'],
-      'Stabilisation/Finings': ['Malolactic', 'Stabilisation/Finings'],
-      // Bottling stages
-      'Blending': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Racking': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Backsweetening': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Bottling': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Conditioning/Lees Aging': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Tasting/QA': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-    };
-
-    const allowedStages = stageMapping[selectedBatch.currentStage] || [selectedBatch.currentStage];
-    const defaultStage = allowedStages[0];
+    // Use the batch's current stage as default for the new note
+    const defaultStage = freshSelected.currentStage;
 
     try {
       const { data, error } = await supabase
         .from('batch_logs')
         .insert([
           {
-            batch_id: selectedBatch.id,
+            batch_id: freshSelected.id,
             user_id: session.user.id,
             stage: defaultStage,
             role: 'General',
@@ -383,6 +367,8 @@ const Index = () => {
 
       if (error) throw error;
 
+      // Refresh and prepend
+      await fetchLogs(freshSelected.id);
       setLogs([data as BatchLog, ...logs]);
       toast.success('Log entry created');
     } catch (error: any) {
