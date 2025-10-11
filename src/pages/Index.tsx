@@ -466,7 +466,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="timeline" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
@@ -476,31 +476,20 @@ const Index = () => {
                   className="pl-8 sm:pl-10 text-sm"
                 />
               </div>
-              
-              {/* Stage Filter Buttons */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={stageFilter === "All" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setStageFilter("All")}
-                  className="text-xs"
-                >
-                  All Stages
-                </Button>
-                {STAGES.map((stage) => (
-                  <Button
-                    key={stage}
-                    variant={stageFilter === stage ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStageFilter(stage)}
-                    className="text-xs"
-                  >
-                    {stage}
-                  </Button>
-                ))}
-              </div>
-              
-              <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="w-full sm:w-auto whitespace-nowrap">
+              <Select value={stageFilter} onValueChange={setStageFilter}>
+                <SelectTrigger className="w-full sm:w-[200px] text-sm">
+                  <SelectValue placeholder="All stages" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border z-50 max-h-[300px]">
+                  <SelectItem value="All">All stages</SelectItem>
+                  {STAGES.map((stage) => (
+                    <SelectItem key={stage} value={stage} className="text-sm">
+                      {stage}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
                 <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Add Note</span>
                 <span className="sm:hidden">Add</span>
