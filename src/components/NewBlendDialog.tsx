@@ -11,6 +11,8 @@ import { z } from "zod";
 const blendSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   total_volume: z.number().positive("Total volume must be positive"),
+  bottles_75cl: z.number().int().min(0, "Bottles must be a positive number").optional(),
+  bottles_150cl: z.number().int().min(0, "Bottles must be a positive number").optional(),
   notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
   components: z.array(z.object({
     source_batch_id: z.string().min(1, "Batch is required"),
@@ -40,6 +42,8 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [totalVolume, setTotalVolume] = useState("");
+  const [bottles75cl, setBottles75cl] = useState("");
+  const [bottles150cl, setBottles150cl] = useState("");
   const [notes, setNotes] = useState("");
   const [components, setComponents] = useState<BlendComponent[]>([
     { source_batch_id: "", percentage: "", volume_liters: "" }
@@ -72,6 +76,8 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
     const validation = blendSchema.safeParse({
       name: name.trim(),
       total_volume: parseFloat(totalVolume),
+      bottles_75cl: bottles75cl ? parseInt(bottles75cl) : 0,
+      bottles_150cl: bottles150cl ? parseInt(bottles150cl) : 0,
       notes: notes.trim(),
       components: parsedComponents,
     });
@@ -84,6 +90,8 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
     onBlendCreated({
       name: validation.data.name,
       total_volume: validation.data.total_volume,
+      bottles_75cl: validation.data.bottles_75cl,
+      bottles_150cl: validation.data.bottles_150cl,
       notes: validation.data.notes,
       components: validation.data.components,
     });
@@ -91,6 +99,8 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
     // Reset form
     setName("");
     setTotalVolume("");
+    setBottles75cl("");
+    setBottles150cl("");
     setNotes("");
     setComponents([{ source_batch_id: "", percentage: "", volume_liters: "" }]);
     setOpen(false);
@@ -139,6 +149,31 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
               onChange={(e) => setTotalVolume(e.target.value)}
               placeholder="e.g., 100"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="bottles-75">Bottles 75cl</Label>
+              <Input
+                id="bottles-75"
+                type="number"
+                min="0"
+                value={bottles75cl}
+                onChange={(e) => setBottles75cl(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="bottles-150">Bottles 150cl</Label>
+              <Input
+                id="bottles-150"
+                type="number"
+                min="0"
+                value={bottles150cl}
+                onChange={(e) => setBottles150cl(e.target.value)}
+                placeholder="0"
+              />
+            </div>
           </div>
 
           <div>

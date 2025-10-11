@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Wine, Save } from "lucide-react";
+import { Wine, Save, Edit, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getUserFriendlyError } from "@/lib/errorHandler";
@@ -26,6 +26,8 @@ interface BlendBatch {
   notes: string | null;
   created_at: string;
   components: BlendComponent[];
+  bottles_75cl?: number;
+  bottles_150cl?: number;
 }
 
 interface BlendBatchDetailsProps {
@@ -36,31 +38,59 @@ interface BlendBatchDetailsProps {
 }
 
 export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }: BlendBatchDetailsProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [blendName, setBlendName] = useState("");
+  const [totalVolume, setTotalVolume] = useState("");
+  const [bottles75cl, setBottles75cl] = useState("");
+  const [bottles150cl, setBottles150cl] = useState("");
   const [notes, setNotes] = useState("");
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (blend) {
+      setBlendName(blend.name);
+      setTotalVolume(blend.total_volume.toString());
+      setBottles75cl((blend.bottles_75cl || 0).toString());
+      setBottles150cl((blend.bottles_150cl || 0).toString());
       setNotes(blend.notes || "");
-      setIsEditingNotes(false);
+      setIsEditing(false);
     }
   }, [blend]);
 
-  const handleSaveNotes = async () => {
+  const handleSave = async () => {
     if (!blend) return;
+    
+    if (!blendName.trim()) {
+      toast.error("Blend name is required");
+      return;
+    }
+
+    const volumeNum = parseFloat(totalVolume);
+    if (isNaN(volumeNum) || volumeNum <= 0) {
+      toast.error("Valid total volume is required");
+      return;
+    }
+
+    const bottles75 = parseInt(bottles75cl) || 0;
+    const bottles150 = parseInt(bottles150cl) || 0;
     
     setIsSaving(true);
     try {
       const { error } = await supabase
         .from("blend_batches")
-        .update({ notes: notes.trim() || null })
+        .update({ 
+          name: blendName.trim(),
+          total_volume: volumeNum,
+          bottles_75cl: bottles75,
+          bottles_150cl: bottles150,
+          notes: notes.trim() || null 
+        })
         .eq("id", blend.id);
 
       if (error) throw error;
 
-      toast.success("Notes saved");
-      setIsEditingNotes(false);
+      toast.success("Blend updated successfully");
+      setIsEditing(false);
       onBlendUpdated();
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
@@ -75,18 +105,135 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-2">
-            <Wine className="w-6 h-6 text-primary" />
-            <DialogTitle className="text-2xl">{blend.name}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wine className="w-6 h-6 text-primary" />
+              <DialogTitle className="text-2xl">{blend.name}</DialogTitle>
+            </div>
+            {!isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Details
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Total Volume */}
-          <div className="border border-border rounded-lg p-4">
-            <Label className="text-sm text-muted-foreground">Total Volume</Label>
-            <p className="text-2xl font-bold mt-1">{blend.total_volume}L</p>
-          </div>
+          {isEditing && (
+            <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-4">
+              <div>
+                <Label htmlFor="blend-name">Blend Name</Label>
+                <Input
+                  id="blend-name"
+                  value={blendName}
+                  onChange={(e) => setBlendName(e.target.value)}
+                  placeholder="Enter blend name"
+                  maxLength={100}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="total-volume">Total Volume (L)</Label>
+                  <Input
+                    id="total-volume"
+                    type="number"
+                    step="0.1"
+                    value={totalVolume}
+                    onChange={(e) => setTotalVolume(e.target.value)}
+                    placeholder="Enter volume"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="bottles-75">Bottles 75cl</Label>
+                  <Input
+                    id="bottles-75"
+                    type="number"
+                    min="0"
+                    value={bottles75cl}
+                    onChange={(e) => setBottles75cl(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="bottles-150">Bottles 150cl</Label>
+                <Input
+                  id="bottles-150"
+                  type="number"
+                  min="0"
+                  value={bottles150cl}
+                  onChange={(e) => setBottles150cl(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="blend-notes">Notes</Label>
+                <Textarea
+                  id="blend-notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this blend..."
+                  rows={4}
+                  maxLength={1000}
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setBlendName(blend.name);
+                    setTotalVolume(blend.total_volume.toString());
+                    setBottles75cl((blend.bottles_75cl || 0).toString());
+                    setBottles150cl((blend.bottles_150cl || 0).toString());
+                    setNotes(blend.notes || "");
+                    setIsEditing(false);
+                  }}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Display mode */}
+          {!isEditing && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border border-border rounded-lg p-4">
+                  <Label className="text-sm text-muted-foreground">Total Volume</Label>
+                  <p className="text-2xl font-bold mt-1">{blend.total_volume}L</p>
+                </div>
+                <div className="border border-border rounded-lg p-4">
+                  <Label className="text-sm text-muted-foreground">Bottles 75cl</Label>
+                  <p className="text-2xl font-bold mt-1">{blend.bottles_75cl || 0}</p>
+                </div>
+              </div>
+
+              <div className="border border-border rounded-lg p-4">
+                <Label className="text-sm text-muted-foreground">Bottles 150cl</Label>
+                <p className="text-2xl font-bold mt-1">{blend.bottles_150cl || 0}</p>
+              </div>
+            </>
+          )}
 
           {/* Components */}
           <div>
@@ -113,59 +260,17 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
+          {/* Notes - only show in display mode */}
+          {!isEditing && (
+            <div>
               <Label className="text-base font-semibold">Notes</Label>
-              {!isEditingNotes && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingNotes(true)}
-                >
-                  Edit
-                </Button>
-              )}
-            </div>
-            
-            {isEditingNotes ? (
-              <div className="space-y-2">
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes about this blend..."
-                  rows={4}
-                  maxLength={1000}
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setNotes(blend.notes || "");
-                      setIsEditingNotes(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveNotes}
-                    disabled={isSaving}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {isSaving ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="border border-border rounded-lg p-4 min-h-[100px]">
+              <div className="border border-border rounded-lg p-4 min-h-[100px] mt-2">
                 <p className="text-sm whitespace-pre-wrap">
                   {blend.notes || "No notes added yet."}
                 </p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Created Date */}
           <div className="text-sm text-muted-foreground">

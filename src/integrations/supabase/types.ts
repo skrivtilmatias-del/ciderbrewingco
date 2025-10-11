@@ -187,6 +187,8 @@ export type Database = {
       }
       blend_batches: {
         Row: {
+          bottles_150cl: number | null
+          bottles_75cl: number | null
           created_at: string
           id: string
           name: string
@@ -196,6 +198,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bottles_150cl?: number | null
+          bottles_75cl?: number | null
           created_at?: string
           id?: string
           name: string
@@ -205,6 +209,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bottles_150cl?: number | null
+          bottles_75cl?: number | null
           created_at?: string
           id?: string
           name?: string

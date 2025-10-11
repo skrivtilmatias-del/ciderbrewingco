@@ -462,6 +462,8 @@ const Index = () => {
           user_id: user.id,
           name: blendData.name,
           total_volume: blendData.total_volume,
+          bottles_75cl: blendData.bottles_75cl || 0,
+          bottles_150cl: blendData.bottles_150cl || 0,
           notes: blendData.notes || null,
         }])
         .select()
