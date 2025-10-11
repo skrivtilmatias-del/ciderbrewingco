@@ -5,8 +5,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Save } from "lucide-react";
 import { z } from "zod";
+
+const APPEARANCE_DESCRIPTORS = [
+  "brilliant", "clear", "slightly hazy", "cloudy", "sedimented", "pale straw", 
+  "golden", "amber", "deep gold", "copper", "brownish", "still", "slightly sparkling", 
+  "fine mousse", "persistent bubbles", "viscosity", "legs", "natural sediment", "foam retention"
+];
+
+const AROMA_DESCRIPTORS = [
+  "fresh apple", "baked apple", "pear", "quince", "stone fruit", "apricot", "peach", 
+  "citrus", "lemon", "orange zest", "red berries", "pineapple", "tropical fruit", 
+  "blossom", "elderflower", "honeysuckle", "herbal", "hay", "cut grass", "yeasty", 
+  "bready", "doughy", "brioche", "buttery", "nutty", "honey", "caramel", "toffee", 
+  "vanilla", "spicy", "clove", "cinnamon", "woody", "oak", "smoky", "earthy", "funky", 
+  "farmyard", "barnyard", "leather", "wet wool", "brettanomyces", "horse blanket", 
+  "vinegar", "sulphur"
+];
+
+const PALATE_DESCRIPTORS = [
+  "dry", "off-dry", "medium", "sweet", "crisp", "sharp", "tangy", "lively", "balanced", 
+  "round", "refreshing", "tart green apple", "lemon-like acidity", "soft", "astringent", 
+  "grippy", "smooth", "silky", "full-bodied", "light-bodied", "apple", "baked apple", 
+  "oxidized apple", "pear", "citrus", "stone fruit", "tropical fruit", "honey", "caramel", 
+  "toffee", "nuts", "buttery", "spicy", "earthy", "funky", "mineral", "clean", 
+  "lingering", "bitter-sweet", "drying", "refreshing", "warm"
+];
 
 const tastingSchema = z.object({
   blend_batch_id: z.string().min(1, "Blend batch is required"),
@@ -78,6 +104,17 @@ export function TastingAnalysisDialog({
     setErrors([]);
   };
 
+  const addDescriptor = (field: 'colour' | 'taste' | 'palate', descriptor: string) => {
+    const currentValue = field === 'colour' ? colour : field === 'taste' ? taste : palate;
+    const setter = field === 'colour' ? setColour : field === 'taste' ? setTaste : setPalate;
+    
+    if (currentValue.trim()) {
+      setter(currentValue + ", " + descriptor);
+    } else {
+      setter(descriptor);
+    }
+  };
+
   const handleSave = () => {
     setErrors([]);
 
@@ -140,6 +177,18 @@ export function TastingAnalysisDialog({
 
           <div>
             <Label htmlFor="colour">Appearance</Label>
+            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
+              {APPEARANCE_DESCRIPTORS.map((descriptor) => (
+                <Badge
+                  key={descriptor}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
+                  onClick={() => addDescriptor('colour', descriptor)}
+                >
+                  {descriptor}
+                </Badge>
+              ))}
+            </div>
             <Textarea
               id="colour"
               value={colour}
@@ -152,6 +201,18 @@ export function TastingAnalysisDialog({
 
           <div>
             <Label htmlFor="taste">Aroma / Bouquet</Label>
+            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
+              {AROMA_DESCRIPTORS.map((descriptor) => (
+                <Badge
+                  key={descriptor}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
+                  onClick={() => addDescriptor('taste', descriptor)}
+                >
+                  {descriptor}
+                </Badge>
+              ))}
+            </div>
             <Textarea
               id="taste"
               value={taste}
@@ -164,6 +225,18 @@ export function TastingAnalysisDialog({
 
           <div>
             <Label htmlFor="palate">Palate / Flavour</Label>
+            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
+              {PALATE_DESCRIPTORS.map((descriptor) => (
+                <Badge
+                  key={descriptor}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
+                  onClick={() => addDescriptor('palate', descriptor)}
+                >
+                  {descriptor}
+                </Badge>
+              ))}
+            </div>
             <Textarea
               id="palate"
               value={palate}
