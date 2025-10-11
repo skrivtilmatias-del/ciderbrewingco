@@ -532,6 +532,7 @@ const Index = () => {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onUpdateStage={handleUpdateStage}
+        onBatchUpdated={fetchBatches}
       />
     </div>
   );

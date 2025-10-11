@@ -62,45 +62,44 @@ export const StageProgressionUI = ({
           </div>
         </div>
 
-        {/* Stage Timeline */}
+        {/* Stage Timeline - More Compact */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground mb-3">All Production Stages</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {allStages.map((stage, index) => {
-              const isCompleted = index < currentIndex;
-              const isCurrent = index === currentIndex;
-              
-              return (
-                <div
-                  key={stage}
-                  className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                    isCompleted
-                      ? "bg-success/10 border-success"
-                      : isCurrent
-                      ? "bg-primary/10 border-primary border-2"
-                      : "bg-muted/50 border-border"
-                  }`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-                  ) : isCurrent ? (
-                    <Circle className="h-5 w-5 text-primary flex-shrink-0 fill-primary" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium truncate ${
-                      isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground"
-                    }`}>
-                      {stage}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isCompleted ? "✓ Done" : isCurrent ? "In Progress" : "Pending"}
-                    </p>
+          <div className="max-h-[300px] overflow-y-auto border rounded-lg p-3 bg-muted/20">
+            <div className="grid grid-cols-2 gap-2">
+              {allStages.map((stage, index) => {
+                const isCompleted = index < currentIndex;
+                const isCurrent = index === currentIndex;
+                
+                return (
+                  <div
+                    key={stage}
+                    className={`flex items-center gap-2 p-2 rounded border transition-all ${
+                      isCompleted
+                        ? "bg-success/10 border-success/50"
+                        : isCurrent
+                        ? "bg-primary/10 border-primary border-2"
+                        : "bg-background border-border"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
+                    ) : isCurrent ? (
+                      <Circle className="h-4 w-4 text-primary flex-shrink-0 fill-primary" />
+                    ) : (
+                      <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-medium truncate ${
+                        isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground"
+                      }`}>
+                        {stage}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 

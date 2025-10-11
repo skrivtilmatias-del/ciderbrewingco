@@ -1,10 +1,16 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { StageProgressionCard } from "./StageProgressionCard";
 import { STAGES } from "@/constants/ciderStages";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { getUserFriendlyError } from "@/lib/errorHandler";
 
 const getStageIcon = (stage: string) => {
   if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
@@ -32,9 +38,14 @@ interface BatchDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateStage: (batchId: string, newStage: Batch["currentStage"]) => void;
+  onBatchUpdated?: () => void;
 }
 
-export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: BatchDetailsProps) => {
+export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated }: BatchDetailsProps) => {
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [notes, setNotes] = useState(batch?.notes || "");
+  const [isSaving, setIsSaving] = useState(false);
+
   if (!batch) return null;
 
   const currentStageIndex = allStages.indexOf(batch.currentStage);
@@ -45,6 +56,26 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: Batch
     if (currentStageIndex < allStages.length - 1) {
       const nextStage = allStages[currentStageIndex + 1] as Batch["currentStage"];
       onUpdateStage(batch.id, nextStage);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("batches")
+        .update({ notes: notes.trim() || null })
+        .eq("id", batch.id);
+
+      if (error) throw error;
+
+      toast.success("Notes updated successfully");
+      setIsEditingNotes(false);
+      if (onBatchUpdated) onBatchUpdated();
+    } catch (error: any) {
+      toast.error(getUserFriendlyError(error));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -94,12 +125,59 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: Batch
             <Progress value={batch.progress} className="h-3" />
           </div>
 
-          {batch.notes && (
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">Notes</p>
-              <p className="text-sm text-muted-foreground">{batch.notes}</p>
+          {/* Editable Notes Section */}
+          <div className="bg-muted/50 p-4 rounded-lg border">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Notes</p>
+              {!isEditingNotes ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setNotes(batch.notes || "");
+                    setIsEditingNotes(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setNotes(batch.notes || "");
+                      setIsEditingNotes(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveNotes}
+                    disabled={isSaving}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    {isSaving ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
+            {isEditingNotes ? (
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add notes about this batch..."
+                rows={4}
+                className="w-full"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {batch.notes || "No notes yet. Click Edit to add notes."}
+              </p>
+            )}
+          </div>
 
           {/* Stage Progression Card */}
           <StageProgressionCard
