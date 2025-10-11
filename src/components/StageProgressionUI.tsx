@@ -62,10 +62,10 @@ export const StageProgressionUI = ({
           </div>
         </div>
 
-        {/* Stage Timeline - More Compact */}
+        {/* Stage Timeline - Compact */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground mb-3">All Production Stages</p>
-          <div className="max-h-[300px] overflow-y-auto border rounded-lg p-3 bg-muted/20">
+          <div className="max-h-[240px] overflow-y-auto border rounded-lg p-2 bg-muted/20">
             <div className="grid grid-cols-2 gap-2">
               {allStages.map((stage, index) => {
                 const isCompleted = index < currentIndex;
