@@ -9,13 +9,24 @@ import { Batch } from "./BatchCard";
 interface StageProgressionCardProps {
   batch: Batch;
   onAdvanceStage: () => void;
+  onSkipToStage?: (stage: CiderStage | 'Complete') => void;
 }
 
-export function StageProgressionCard({ batch, onAdvanceStage }: StageProgressionCardProps) {
+export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: StageProgressionCardProps) {
   const allStages: Array<CiderStage | 'Complete'> = [...STAGES, 'Complete'];
   const currentStageIndex = allStages.indexOf(batch.currentStage);
   const isComplete = batch.currentStage === 'Complete';
   const canAdvance = currentStageIndex < allStages.length - 1;
+
+  const handleStageClick = (stage: CiderStage | 'Complete', index: number) => {
+    // Only allow jumping forward
+    if (index > currentStageIndex && onSkipToStage) {
+      const confirmed = confirm(`Skip to "${stage}"? This will skip ${index - currentStageIndex} stage(s).`);
+      if (confirmed) {
+        onSkipToStage(stage);
+      }
+    }
+  };
 
   // Calculate progress based on stage completion
   const progressPercentage = ((currentStageIndex + 1) / allStages.length) * 100;
@@ -46,10 +57,12 @@ export function StageProgressionCard({ batch, onAdvanceStage }: StageProgression
             const isCurrentStage = index === currentStageIndex;
             const isCompleted = index < currentStageIndex;
             const isNext = index === currentStageIndex + 1;
+            const canSkipTo = index > currentStageIndex;
 
             return (
               <div
                 key={stage}
+                onClick={() => handleStageClick(stage, index)}
                 className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                   isCurrentStage
                     ? 'bg-primary/10 border-primary shadow-sm'
@@ -57,8 +70,11 @@ export function StageProgressionCard({ batch, onAdvanceStage }: StageProgression
                     ? 'bg-success/5 border-success/20'
                     : isNext
                     ? 'bg-muted/50 border-muted-foreground/20'
+                    : canSkipTo
+                    ? 'bg-background border-border hover:bg-primary/5 hover:border-primary/30 cursor-pointer'
                     : 'bg-background border-border'
                 }`}
+                title={canSkipTo && !isNext ? `Click to skip to ${stage}` : undefined}
               >
                 {isCompleted ? (
                   <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
@@ -83,6 +99,11 @@ export function StageProgressionCard({ batch, onAdvanceStage }: StageProgression
                 {isNext && (
                   <Badge variant="outline" className="text-xs">
                     Next
+                  </Badge>
+                )}
+                {canSkipTo && !isNext && (
+                  <Badge variant="outline" className="text-xs">
+                    Skip
                   </Badge>
                 )}
               </div>

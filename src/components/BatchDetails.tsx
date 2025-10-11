@@ -59,6 +59,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     }
   };
 
+  const handleSkipToStage = (stage: Batch["currentStage"]) => {
+    onUpdateStage(batch.id, stage);
+  };
+
   const handleSaveNotes = async () => {
     setIsSaving(true);
     try {
@@ -183,6 +187,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           <StageProgressionCard
             batch={batch}
             onAdvanceStage={handleAdvanceStage}
+            onSkipToStage={handleSkipToStage}
           />
         </div>
       </DialogContent>
