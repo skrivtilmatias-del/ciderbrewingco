@@ -1,8 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { STAGES } from "@/constants/ciderStages";
-import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { CiderStage } from "@/constants/ciderStages";
 
 interface StageProgressionUIProps {
@@ -12,31 +10,59 @@ interface StageProgressionUIProps {
   onAdvanceStage: (batchId: string, newStage: CiderStage | "Complete") => void;
 }
 
+// Simplified key stages for cleaner UX
+const KEY_STAGES = [
+  'Harvest',
+  'Pressing',
+  'Pitching & Fermentation',
+  'Racking',
+  'Bottling',
+  'Complete'
+] as const;
+
+// Map all stages to key stage indices
+const STAGE_TO_KEY_INDEX: Record<string, number> = {
+  'Harvest': 0,
+  'Sorting & Washing': 0,
+  'Milling': 0,
+  'Pressing': 1,
+  'Settling/Enzymes': 1,
+  'Pitching & Fermentation': 2,
+  'Cold Crash': 2,
+  'Racking': 3,
+  'Malolactic': 3,
+  'Stabilisation/Finings': 3,
+  'Blending': 3,
+  'Backsweetening': 4,
+  'Bottling': 4,
+  'Conditioning/Lees Aging': 4,
+  'Tasting/QA': 4,
+  'Complete': 5
+};
+
 export const StageProgressionUI = ({ 
   currentStage, 
   batchId, 
   batchName,
   onAdvanceStage 
 }: StageProgressionUIProps) => {
-  const allStages = [...STAGES, "Complete"] as const;
-  const currentIndex = allStages.indexOf(currentStage as any);
+  const currentKeyStageIndex = STAGE_TO_KEY_INDEX[currentStage] ?? 0;
   const isComplete = currentStage === "Complete";
-  
-  const handleAdvance = () => {
-    if (currentIndex < allStages.length - 1) {
-      const nextStage = allStages[currentIndex + 1];
-      onAdvanceStage(batchId, nextStage);
-    }
-  };
 
-  const handleStageClick = (stage: CiderStage | "Complete", index: number) => {
-    // Only allow jumping forward or to the current stage
-    if (index >= currentIndex) {
-      if (index > currentIndex) {
-        const confirmed = confirm(`Skip to "${stage}"? This will skip ${index - currentIndex} stage(s).`);
-        if (confirmed) {
-          onAdvanceStage(batchId, stage);
-        }
+  const handleKeyStageClick = (keyStage: string, index: number) => {
+    if (index > currentKeyStageIndex) {
+      // Map key stage to actual stage
+      let targetStage: CiderStage | 'Complete';
+      if (keyStage === 'Harvest') targetStage = 'Harvest';
+      else if (keyStage === 'Pressing') targetStage = 'Pressing';
+      else if (keyStage === 'Pitching & Fermentation') targetStage = 'Pitching & Fermentation';
+      else if (keyStage === 'Racking') targetStage = 'Racking';
+      else if (keyStage === 'Bottling') targetStage = 'Bottling';
+      else targetStage = 'Complete';
+
+      const confirmed = confirm(`Skip to "${keyStage}"?`);
+      if (confirmed) {
+        onAdvanceStage(batchId, targetStage);
       }
     }
   };
@@ -44,95 +70,50 @@ export const StageProgressionUI = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-          <span className="break-words">Production Progress: {batchName}</span>
-          <Badge variant={isComplete ? "default" : "secondary"} className="self-start sm:self-auto">
-            {currentStage}
-          </Badge>
+        <CardTitle className="text-base sm:text-lg">
+          Production Progress: {batchName}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 sm:space-y-4">
-        {/* Current Stage Highlight */}
-        <div className="bg-primary/10 border-2 border-primary rounded-lg p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Current Stage</p>
-              <p className="text-lg sm:text-xl font-bold text-primary break-words">{currentStage}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Step {currentIndex + 1} of {allStages.length}
-              </p>
-            </div>
-            {!isComplete && (
-              <Button 
-                onClick={handleAdvance}
-                className="bg-primary hover:bg-primary/90 w-full sm:w-auto text-sm"
-                size="sm"
+      <CardContent className="space-y-4">
+        <p className="text-sm font-medium text-muted-foreground">Production Stages</p>
+        
+        {/* Horizontal Key Stages */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {KEY_STAGES.map((stage, index) => {
+            const isCompleted = index < currentKeyStageIndex;
+            const isCurrent = index === currentKeyStageIndex;
+            const canSkipTo = index > currentKeyStageIndex;
+
+            return (
+              <Button
+                key={stage}
+                variant="outline"
+                onClick={() => handleKeyStageClick(stage, index)}
+                disabled={isCompleted || isCurrent}
+                className={`flex-1 min-w-[100px] h-auto py-3 px-4 flex flex-col items-center gap-2 transition-all ${
+                  isCompleted
+                    ? 'bg-success/10 border-success text-success hover:bg-success/10'
+                    : isCurrent
+                    ? 'bg-primary/10 border-primary text-primary hover:bg-primary/10'
+                    : canSkipTo
+                    ? 'hover:bg-muted cursor-pointer'
+                    : 'opacity-50'
+                }`}
               >
-                Advance to Next Stage
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isCompleted ? (
+                  <CheckCircle2 className="w-5 h-5" />
+                ) : isCurrent ? (
+                  <Clock className="w-5 h-5" />
+                ) : (
+                  <Circle className="w-5 h-5" />
+                )}
+                <span className="text-xs font-medium text-center whitespace-normal">
+                  {stage}
+                </span>
               </Button>
-            )}
-          </div>
+            );
+          })}
         </div>
-
-        {/* Stage Timeline - Compact */}
-        <div className="space-y-2">
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">All Production Stages</p>
-          <div className="max-h-[240px] overflow-y-auto border rounded-lg p-2 bg-muted/20">
-            <div className="grid grid-cols-2 gap-2">
-              {allStages.map((stage, index) => {
-                const isCompleted = index < currentIndex;
-                const isCurrent = index === currentIndex;
-                const canSkipTo = index > currentIndex;
-                
-                return (
-                  <div
-                    key={stage}
-                    onClick={() => handleStageClick(stage, index)}
-                    className={`flex items-center gap-2 p-2 rounded border transition-all ${
-                      isCompleted
-                        ? "bg-success/10 border-success/50"
-                        : isCurrent
-                        ? "bg-primary/10 border-primary border-2"
-                        : canSkipTo
-                        ? "bg-background border-border hover:bg-primary/5 hover:border-primary/30 cursor-pointer"
-                        : "bg-background border-border"
-                    }`}
-                    title={canSkipTo ? `Click to skip to ${stage}` : undefined}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
-                    ) : isCurrent ? (
-                      <Circle className="h-4 w-4 text-primary flex-shrink-0 fill-primary" />
-                    ) : (
-                      <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-medium truncate ${
-                        isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground"
-                      }`}>
-                        {stage}
-                      </p>
-                    </div>
-                    {canSkipTo && (
-                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
-                        Skip
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Next Stage Preview */}
-        {!isComplete && currentIndex < allStages.length - 1 && (
-          <div className="bg-muted/50 rounded-lg p-4 border border-dashed">
-            <p className="text-sm text-muted-foreground mb-2">Next Stage</p>
-            <p className="font-semibold">{allStages[currentIndex + 1]}</p>
-          </div>
-        )}
 
         {isComplete && (
           <div className="bg-success/10 border border-success rounded-lg p-4 text-center">
