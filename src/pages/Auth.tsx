@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Apple } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [userRole, setUserRole] = useState<"production" | "taster">("taster");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -51,6 +53,7 @@ const Auth = () => {
         options: {
           data: {
             full_name: validation.data.fullName,
+            role: userRole,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -62,6 +65,7 @@ const Auth = () => {
       setEmail("");
       setPassword("");
       setFullName("");
+      setUserRole("taster");
     } catch (error: any) {
       toast.error(getAuthErrorMessage(error));
     } finally {
@@ -164,6 +168,22 @@ const Auth = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-role">Account Type</Label>
+                <Select value={userRole} onValueChange={(value: "production" | "taster") => setUserRole(value)}>
+                  <SelectTrigger id="signup-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="production">Production (Full Access)</SelectItem>
+                    <SelectItem value="taster">Taster (Tasting Only)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Production users have full access. Tasters can only access the tasting tab.
+                </p>
               </div>
 
               <div className="space-y-2">

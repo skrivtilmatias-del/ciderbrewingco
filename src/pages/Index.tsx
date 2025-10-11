@@ -32,6 +32,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -81,6 +82,8 @@ const Index = () => {
         navigate("/auth");
       } else {
         setUser(session.user);
+        // Fetch user role
+        fetchUserRole(session.user.id);
       }
     });
 
@@ -95,11 +98,31 @@ const Index = () => {
         navigate("/auth");
       } else {
         setUser(session.user);
+        // Fetch user role when session changes
+        if (session.user) {
+          fetchUserRole(session.user.id);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+      setUserRole(data?.role || null);
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+      setUserRole(null);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -690,169 +713,185 @@ const Index = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="batches" className="mb-6 sm:mb-8">
+        <Tabs defaultValue={userRole === "taster" ? "tasting" : "batches"} className="mb-6 sm:mb-8">
           <TabsList className="w-full sm:w-auto overflow-x-auto flex-nowrap justify-start">
-            <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap">
-              <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              All Batches
-            </TabsTrigger>
-            <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">
-              <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Production
-            </TabsTrigger>
-            <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
-              <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Blending
-            </TabsTrigger>
+            {userRole === "production" && (
+              <>
+                <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap">
+                  <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  All Batches
+                </TabsTrigger>
+                <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">
+                  <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Production
+                </TabsTrigger>
+                <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
+                  <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Blending
+                </TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap">
               <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Tasting
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
-              <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Calculators
-            </TabsTrigger>
+            {userRole === "production" && (
+              <>
+                <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Analytics
+                </TabsTrigger>
+                <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
+                  <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Calculators
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
-          <TabsContent value="batches" className="mt-4 sm:mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-              {batches.length === 0 ? (
-                <Card className="col-span-full p-12 text-center border-dashed">
-                  <p className="text-muted-foreground">
-                    No batches yet. Click "New Batch" to get started.
+          {userRole === "production" && (
+            <TabsContent value="batches" className="mt-4 sm:mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                {batches.length === 0 ? (
+                  <Card className="col-span-full p-12 text-center border-dashed">
+                    <p className="text-muted-foreground">
+                      No batches yet. Click "New Batch" to get started.
+                    </p>
+                  </Card>
+                ) : (
+                  batches.map((batch) => (
+                    <BatchCard
+                      key={batch.id}
+                      batch={batch}
+                      onClick={() => handleBatchClick(batch)}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+          )}
+
+          {userRole === "production" && (
+            <TabsContent value="production" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+              {selectedBatch ? (
+                <>
+                  <StageProgressionUI
+                    currentStage={selectedBatch.currentStage}
+                    batchId={selectedBatch.id}
+                    batchName={selectedBatch.name}
+                    onAdvanceStage={handleUpdateStage}
+                  />
+                  
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search notes, tags..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-8 sm:pl-10 text-sm"
+                        />
+                      </div>
+                      <Select value={stageFilter} onValueChange={setStageFilter}>
+                        <SelectTrigger className="w-full sm:w-[200px] text-sm">
+                          <SelectValue placeholder="All stages" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-card border-border z-50 max-h-[300px]">
+                          <SelectItem value="All">All stages</SelectItem>
+                          {getAllowedStages(selectedBatch.currentStage).map((stage) => (
+                            <SelectItem key={stage} value={stage} className="text-sm">
+                              {stage}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Add Note</span>
+                        <span className="sm:hidden">Add</span>
+                      </Button>
+                    </div>
+
+                    {filteredLogs.length === 0 ? (
+                      <Card className="p-8 sm:p-12 text-center border-dashed">
+                        <p className="text-sm sm:text-base text-muted-foreground">
+                          No notes yet. Click "Add Note" to get started.
+                        </p>
+                      </Card>
+                    ) : (
+                      filteredLogs.map((log) => (
+                        <BatchLogCard
+                          key={log.id}
+                          log={log}
+                          onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                          onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                          allowedStages={getAllowedStages(selectedBatch.currentStage)}
+                        />
+                      ))
+                    )}
+                  </div>
+                </>
+              ) : (
+                <Card className="p-8 sm:p-12 text-center border-dashed">
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Select a batch to view production progress and notes
                   </p>
                 </Card>
-              ) : (
-                batches.map((batch) => (
-                  <BatchCard
-                    key={batch.id}
-                    batch={batch}
-                    onClick={() => handleBatchClick(batch)}
-                  />
-                ))
               )}
-            </div>
-          </TabsContent>
+            </TabsContent>
+          )}
 
-          <TabsContent value="production" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
-            {selectedBatch ? (
-              <>
-                <StageProgressionUI
-                  currentStage={selectedBatch.currentStage}
-                  batchId={selectedBatch.id}
-                  batchName={selectedBatch.name}
-                  onAdvanceStage={handleUpdateStage}
-                />
+          {userRole === "production" && (
+            <>
+              <TabsContent value="analytics" className="mt-4 sm:mt-6">
+                {batches.length > 0 && (
+                  <ProductionAnalytics 
+                    batches={batches} 
+                    blendBatches={blendBatches}
+                    tastingAnalyses={tastingAnalyses}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="calculators" className="mt-4 sm:mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                  <ABVCalculator />
+                  <PrimingCalculator />
+                  <SO2Calculator />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="blending" className="mt-4 sm:mt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Blend Batches</h2>
+                  <NewBlendDialog 
+                    availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
+                    onBlendCreated={handleBlendCreated}
+                  />
+                </div>
                 
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search notes, tags..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 sm:pl-10 text-sm"
-                      />
-                    </div>
-                    <Select value={stageFilter} onValueChange={setStageFilter}>
-                      <SelectTrigger className="w-full sm:w-[200px] text-sm">
-                        <SelectValue placeholder="All stages" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border-border z-50 max-h-[300px]">
-                        <SelectItem value="All">All stages</SelectItem>
-                        {getAllowedStages(selectedBatch.currentStage).map((stage) => (
-                          <SelectItem key={stage} value={stage} className="text-sm">
-                            {stage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
-                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Add Note</span>
-                      <span className="sm:hidden">Add</span>
-                    </Button>
-                  </div>
-
-                  {filteredLogs.length === 0 ? (
-                    <Card className="p-8 sm:p-12 text-center border-dashed">
-                      <p className="text-sm sm:text-base text-muted-foreground">
-                        No notes yet. Click "Add Note" to get started.
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                  {blendBatches.length === 0 ? (
+                    <Card className="col-span-full p-12 text-center border-dashed">
+                      <p className="text-muted-foreground">
+                        No blend batches yet. Click "New Blend" to get started.
                       </p>
                     </Card>
                   ) : (
-                    filteredLogs.map((log) => (
-                      <BatchLogCard
-                        key={log.id}
-                        log={log}
-                        onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                        onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                        allowedStages={getAllowedStages(selectedBatch.currentStage)}
+                    blendBatches.map((blend) => (
+                      <BlendBatchCard
+                        key={blend.id}
+                        blend={blend}
+                        onDelete={handleDeleteBlend}
+                        onClick={handleBlendClick}
                       />
                     ))
                   )}
                 </div>
-              </>
-            ) : (
-              <Card className="p-8 sm:p-12 text-center border-dashed">
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Select a batch to view production progress and notes
-                </p>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="analytics" className="mt-4 sm:mt-6">
-            {batches.length > 0 && (
-              <ProductionAnalytics 
-                batches={batches} 
-                blendBatches={blendBatches}
-                tastingAnalyses={tastingAnalyses}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="calculators" className="mt-4 sm:mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              <ABVCalculator />
-              <PrimingCalculator />
-              <SO2Calculator />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="blending" className="mt-4 sm:mt-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Blend Batches</h2>
-              <NewBlendDialog 
-                availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
-                onBlendCreated={handleBlendCreated}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-              {blendBatches.length === 0 ? (
-                <Card className="col-span-full p-12 text-center border-dashed">
-                  <p className="text-muted-foreground">
-                    No blend batches yet. Click "New Blend" to get started.
-                  </p>
-                </Card>
-              ) : (
-                blendBatches.map((blend) => (
-                  <BlendBatchCard
-                    key={blend.id}
-                    blend={blend}
-                    onDelete={handleDeleteBlend}
-                    onClick={handleBlendClick}
-                  />
-                ))
-              )}
-            </div>
-          </TabsContent>
+              </TabsContent>
+            </>
+          )}
 
           <TabsContent value="tasting" className="mt-4 sm:mt-6">
             <div className="flex justify-between items-center mb-4">
