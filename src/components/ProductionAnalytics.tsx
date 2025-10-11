@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { CalendarDays, TrendingUp, BarChart3, Wine, Award } from "lucide-react";
+import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package } from "lucide-react";
 import type { Batch } from "@/components/BatchCard";
 
 interface ProductionAnalyticsProps {
@@ -36,6 +36,10 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
     const currentYear = new Date().getFullYear();
     return batchYear === currentYear;
   });
+
+  // Calculate bottle inventory
+  const total75clBottles = blendBatches.reduce((sum, b) => sum + (b.bottles_75cl || 0), 0);
+  const total150clBottles = blendBatches.reduce((sum, b) => sum + (b.bottles_150cl || 0), 0);
 
   // Get top tasting scores
   const topTastingScores = tastingAnalyses
@@ -105,6 +109,39 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
           </div>
           <p className="text-sm text-muted-foreground">
             Created blend batches
+          </p>
+        </Card>
+      </div>
+
+      {/* Bottle Inventory Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-success/10 rounded-lg">
+              <Package className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">75cl Bottles in Cellar</p>
+              <p className="text-3xl font-bold text-foreground">{total75clBottles}</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Total standard bottles available
+          </p>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-chart-2/10 rounded-lg">
+              <Package className="w-6 h-6 text-chart-2" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">150cl Bottles in Cellar</p>
+              <p className="text-3xl font-bold text-foreground">{total150clBottles}</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Total magnum bottles available
           </p>
         </Card>
       </div>
