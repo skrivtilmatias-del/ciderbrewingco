@@ -114,6 +114,7 @@ export type Database = {
       batches: {
         Row: {
           apple_mix: string | null
+          attachments: string[] | null
           completed_at: string | null
           created_at: string
           current_stage: string
@@ -135,6 +136,7 @@ export type Database = {
         }
         Insert: {
           apple_mix?: string | null
+          attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage: string
@@ -156,6 +158,7 @@ export type Database = {
         }
         Update: {
           apple_mix?: string | null
+          attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage?: string
@@ -187,6 +190,7 @@ export type Database = {
       }
       blend_batches: {
         Row: {
+          attachments: string[] | null
           bottles_150cl: number | null
           bottles_75cl: number | null
           created_at: string
@@ -198,6 +202,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: string[] | null
           bottles_150cl?: number | null
           bottles_75cl?: number | null
           created_at?: string
@@ -209,6 +214,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: string[] | null
           bottles_150cl?: number | null
           bottles_75cl?: number | null
           created_at?: string
@@ -292,6 +298,7 @@ export type Database = {
       }
       tasting_analysis: {
         Row: {
+          attachments: string[] | null
           blend_batch_id: string
           colour: string | null
           created_at: string
@@ -304,6 +311,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: string[] | null
           blend_batch_id: string
           colour?: string | null
           created_at?: string
@@ -316,6 +324,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: string[] | null
           blend_batch_id?: string
           colour?: string | null
           created_at?: string

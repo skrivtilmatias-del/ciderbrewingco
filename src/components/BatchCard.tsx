@@ -13,6 +13,7 @@ export interface Batch {
   currentStage: CiderStage | 'Complete';
   progress: number;
   notes?: string;
+  attachments?: string[];
 }
 
 const getStageIcon = (stage: string) => {

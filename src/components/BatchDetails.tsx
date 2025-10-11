@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { StageProgressionCard } from "./StageProgressionCard";
+import { ImageUpload } from "./ImageUpload";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ interface BatchDetailsProps {
 export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated }: BatchDetailsProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(batch?.notes || "");
+  const [attachments, setAttachments] = useState<string[]>(batch?.attachments || []);
   const [isSaving, setIsSaving] = useState(false);
   
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -76,6 +78,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
       setVolume(batch.volume.toString());
       setStartDate(batch.startDate);
       setNotes(batch.notes || "");
+      setAttachments(batch.attachments || []);
     }
   }, [batch]);
 
@@ -305,17 +308,37 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
               )}
             </div>
             {isEditingNotes ? (
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this batch..."
-                rows={4}
-                className="w-full"
-              />
+              <div className="space-y-3">
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this batch..."
+                  rows={4}
+                  className="w-full"
+                />
+                <ImageUpload
+                  images={attachments}
+                  onImagesChange={setAttachments}
+                />
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {batch.notes || "No notes yet. Click Edit to add notes."}
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {batch.notes || "No notes yet. Click Edit to add notes."}
+                </p>
+                {attachments.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {attachments.map((imageUrl, index) => (
+                      <img
+                        key={index}
+                        src={imageUrl}
+                        alt={`Attachment ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-border"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

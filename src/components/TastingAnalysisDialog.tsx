@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Save } from "lucide-react";
+import { ImageUpload } from "./ImageUpload";
 import { z } from "zod";
 
 const APPEARANCE_DESCRIPTORS = [
