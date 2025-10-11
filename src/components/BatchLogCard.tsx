@@ -33,9 +33,10 @@ interface BatchLogCardProps {
   log: BatchLog;
   onUpdate: () => void;
   onDelete: () => void;
+  allowedStages?: string[];
 }
 
-export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
+export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLogCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [stage, setStage] = useState(log.stage);
   const [role, setRole] = useState(log.role || "General");
@@ -147,7 +148,7 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STAGES.map((s) => (
+                {(allowedStages || STAGES).map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>

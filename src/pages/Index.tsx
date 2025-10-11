@@ -35,6 +35,28 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
   
+  // Get allowed stages based on current batch stage
+  const getAllowedStages = (currentStage: string): string[] => {
+    const stageMapping: Record<string, string[]> = {
+      'Harvest': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Sorting & Washing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Milling': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Pressing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Settling/Enzymes': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Pitching & Fermentation': ['Pitching & Fermentation', 'Cold Crash'],
+      'Cold Crash': ['Pitching & Fermentation', 'Cold Crash'],
+      'Malolactic': ['Malolactic', 'Stabilisation/Finings'],
+      'Stabilisation/Finings': ['Malolactic', 'Stabilisation/Finings'],
+      'Blending': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Racking': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Backsweetening': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Bottling': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Conditioning/Lees Aging': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Tasting/QA': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+    };
+    return stageMapping[currentStage] || [...STAGES];
+  };
+  
   // Debounce search query to prevent excessive filtering
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -168,13 +190,39 @@ const Index = () => {
   const handleAddLog = async () => {
     if (!selectedBatch) return;
 
+    // Determine which stages are allowed based on current stage
+    const stageMapping: Record<string, string[]> = {
+      // Pressing stages
+      'Harvest': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Sorting & Washing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Milling': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Pressing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      'Settling/Enzymes': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
+      // Fermentation stages
+      'Pitching & Fermentation': ['Pitching & Fermentation', 'Cold Crash'],
+      'Cold Crash': ['Pitching & Fermentation', 'Cold Crash'],
+      // Aging stages
+      'Malolactic': ['Malolactic', 'Stabilisation/Finings'],
+      'Stabilisation/Finings': ['Malolactic', 'Stabilisation/Finings'],
+      // Bottling stages
+      'Blending': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Racking': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Backsweetening': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Bottling': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Conditioning/Lees Aging': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Tasting/QA': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+    };
+
+    const allowedStages = stageMapping[selectedBatch.currentStage] || [selectedBatch.currentStage];
+    const defaultStage = allowedStages[0];
+
     try {
       const { data, error } = await supabase
         .from("batch_logs")
         .insert([{
           batch_id: selectedBatch.id,
           user_id: user.id,
-          stage: "Harvest",
+          stage: defaultStage,
           role: "General",
           title: "",
           content: "",
@@ -471,7 +519,7 @@ const Index = () => {
                       </SelectTrigger>
                       <SelectContent className="bg-card border-border z-50 max-h-[300px]">
                         <SelectItem value="All">All stages</SelectItem>
-                        {STAGES.map((stage) => (
+                        {getAllowedStages(selectedBatch.currentStage).map((stage) => (
                           <SelectItem key={stage} value={stage} className="text-sm">
                             {stage}
                           </SelectItem>
@@ -498,6 +546,7 @@ const Index = () => {
                         log={log}
                         onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
                         onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                        allowedStages={getAllowedStages(selectedBatch.currentStage)}
                       />
                     ))
                   )}
