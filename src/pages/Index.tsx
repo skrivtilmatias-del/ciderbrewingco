@@ -8,6 +8,7 @@ import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
+import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -403,8 +404,16 @@ const Index = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="timeline" className="mb-8">
+        <Tabs defaultValue="batches" className="mb-8">
           <TabsList>
+            <TabsTrigger value="batches">
+              <Package className="h-4 w-4 mr-2" />
+              All Batches
+            </TabsTrigger>
+            <TabsTrigger value="stages">
+              <Activity className="h-4 w-4 mr-2" />
+              Stage Progress
+            </TabsTrigger>
             <TabsTrigger value="timeline">
               <Calendar className="h-4 w-4 mr-2" />
               Timeline
@@ -418,6 +427,43 @@ const Index = () => {
               Calculators
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="batches">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {batches.length === 0 ? (
+                <Card className="col-span-full p-12 text-center border-dashed">
+                  <p className="text-muted-foreground">
+                    No batches yet. Click "New Batch" to get started.
+                  </p>
+                </Card>
+              ) : (
+                batches.map((batch) => (
+                  <BatchCard
+                    key={batch.id}
+                    batch={batch}
+                    onClick={() => handleBatchClick(batch)}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="stages">
+            {selectedBatch ? (
+              <StageProgressionUI
+                currentStage={selectedBatch.currentStage}
+                batchId={selectedBatch.id}
+                batchName={selectedBatch.name}
+                onAdvanceStage={handleUpdateStage}
+              />
+            ) : (
+              <Card className="p-12 text-center border-dashed">
+                <p className="text-muted-foreground">
+                  Select a batch to view stage progression
+                </p>
+              </Card>
+            )}
+          </TabsContent>
 
           <TabsContent value="timeline" className="space-y-4">
             <div className="flex gap-4 items-center">
