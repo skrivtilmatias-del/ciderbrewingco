@@ -14,7 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      batch_history: {
+        Row: {
+          batch_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          stage: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_history_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      batches: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_stage: string
+          id: string
+          name: string
+          notes: string | null
+          progress: number
+          started_at: string
+          updated_at: string
+          user_id: string
+          variety: string
+          volume: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_stage: string
+          id?: string
+          name: string
+          notes?: string | null
+          progress?: number
+          started_at?: string
+          updated_at?: string
+          user_id: string
+          variety: string
+          volume: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_stage?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          progress?: number
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+          variety?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
