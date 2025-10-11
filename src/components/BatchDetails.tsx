@@ -1,19 +1,31 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Apple, Droplets, Clock, Wine, Calendar, Beaker } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package } from "lucide-react";
 import { Batch } from "./BatchCard";
+import { StageProgressionCard } from "./StageProgressionCard";
+import { STAGES } from "@/constants/ciderStages";
 
-const stageConfig = {
-  pressing: { label: "Pressing", icon: Apple, color: "bg-success" },
-  fermentation: { label: "Fermentation", icon: Droplets, color: "bg-info" },
-  aging: { label: "Aging", icon: Clock, color: "bg-warning" },
-  bottling: { label: "Bottling", icon: Wine, color: "bg-accent" },
-  complete: { label: "Complete", icon: Wine, color: "bg-muted" },
+const getStageIcon = (stage: string) => {
+  if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
+  if (stage.includes('Fermentation') || stage.includes('Pitching')) return Droplets;
+  if (stage.includes('Aging') || stage.includes('Conditioning')) return Clock;
+  if (stage.includes('Bottling') || stage.includes('Packaging')) return Wine;
+  if (stage.includes('Lab') || stage.includes('Testing') || stage.includes('QA')) return FlaskConical;
+  if (stage.includes('Complete')) return CheckCircle2;
+  return Beaker;
 };
 
-const stages = ["pressing", "fermentation", "aging", "bottling", "complete"];
+const getStageColor = (stage: string) => {
+  if (stage === 'Complete') return 'bg-muted';
+  if (stage.includes('Harvest')) return 'bg-success';
+  if (stage.includes('Fermentation') || stage.includes('Pitching')) return 'bg-info';
+  if (stage.includes('Aging') || stage.includes('Conditioning')) return 'bg-warning';
+  if (stage.includes('Bottling')) return 'bg-accent';
+  return 'bg-primary';
+};
+
+const allStages = [...STAGES, 'Complete'];
 
 interface BatchDetailsProps {
   batch: Batch | null;
@@ -25,13 +37,13 @@ interface BatchDetailsProps {
 export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: BatchDetailsProps) => {
   if (!batch) return null;
 
-  const currentStageIndex = stages.indexOf(batch.currentStage);
-  const stage = stageConfig[batch.currentStage];
-  const StageIcon = stage.icon;
+  const currentStageIndex = allStages.indexOf(batch.currentStage);
+  const StageIcon = getStageIcon(batch.currentStage);
+  const stageColor = getStageColor(batch.currentStage);
 
-  const handleNextStage = () => {
-    if (currentStageIndex < stages.length - 1) {
-      const nextStage = stages[currentStageIndex + 1] as Batch["currentStage"];
+  const handleAdvanceStage = () => {
+    if (currentStageIndex < allStages.length - 1) {
+      const nextStage = allStages[currentStageIndex + 1] as Batch["currentStage"];
       onUpdateStage(batch.id, nextStage);
     }
   };
@@ -49,9 +61,9 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: Batch
               <p className="text-sm text-muted-foreground">Apple Variety</p>
               <p className="text-lg font-medium">{batch.variety}</p>
             </div>
-            <Badge className={`${stage.color} text-white`}>
+            <Badge className={`${stageColor} text-white`}>
               <StageIcon className="w-4 h-4 mr-1" />
-              {stage.label}
+              {batch.currentStage}
             </Badge>
           </div>
 
@@ -82,40 +94,6 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: Batch
             <Progress value={batch.progress} className="h-3" />
           </div>
 
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Production Stages</p>
-            <div className="flex gap-2">
-              {stages.map((s, index) => {
-                const stageInfo = stageConfig[s as Batch["currentStage"]];
-                const Icon = stageInfo.icon;
-                const isComplete = index < currentStageIndex;
-                const isCurrent = index === currentStageIndex;
-                
-                return (
-                  <div
-                    key={s}
-                    className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                      isComplete
-                        ? "bg-success/10 border-success"
-                        : isCurrent
-                        ? "bg-primary/10 border-primary"
-                        : "bg-muted/50 border-border"
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5 mb-1 ${
-                      isComplete ? "text-success" : isCurrent ? "text-primary" : "text-muted-foreground"
-                    }`} />
-                    <p className={`text-xs font-medium ${
-                      isComplete || isCurrent ? "text-foreground" : "text-muted-foreground"
-                    }`}>
-                      {stageInfo.label}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {batch.notes && (
             <div className="bg-muted/50 p-4 rounded-lg">
               <p className="text-sm font-medium mb-2">Notes</p>
@@ -123,14 +101,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage }: Batch
             </div>
           )}
 
-          {currentStageIndex < stages.length - 1 && (
-            <Button 
-              onClick={handleNextStage}
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              Advance to {stageConfig[stages[currentStageIndex + 1] as Batch["currentStage"]].label}
-            </Button>
-          )}
+          {/* Stage Progression Card */}
+          <StageProgressionCard
+            batch={batch}
+            onAdvanceStage={handleAdvanceStage}
+          />
         </div>
       </DialogContent>
     </Dialog>

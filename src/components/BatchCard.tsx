@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Apple, Droplets, Clock, Wine } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
+import { CiderStage } from "@/constants/ciderStages";
 
 export interface Batch {
   id: string;
@@ -9,17 +10,28 @@ export interface Batch {
   variety: string;
   volume: number;
   startDate: string;
-  currentStage: "pressing" | "fermentation" | "aging" | "bottling" | "complete";
+  currentStage: CiderStage | 'Complete';
   progress: number;
   notes?: string;
 }
 
-const stageConfig = {
-  pressing: { label: "Pressing", icon: Apple, color: "bg-success" },
-  fermentation: { label: "Fermentation", icon: Droplets, color: "bg-info" },
-  aging: { label: "Aging", icon: Clock, color: "bg-warning" },
-  bottling: { label: "Bottling", icon: Wine, color: "bg-accent" },
-  complete: { label: "Complete", icon: Wine, color: "bg-muted" },
+const getStageIcon = (stage: string) => {
+  if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
+  if (stage.includes('Fermentation') || stage.includes('Pitching')) return Droplets;
+  if (stage.includes('Aging') || stage.includes('Conditioning')) return Clock;
+  if (stage.includes('Bottling') || stage.includes('Packaging')) return Wine;
+  if (stage.includes('Lab') || stage.includes('Testing') || stage.includes('QA')) return FlaskConical;
+  if (stage.includes('Complete')) return CheckCircle2;
+  return Beaker;
+};
+
+const getStageColor = (stage: string) => {
+  if (stage === 'Complete') return 'bg-muted';
+  if (stage.includes('Harvest')) return 'bg-success';
+  if (stage.includes('Fermentation') || stage.includes('Pitching')) return 'bg-info';
+  if (stage.includes('Aging') || stage.includes('Conditioning')) return 'bg-warning';
+  if (stage.includes('Bottling')) return 'bg-accent';
+  return 'bg-primary';
 };
 
 interface BatchCardProps {
@@ -28,8 +40,8 @@ interface BatchCardProps {
 }
 
 export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
-  const stage = stageConfig[batch.currentStage];
-  const StageIcon = stage.icon;
+  const StageIcon = getStageIcon(batch.currentStage);
+  const stageColor = getStageColor(batch.currentStage);
 
   return (
     <Card 
@@ -41,9 +53,9 @@ export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
           <h3 className="text-xl font-semibold text-foreground mb-1">{batch.name}</h3>
           <p className="text-sm text-muted-foreground">{batch.variety}</p>
         </div>
-        <Badge className={`${stage.color} text-white`}>
+        <Badge className={`${stageColor} text-white`}>
           <StageIcon className="w-3 h-3 mr-1" />
-          {stage.label}
+          {batch.currentStage}
         </Badge>
       </div>
 

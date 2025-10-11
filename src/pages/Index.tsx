@@ -254,21 +254,26 @@ const Index = () => {
   };
 
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
-    const stageProgress = {
-      pressing: 20,
-      fermentation: 45,
-      aging: 75,
-      bottling: 90,
-      complete: 100,
-    };
+    // Calculate progress based on stage
+    const allStages = [
+      'Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes',
+      'Pitching & Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
+      'Stabilisation/Finings', 'Blending', 'Backsweetening', 'Bottling',
+      'Conditioning/Lees Aging', 'Tasting/QA', 'Complete'
+    ];
+    
+    const stageIndex = allStages.indexOf(newStage);
+    const progress = stageIndex === allStages.length - 1 
+      ? 100 
+      : Math.round(((stageIndex + 1) / allStages.length) * 100);
 
     try {
       const { error } = await supabase
         .from("batches")
         .update({
           current_stage: newStage,
-          progress: stageProgress[newStage],
-          completed_at: newStage === "complete" ? new Date().toISOString() : null,
+          progress: progress,
+          completed_at: newStage === "Complete" ? new Date().toISOString() : null,
         })
         .eq("id", batchId);
 
@@ -277,14 +282,14 @@ const Index = () => {
       setBatches(
         batches.map((batch) =>
           batch.id === batchId
-            ? { ...batch, currentStage: newStage, progress: stageProgress[newStage] }
+            ? { ...batch, currentStage: newStage, progress: progress }
             : batch
         )
       );
 
       setSelectedBatch((prev) =>
         prev?.id === batchId
-          ? { ...prev, currentStage: newStage, progress: stageProgress[newStage] }
+          ? { ...prev, currentStage: newStage, progress: progress }
           : prev
       );
 
@@ -307,7 +312,7 @@ const Index = () => {
     );
   }
 
-  const activeBatches = batches.filter((b) => b.currentStage !== "complete").length;
+  const activeBatches = batches.filter((b) => b.currentStage !== "Complete").length;
   const totalVolume = batches.reduce((sum, b) => sum + b.volume, 0);
   const avgProgress =
     batches.length > 0

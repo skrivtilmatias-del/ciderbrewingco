@@ -8,7 +8,7 @@ interface ProductionAnalyticsProps {
 
 export const ProductionAnalytics = ({ batches }: ProductionAnalyticsProps) => {
   // Calculate analytics
-  const completedBatches = batches.filter((b) => b.currentStage === "complete");
+  const completedBatches = batches.filter((b) => b.currentStage === "Complete");
   const completionRate =
     batches.length > 0
       ? Math.round((completedBatches.length / batches.length) * 100)

@@ -43,8 +43,8 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       variety: validation.data.variety,
       volume: validation.data.volume,
       startDate: new Date().toISOString(),
-      currentStage: "pressing" as const,
-      progress: 10,
+      currentStage: "Harvest" as const,
+      progress: 0,
       notes: validation.data.notes,
     };
 
