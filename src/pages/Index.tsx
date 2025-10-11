@@ -536,8 +536,8 @@ const Index = () => {
     }
   };
 
-  const handleBlendClick = (blend: any) => {
-    setSelectedBlend(blend);
+  const handleBlendClick = (blend: any, fromCellar = false) => {
+    setSelectedBlend({ ...blend, showInventoryControls: fromCellar });
     setBlendDetailsOpen(true);
   };
 
@@ -979,7 +979,7 @@ const Index = () => {
                               <tr 
                                 key={blend.id} 
                                 className="border-b border-border hover:bg-muted/50 cursor-pointer transition-colors"
-                                onClick={() => handleBlendClick(blend)}
+                                onClick={() => handleBlendClick(blend, true)}
                               >
                                 <td className="py-4 px-4">
                                   <div className="flex items-center gap-2">
@@ -1059,6 +1059,7 @@ const Index = () => {
         open={blendDetailsOpen}
         onOpenChange={setBlendDetailsOpen}
         onBlendUpdated={fetchBlendBatches}
+        showInventoryControls={selectedBlend?.showInventoryControls || false}
       />
 
       <TastingAnalysisDialog

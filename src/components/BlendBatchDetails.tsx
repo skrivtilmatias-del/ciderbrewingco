@@ -37,9 +37,10 @@ interface BlendBatchDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBlendUpdated: () => void;
+  showInventoryControls?: boolean;
 }
 
-export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }: BlendBatchDetailsProps) {
+export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, showInventoryControls = false }: BlendBatchDetailsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [blendName, setBlendName] = useState("");
   const [totalVolume, setTotalVolume] = useState("");
@@ -300,12 +301,47 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
                 <div className="border border-border rounded-lg p-4">
                   <Label className="text-sm text-muted-foreground">Bottles 75cl</Label>
                   <p className="text-2xl font-bold mt-1">{blend.bottles_75cl || 0}</p>
+                  {showInventoryControls && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReduceBottle('75cl')}
+                        disabled={(blend.bottles_75cl || 0) === 0}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={amount75cl}
+                        onChange={(e) => setAmount75cl(e.target.value)}
+                        className="h-8 w-16 text-center"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddBottle('75cl')}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="border border-border rounded-lg p-4">
+                <Label className="text-sm text-muted-foreground">Bottles 150cl</Label>
+                <p className="text-2xl font-bold mt-1">{blend.bottles_150cl || 0}</p>
+                {showInventoryControls && (
                   <div className="flex items-center gap-2 mt-3">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleReduceBottle('75cl')}
-                      disabled={(blend.bottles_75cl || 0) === 0}
+                      onClick={() => handleReduceBottle('150cl')}
+                      disabled={(blend.bottles_150cl || 0) === 0}
                       className="h-8 w-8 p-0"
                     >
                       <Minus className="h-4 w-4" />
@@ -313,51 +349,20 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated }:
                     <Input
                       type="number"
                       min="1"
-                      value={amount75cl}
-                      onChange={(e) => setAmount75cl(e.target.value)}
+                      value={amount150cl}
+                      onChange={(e) => setAmount150cl(e.target.value)}
                       className="h-8 w-16 text-center"
                     />
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleAddBottle('75cl')}
+                      onClick={() => handleAddBottle('150cl')}
                       className="h-8 w-8 p-0"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-              </div>
-
-              <div className="border border-border rounded-lg p-4">
-                <Label className="text-sm text-muted-foreground">Bottles 150cl</Label>
-                <p className="text-2xl font-bold mt-1">{blend.bottles_150cl || 0}</p>
-                <div className="flex items-center gap-2 mt-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReduceBottle('150cl')}
-                    disabled={(blend.bottles_150cl || 0) === 0}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={amount150cl}
-                    onChange={(e) => setAmount150cl(e.target.value)}
-                    className="h-8 w-16 text-center"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAddBottle('150cl')}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                )}
               </div>
             </>
           )}
