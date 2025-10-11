@@ -584,6 +584,10 @@ const Index = () => {
               <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Production
             </TabsTrigger>
+            <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
+              <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Blending
+            </TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Analytics
@@ -591,10 +595,6 @@ const Index = () => {
             <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
               <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Calculators
-            </TabsTrigger>
-            <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
-              <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Blending
             </TabsTrigger>
           </TabsList>
 
