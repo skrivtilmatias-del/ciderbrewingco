@@ -324,22 +324,22 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Apple className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">Cider Brewing Co Notepad</h1>
+              <Apple className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Cider Brewing Co Notepad</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">{user.email}</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Settings2 className="w-4 h-4 mr-2" />
-                    {selectedBatch?.name || "Select Batch"}
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                    <Settings2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="truncate max-w-[100px] sm:max-w-[150px]">{selectedBatch?.name || "Select Batch"}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-background z-50">
                   <DropdownMenuLabel>Switch Batch</DropdownMenuLabel>
                   {batches.map((b) => (
                     <DropdownMenuItem
@@ -356,80 +356,80 @@ const Index = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
-              <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
-                <LogOut className="w-4 h-4" />
+              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleSignOut} title="Sign Out">
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Activity className="w-6 h-6 text-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+                <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Active Batches</p>
-                <p className="text-3xl font-bold text-foreground">{activeBatches}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Active Batches</p>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground">{activeBatches}</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-info/10 rounded-lg">
-                <Package className="w-6 h-6 text-info" />
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-info/10 rounded-lg">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-info" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Volume</p>
-                <p className="text-3xl font-bold text-foreground">{totalVolume}L</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Volume</p>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalVolume}L</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-success/10 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-success" />
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Avg. Progress</p>
-                <p className="text-3xl font-bold text-foreground">{avgProgress}%</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Avg. Progress</p>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground">{avgProgress}%</p>
               </div>
             </div>
           </Card>
         </div>
 
-        <Tabs defaultValue="batches" className="mb-8">
-          <TabsList>
-            <TabsTrigger value="batches">
-              <Package className="h-4 w-4 mr-2" />
+        <Tabs defaultValue="batches" className="mb-6 sm:mb-8">
+          <TabsList className="w-full sm:w-auto overflow-x-auto flex-nowrap justify-start">
+            <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap">
+              <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               All Batches
             </TabsTrigger>
-            <TabsTrigger value="stages">
-              <Activity className="h-4 w-4 mr-2" />
+            <TabsTrigger value="stages" className="text-xs sm:text-sm whitespace-nowrap">
+              <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Stage Progress
             </TabsTrigger>
-            <TabsTrigger value="timeline">
-              <Calendar className="h-4 w-4 mr-2" />
+            <TabsTrigger value="timeline" className="text-xs sm:text-sm whitespace-nowrap">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Timeline
             </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="calculators">
-              <FlaskConical className="h-4 w-4 mr-2" />
+            <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
+              <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Calculators
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="batches">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <TabsContent value="batches" className="mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {batches.length === 0 ? (
                 <Card className="col-span-full p-12 text-center border-dashed">
                   <p className="text-muted-foreground">
@@ -448,7 +448,7 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="stages">
+          <TabsContent value="stages" className="mt-4 sm:mt-6">
             {selectedBatch ? (
               <StageProgressionUI
                 currentStage={selectedBatch.currentStage}
@@ -457,47 +457,48 @@ const Index = () => {
                 onAdvanceStage={handleUpdateStage}
               />
             ) : (
-              <Card className="p-12 text-center border-dashed">
-                <p className="text-muted-foreground">
+              <Card className="p-8 sm:p-12 text-center border-dashed">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Select a batch to view stage progression
                 </p>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="timeline" className="space-y-4">
-            <div className="flex gap-4 items-center">
+          <TabsContent value="timeline" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search notes, tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 sm:pl-10 text-sm"
                 />
               </div>
               <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px] text-sm">
                   <SelectValue placeholder="All stages" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-50">
                   <SelectItem value="All">All stages</SelectItem>
                   {STAGES.map((stage) => (
-                    <SelectItem key={stage} value={stage}>
+                    <SelectItem key={stage} value={stage} className="text-sm">
                       {stage}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddLog} disabled={!selectedBatch}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Note
+              <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Add Note</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
 
             {filteredLogs.length === 0 ? (
-              <Card className="p-12 text-center border-dashed">
-                <p className="text-muted-foreground">
+              <Card className="p-8 sm:p-12 text-center border-dashed">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   No notes yet. Click "Add Note" to get started.
                 </p>
               </Card>
@@ -513,12 +514,12 @@ const Index = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="analytics">
+          <TabsContent value="analytics" className="mt-4 sm:mt-6">
             {batches.length > 0 && <ProductionAnalytics batches={batches} />}
           </TabsContent>
 
-          <TabsContent value="calculators">
-            <div className="grid md:grid-cols-3 gap-6">
+          <TabsContent value="calculators" className="mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               <ABVCalculator />
               <PrimingCalculator />
               <SO2Calculator />

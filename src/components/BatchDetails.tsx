@@ -81,9 +81,9 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{batch.name}</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl pr-8">{batch.name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -98,20 +98,20 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
             </Badge>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Beaker className="w-4 h-4" />
-                <span className="text-sm">Volume</span>
+                <Beaker className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Volume</span>
               </div>
-              <p className="text-xl font-semibold">{batch.volume}L</p>
+              <p className="text-lg sm:text-xl font-semibold">{batch.volume}L</p>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">Started</span>
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Started</span>
               </div>
-              <p className="text-xl font-semibold">
+              <p className="text-lg sm:text-xl font-semibold">
                 {new Date(batch.startDate).toLocaleDateString()}
               </p>
             </div>

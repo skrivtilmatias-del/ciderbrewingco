@@ -32,20 +32,20 @@ export const StageProgressionUI = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center justify-between">
-          <span>Production Progress: {batchName}</span>
-          <Badge variant={isComplete ? "default" : "secondary"}>
+        <CardTitle className="text-base sm:text-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+          <span className="break-words">Production Progress: {batchName}</span>
+          <Badge variant={isComplete ? "default" : "secondary"} className="self-start sm:self-auto">
             {currentStage}
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* Current Stage Highlight */}
-        <div className="bg-primary/10 border-2 border-primary rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-primary/10 border-2 border-primary rounded-lg p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Current Stage</p>
-              <p className="text-xl font-bold text-primary">{currentStage}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Current Stage</p>
+              <p className="text-lg sm:text-xl font-bold text-primary break-words">{currentStage}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Step {currentIndex + 1} of {allStages.length}
               </p>
@@ -53,7 +53,8 @@ export const StageProgressionUI = ({
             {!isComplete && (
               <Button 
                 onClick={handleAdvance}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 w-full sm:w-auto text-sm"
+                size="sm"
               >
                 Advance to Next Stage
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -64,7 +65,7 @@ export const StageProgressionUI = ({
 
         {/* Stage Timeline - Compact */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground mb-3">All Production Stages</p>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">All Production Stages</p>
           <div className="max-h-[240px] overflow-y-auto border rounded-lg p-2 bg-muted/20">
             <div className="grid grid-cols-2 gap-2">
               {allStages.map((stage, index) => {
