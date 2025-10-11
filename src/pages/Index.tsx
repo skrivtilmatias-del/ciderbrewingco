@@ -5,11 +5,20 @@ import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
-import { Apple, TrendingUp, Package, Activity, LogOut } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import type { Batch } from "@/components/BatchCard";
+import { BatchLogCard, type BatchLog } from "@/components/BatchLogCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ABVCalculator } from "@/components/calculators/ABVCalculator";
+import { PrimingCalculator } from "@/components/calculators/PrimingCalculator";
+import { SO2Calculator } from "@/components/calculators/SO2Calculator";
+import { STAGES } from "@/constants/ciderStages";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -18,6 +27,9 @@ const Index = () => {
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<BatchLog[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState("All");
 
   useEffect(() => {
     // Check authentication
@@ -41,8 +53,11 @@ const Index = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (user) {
+    if (user && batches.length > 0) {
       fetchBatches();
+      if (batches[0]) {
+        fetchLogs(batches[0].id);
+      }
     }
   }, [user]);
 
@@ -73,6 +88,86 @@ const Index = () => {
       setLoading(false);
     }
   };
+
+  const fetchLogs = async (batchId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("batch_logs")
+        .select("*")
+        .eq("batch_id", batchId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setLogs(data as BatchLog[]);
+    } catch (error: any) {
+      toast.error("Error loading logs: " + error.message);
+    }
+  };
+
+  const handleBatchSelect = (batch: Batch) => {
+    setSelectedBatch(batch);
+    fetchLogs(batch.id);
+  };
+
+  const handleDeleteBatch = async (batchId: string) => {
+    if (!confirm("Delete this batch and all its logs?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("batches")
+        .delete()
+        .eq("id", batchId);
+
+      if (error) throw error;
+
+      setBatches(batches.filter(b => b.id !== batchId));
+      if (selectedBatch?.id === batchId) {
+        setSelectedBatch(batches[0] || null);
+        if (batches[0]) fetchLogs(batches[0].id);
+      }
+      toast.success("Batch deleted");
+    } catch (error: any) {
+      toast.error("Error deleting batch: " + error.message);
+    }
+  };
+
+  const handleAddLog = async () => {
+    if (!selectedBatch) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("batch_logs")
+        .insert([{
+          batch_id: selectedBatch.id,
+          user_id: user.id,
+          stage: "Harvest",
+          role: "General",
+          title: "",
+          content: "",
+          tags: [],
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setLogs([data as BatchLog, ...logs]);
+      toast.success("Log entry created");
+    } catch (error: any) {
+      toast.error("Error creating log: " + error.message);
+    }
+  };
+
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = searchQuery === "" || 
+      log.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesStage = stageFilter === "All" || log.stage === stageFilter;
+    
+    return matchesSearch && matchesStage;
+  });
 
   const handleBatchCreated = async (newBatch: Omit<Batch, "id">) => {
     try {
@@ -186,19 +281,35 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Apple className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">CiderTrack</h1>
+              <h1 className="text-3xl font-bold text-foreground">Cider Brewing Co Notepad</h1>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
-                {user.email}
-              </span>
+              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Settings2 className="w-4 h-4 mr-2" />
+                    {selectedBatch?.name || "Select Batch"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Switch Batch</DropdownMenuLabel>
+                  {batches.map((b) => (
+                    <DropdownMenuItem
+                      key={b.id}
+                      onClick={() => handleBatchSelect(b)}
+                    >
+                      {b.name}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => selectedBatch && handleDeleteBatch(selectedBatch.id)}>
+                    Delete Current Batch
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleSignOut}
-                title="Sign Out"
-              >
+              <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -246,33 +357,82 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Analytics */}
-        {batches.length > 0 && (
-          <div className="mb-8">
-            <ProductionAnalytics batches={batches} />
-          </div>
-        )}
+        <Tabs defaultValue="timeline" className="mb-8">
+          <TabsList>
+            <TabsTrigger value="timeline">
+              <Calendar className="h-4 w-4 mr-2" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="calculators">
+              <FlaskConical className="h-4 w-4 mr-2" />
+              Calculators
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Batches Grid */}
-        <div>
-          <h2 className="text-2xl font-semibold mb-6 text-foreground">Production Batches</h2>
-          {batches.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Apple className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-foreground">No batches yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Create your first batch to start tracking your cider production
-              </p>
-              <NewBatchDialog onBatchCreated={handleBatchCreated} />
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {batches.map((batch) => (
-                <BatchCard key={batch.id} batch={batch} onClick={() => handleBatchClick(batch)} />
-              ))}
+          <TabsContent value="timeline" className="space-y-4">
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search notes, tags..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={stageFilter} onValueChange={setStageFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All stages" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All stages</SelectItem>
+                  {STAGES.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {stage}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleAddLog}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Note
+              </Button>
             </div>
-          )}
-        </div>
+
+            {filteredLogs.length === 0 ? (
+              <Card className="p-12 text-center border-dashed">
+                <p className="text-muted-foreground">
+                  No notes yet. Click "Add Note" to get started.
+                </p>
+              </Card>
+            ) : (
+              filteredLogs.map((log) => (
+                <BatchLogCard
+                  key={log.id}
+                  log={log}
+                  onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                  onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            {batches.length > 0 && <ProductionAnalytics batches={batches} />}
+          </TabsContent>
+
+          <TabsContent value="calculators">
+            <div className="grid md:grid-cols-3 gap-6">
+              <ABVCalculator />
+              <PrimingCalculator />
+              <SO2Calculator />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       <BatchDetails

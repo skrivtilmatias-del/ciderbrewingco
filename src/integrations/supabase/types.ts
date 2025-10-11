@@ -46,8 +46,74 @@ export type Database = {
           },
         ]
       }
+      batch_logs: {
+        Row: {
+          attachments: string[] | null
+          batch_id: string
+          content: string | null
+          created_at: string
+          fg: number | null
+          id: string
+          og: number | null
+          ph: number | null
+          role: string | null
+          stage: string
+          ta_gpl: number | null
+          tags: string[] | null
+          temp_c: number | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          batch_id: string
+          content?: string | null
+          created_at?: string
+          fg?: number | null
+          id?: string
+          og?: number | null
+          ph?: number | null
+          role?: string | null
+          stage: string
+          ta_gpl?: number | null
+          tags?: string[] | null
+          temp_c?: number | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          batch_id?: string
+          content?: string | null
+          created_at?: string
+          fg?: number | null
+          id?: string
+          og?: number | null
+          ph?: number | null
+          role?: string | null
+          stage?: string
+          ta_gpl?: number | null
+          tags?: string[] | null
+          temp_c?: number | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_logs_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batches: {
         Row: {
+          apple_mix: string | null
           completed_at: string | null
           created_at: string
           current_stage: string
@@ -56,12 +122,19 @@ export type Database = {
           notes: string | null
           progress: number
           started_at: string
+          style: string | null
+          target_fg: number | null
+          target_og: number | null
+          target_ph: number | null
+          target_ta: number | null
+          target_temp_c: number | null
           updated_at: string
           user_id: string
           variety: string
           volume: number
         }
         Insert: {
+          apple_mix?: string | null
           completed_at?: string | null
           created_at?: string
           current_stage: string
@@ -70,12 +143,19 @@ export type Database = {
           notes?: string | null
           progress?: number
           started_at?: string
+          style?: string | null
+          target_fg?: number | null
+          target_og?: number | null
+          target_ph?: number | null
+          target_ta?: number | null
+          target_temp_c?: number | null
           updated_at?: string
           user_id: string
           variety: string
           volume: number
         }
         Update: {
+          apple_mix?: string | null
           completed_at?: string | null
           created_at?: string
           current_stage?: string
@@ -84,6 +164,12 @@ export type Database = {
           notes?: string | null
           progress?: number
           started_at?: string
+          style?: string | null
+          target_fg?: number | null
+          target_og?: number | null
+          target_ph?: number | null
+          target_ta?: number | null
+          target_temp_c?: number | null
           updated_at?: string
           user_id?: string
           variety?: string
