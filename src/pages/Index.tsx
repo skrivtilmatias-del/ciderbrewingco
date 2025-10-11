@@ -33,6 +33,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -112,15 +113,17 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, full_name")
         .eq("id", userId)
         .single();
 
       if (error) throw error;
       setUserRole(data?.role || null);
+      setUserProfile(data);
     } catch (error) {
-      console.error("Error fetching user role:", error);
+      console.error("Error fetching user profile:", error);
       setUserRole(null);
+      setUserProfile(null);
     }
   };
 
@@ -642,7 +645,9 @@ const Index = () => {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">{user.email}</span>
+              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
+                {userProfile?.full_name || user.email}
+              </span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="text-xs sm:text-sm">
