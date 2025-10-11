@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Clock } from "lucide-react";
+import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle } from "lucide-react";
 import { CiderStage } from "@/constants/ciderStages";
 
 interface StageProgressionUIProps {
@@ -10,14 +10,13 @@ interface StageProgressionUIProps {
   onAdvanceStage: (batchId: string, newStage: CiderStage | "Complete") => void;
 }
 
-// Simplified key stages for cleaner UX
+// Simplified key stages with icons
 const KEY_STAGES = [
-  'Harvest',
-  'Pressing',
-  'Pitching & Fermentation',
-  'Racking',
-  'Bottling',
-  'Complete'
+  { name: 'Pressing', icon: Apple },
+  { name: 'Fermentation', icon: Droplets },
+  { name: 'Aging', icon: Clock },
+  { name: 'Bottling', icon: Wine },
+  { name: 'Complete', icon: CheckCircle }
 ] as const;
 
 // Map all stages to key stage indices
@@ -25,19 +24,19 @@ const STAGE_TO_KEY_INDEX: Record<string, number> = {
   'Harvest': 0,
   'Sorting & Washing': 0,
   'Milling': 0,
-  'Pressing': 1,
-  'Settling/Enzymes': 1,
-  'Pitching & Fermentation': 2,
-  'Cold Crash': 2,
-  'Racking': 3,
-  'Malolactic': 3,
-  'Stabilisation/Finings': 3,
-  'Blending': 3,
-  'Backsweetening': 4,
-  'Bottling': 4,
-  'Conditioning/Lees Aging': 4,
-  'Tasting/QA': 4,
-  'Complete': 5
+  'Pressing': 0,
+  'Settling/Enzymes': 0,
+  'Pitching & Fermentation': 1,
+  'Cold Crash': 1,
+  'Racking': 2,
+  'Malolactic': 2,
+  'Stabilisation/Finings': 2,
+  'Blending': 2,
+  'Backsweetening': 3,
+  'Bottling': 3,
+  'Conditioning/Lees Aging': 3,
+  'Tasting/QA': 3,
+  'Complete': 4
 };
 
 export const StageProgressionUI = ({ 
@@ -50,17 +49,17 @@ export const StageProgressionUI = ({
   const isComplete = currentStage === "Complete";
 
   const handleKeyStageClick = (keyStage: string, index: number) => {
-    if (index > currentKeyStageIndex) {
+    if (index !== currentKeyStageIndex) {
       // Map key stage to actual stage
       let targetStage: CiderStage | 'Complete';
-      if (keyStage === 'Harvest') targetStage = 'Harvest';
-      else if (keyStage === 'Pressing') targetStage = 'Pressing';
-      else if (keyStage === 'Pitching & Fermentation') targetStage = 'Pitching & Fermentation';
-      else if (keyStage === 'Racking') targetStage = 'Racking';
+      if (keyStage === 'Pressing') targetStage = 'Pressing';
+      else if (keyStage === 'Fermentation') targetStage = 'Pitching & Fermentation';
+      else if (keyStage === 'Aging') targetStage = 'Racking';
       else if (keyStage === 'Bottling') targetStage = 'Bottling';
       else targetStage = 'Complete';
 
-      const confirmed = confirm(`Skip to "${keyStage}"?`);
+      const action = index < currentKeyStageIndex ? 'Go back' : 'Skip';
+      const confirmed = confirm(`${action} to "${keyStage}"?`);
       if (confirmed) {
         onAdvanceStage(batchId, targetStage);
       }
@@ -77,38 +76,29 @@ export const StageProgressionUI = ({
       <CardContent className="space-y-4">
         <p className="text-sm font-medium text-muted-foreground">Production Stages</p>
         
-        {/* Horizontal Key Stages */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        {/* Horizontal Key Stages - Responsive Grid */}
+        <div className="grid grid-cols-5 gap-2">
           {KEY_STAGES.map((stage, index) => {
             const isCompleted = index < currentKeyStageIndex;
             const isCurrent = index === currentKeyStageIndex;
-            const canSkipTo = index > currentKeyStageIndex;
+            const Icon = stage.icon;
 
             return (
               <Button
-                key={stage}
+                key={stage.name}
                 variant="outline"
-                onClick={() => handleKeyStageClick(stage, index)}
-                disabled={isCompleted || isCurrent}
-                className={`flex-1 min-w-[100px] h-auto py-3 px-4 flex flex-col items-center gap-2 transition-all ${
+                onClick={() => handleKeyStageClick(stage.name, index)}
+                className={`h-auto py-2 sm:py-3 px-2 sm:px-3 flex flex-col items-center gap-1 sm:gap-2 transition-all ${
                   isCompleted
-                    ? 'bg-success/10 border-success text-success hover:bg-success/10'
+                    ? 'bg-success/10 border-success text-success hover:bg-success/20 cursor-pointer'
                     : isCurrent
-                    ? 'bg-primary/10 border-primary text-primary hover:bg-primary/10'
-                    : canSkipTo
-                    ? 'hover:bg-muted cursor-pointer'
-                    : 'opacity-50'
+                    ? 'bg-primary/10 border-primary text-primary hover:bg-primary/10 cursor-default'
+                    : 'hover:bg-muted cursor-pointer'
                 }`}
               >
-                {isCompleted ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : isCurrent ? (
-                  <Clock className="w-5 h-5" />
-                ) : (
-                  <Circle className="w-5 h-5" />
-                )}
-                <span className="text-xs font-medium text-center whitespace-normal">
-                  {stage}
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
+                  {stage.name}
                 </span>
               </Button>
             );
