@@ -721,44 +721,46 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue={userRole === "taster" ? "tasting" : "batches"} className="mb-6 sm:mb-8">
-          <TabsList className="w-full sm:w-auto overflow-x-auto flex-nowrap justify-start">
-            {userRole === "production" && (
-              <>
-                <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap">
-                  <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  All Batches
-                </TabsTrigger>
-                <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">
-                  <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Production
-                </TabsTrigger>
-                <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap">
-                  <Wine className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Blending
-                </TabsTrigger>
-                <TabsTrigger value="cellar" className="text-xs sm:text-sm whitespace-nowrap">
-                  <Warehouse className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Cellar
-                </TabsTrigger>
-              </>
-            )}
-            <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap">
-              <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Tasting
-            </TabsTrigger>
-            {userRole === "production" && (
-              <>
-                <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap">
-                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Analytics
-                </TabsTrigger>
-                <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap">
-                  <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Calculators
-                </TabsTrigger>
-              </>
-            )}
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap justify-start gap-1">
+              {userRole === "production" && (
+                <>
+                  <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <Package className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">All Batches</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <Activity className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Production</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <Wine className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Blending</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="cellar" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <Warehouse className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Cellar</span>
+                  </TabsTrigger>
+                </>
+              )}
+              <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                <Award className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Tasting</span>
+              </TabsTrigger>
+              {userRole === "production" && (
+                <>
+                  <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <TrendingUp className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Analytics</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <FlaskConical className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Calculators</span>
+                  </TabsTrigger>
+                </>
+              )}
+            </TabsList>
+          </div>
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
@@ -961,52 +963,54 @@ const Index = () => {
                     </div>
 
                     {/* Blend Inventory Table */}
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">Inventory Details</h3>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-border">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Blend Name</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total Volume</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">75cl Bottles</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">150cl Bottles</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Created</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {blendBatches.map((blend) => (
-                              <tr 
-                                key={blend.id} 
-                                className="border-b border-border hover:bg-muted/50 cursor-pointer transition-colors"
-                                onClick={() => handleBlendClick(blend, true)}
-                              >
-                                <td className="py-4 px-4">
-                                  <div className="flex items-center gap-2">
-                                    <Wine className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">{blend.name}</span>
-                                  </div>
-                                </td>
-                                <td className="text-right py-4 px-4 text-muted-foreground">
-                                  {blend.total_volume}L
-                                </td>
-                                <td className="text-right py-4 px-4">
-                                  <span className="font-semibold text-foreground">
-                                    {blend.bottles_75cl || 0}
-                                  </span>
-                                </td>
-                                <td className="text-right py-4 px-4">
-                                  <span className="font-semibold text-foreground">
-                                    {blend.bottles_150cl || 0}
-                                  </span>
-                                </td>
-                                <td className="text-right py-4 px-4 text-sm text-muted-foreground">
-                                  {new Date(blend.created_at).toLocaleDateString()}
-                                </td>
+                    <Card className="p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-semibold mb-4">Inventory Details</h3>
+                      <div className="overflow-x-auto -mx-4 sm:mx-0">
+                        <div className="inline-block min-w-full align-middle">
+                          <table className="min-w-full">
+                            <thead>
+                              <tr className="border-b border-border">
+                                <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Blend</th>
+                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Volume</th>
+                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">75cl</th>
+                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">150cl</th>
+                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden sm:table-cell">Created</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {blendBatches.map((blend) => (
+                                <tr 
+                                  key={blend.id} 
+                                  className="border-b border-border hover:bg-muted/50 cursor-pointer transition-colors"
+                                  onClick={() => handleBlendClick(blend, true)}
+                                >
+                                  <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                    <div className="flex items-center gap-2">
+                                      <Wine className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                                      <span className="font-medium text-xs sm:text-sm truncate">{blend.name}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground">
+                                    {blend.total_volume}L
+                                  </td>
+                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
+                                    <span className="font-semibold text-xs sm:text-sm text-foreground">
+                                      {blend.bottles_75cl || 0}
+                                    </span>
+                                  </td>
+                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
+                                    <span className="font-semibold text-xs sm:text-sm text-foreground">
+                                      {blend.bottles_150cl || 0}
+                                    </span>
+                                  </td>
+                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">
+                                    {new Date(blend.created_at).toLocaleDateString()}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </Card>
                   </div>
