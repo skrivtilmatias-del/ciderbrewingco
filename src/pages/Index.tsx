@@ -158,8 +158,15 @@ const Index = () => {
 
       setBatches(formattedBatches);
 
-      // Auto-select first batch on initial load and fetch its logs
+      // Reconcile selected batch with latest data
+      const exists = selectedBatch && formattedBatches.some(b => b.id === selectedBatch.id);
+
+      // Auto-select first batch on initial load
       if (!selectedBatch && formattedBatches.length > 0) {
+        setSelectedBatch(formattedBatches[0]);
+        fetchLogs(formattedBatches[0].id);
+      } else if (selectedBatch && !exists && formattedBatches.length > 0) {
+        // Previously selected batch no longer exists or is not visible
         setSelectedBatch(formattedBatches[0]);
         fetchLogs(formattedBatches[0].id);
       }
@@ -310,6 +317,27 @@ const Index = () => {
   const handleAddLog = async () => {
     if (!selectedBatch) return;
 
+    // Verify session before critical operation
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Session expired. Please log in again');
+      navigate('/auth');
+      return;
+    }
+
+    // Sanity check: ensure selected batch still exists and belongs to user (avoids RLS errors)
+    const { data: batchRow, error: batchCheckError } = await supabase
+      .from('batches')
+      .select('id, user_id')
+      .eq('id', selectedBatch.id)
+      .single();
+
+    if (batchCheckError || !batchRow || batchRow.user_id !== session.user.id) {
+      await fetchBatches();
+      toast.error('Could not verify selected batch. Refreshed your batches, please try again.');
+      return;
+    }
+
     // Determine which stages are allowed based on current stage
     const stageMapping: Record<string, string[]> = {
       // Pressing stages
@@ -338,25 +366,32 @@ const Index = () => {
 
     try {
       const { data, error } = await supabase
-        .from("batch_logs")
-        .insert([{
-          batch_id: selectedBatch.id,
-          user_id: user.id,
-          stage: defaultStage,
-          role: "General",
-          title: "",
-          content: "",
-          tags: [],
-        }])
+        .from('batch_logs')
+        .insert([
+          {
+            batch_id: selectedBatch.id,
+            user_id: session.user.id,
+            stage: defaultStage,
+            role: 'General',
+            title: '',
+            content: '',
+            tags: [],
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
 
       setLogs([data as BatchLog, ...logs]);
-      toast.success("Log entry created");
+      toast.success('Log entry created');
     } catch (error: any) {
-      toast.error(getUserFriendlyError(error));
+      if (error?.code === '42501') {
+        toast.error('Permission denied while creating note. Batch selection refreshed—please try again.');
+        await fetchBatches();
+      } else {
+        toast.error(getUserFriendlyError(error));
+      }
     }
   };
 
