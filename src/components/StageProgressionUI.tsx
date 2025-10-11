@@ -29,6 +29,18 @@ export const StageProgressionUI = ({
     }
   };
 
+  const handleStageClick = (stage: CiderStage | "Complete", index: number) => {
+    // Only allow jumping forward or to the current stage
+    if (index >= currentIndex) {
+      if (index > currentIndex) {
+        const confirmed = confirm(`Skip to "${stage}"? This will skip ${index - currentIndex} stage(s).`);
+        if (confirmed) {
+          onAdvanceStage(batchId, stage);
+        }
+      }
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -71,17 +83,22 @@ export const StageProgressionUI = ({
               {allStages.map((stage, index) => {
                 const isCompleted = index < currentIndex;
                 const isCurrent = index === currentIndex;
+                const canSkipTo = index > currentIndex;
                 
                 return (
                   <div
                     key={stage}
+                    onClick={() => handleStageClick(stage, index)}
                     className={`flex items-center gap-2 p-2 rounded border transition-all ${
                       isCompleted
                         ? "bg-success/10 border-success/50"
                         : isCurrent
                         ? "bg-primary/10 border-primary border-2"
+                        : canSkipTo
+                        ? "bg-background border-border hover:bg-primary/5 hover:border-primary/30 cursor-pointer"
                         : "bg-background border-border"
                     }`}
+                    title={canSkipTo ? `Click to skip to ${stage}` : undefined}
                   >
                     {isCompleted ? (
                       <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
@@ -97,6 +114,11 @@ export const StageProgressionUI = ({
                         {stage}
                       </p>
                     </div>
+                    {canSkipTo && (
+                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                        Skip
+                      </Badge>
+                    )}
                   </div>
                 );
               })}
