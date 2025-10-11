@@ -806,7 +806,13 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-4 sm:mt-6">
-            {batches.length > 0 && <ProductionAnalytics batches={batches} />}
+            {batches.length > 0 && (
+              <ProductionAnalytics 
+                batches={batches} 
+                blendBatches={blendBatches}
+                tastingAnalyses={tastingAnalyses}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="calculators" className="mt-4 sm:mt-6">
