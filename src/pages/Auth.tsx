@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Apple } from "lucide-react";
 import { toast } from "sonner";
+import { signUpSchema, signInSchema } from "@/lib/validationSchemas";
+import { getAuthErrorMessage } from "@/lib/errorHandler";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -27,19 +29,28 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !fullName) {
-      toast.error("Please fill in all fields");
+
+    // Validate input using Zod
+    const validation = signUpSchema.safeParse({
+      email: email.trim(),
+      password,
+      fullName: fullName.trim(),
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: validation.data.fullName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -52,7 +63,7 @@ const Auth = () => {
       setPassword("");
       setFullName("");
     } catch (error: any) {
-      toast.error(error.message || "Error signing up");
+      toast.error(getAuthErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -60,16 +71,24 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+
+    // Validate input using Zod
+    const validation = signInSchema.safeParse({
+      email: email.trim(),
+      password,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
       });
 
       if (error) throw error;
@@ -77,7 +96,7 @@ const Auth = () => {
       toast.success("Signed in successfully!");
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message || "Error signing in");
+      toast.error(getAuthErrorMessage(error));
     } finally {
       setLoading(false);
     }

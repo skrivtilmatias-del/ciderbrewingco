@@ -10,6 +10,8 @@ import { ChevronDown, ChevronRight, Trash2, Tag } from "lucide-react";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { batchLogSchema } from "@/lib/validationSchemas";
+import { getUserFriendlyError } from "@/lib/errorHandler";
 
 export interface BatchLog {
   id: string;
@@ -48,24 +50,33 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
   const [tempC, setTempC] = useState(log.temp_c?.toString() || "");
 
   const handleUpdate = async () => {
+    // Validate input using Zod
+    const validation = batchLogSchema.safeParse({
+      stage,
+      role,
+      title: title || undefined,
+      content: content || undefined,
+      tags: tags.length > 0 ? tags : undefined,
+      og: og ? parseFloat(og) : null,
+      fg: fg ? parseFloat(fg) : null,
+      ph: ph ? parseFloat(ph) : null,
+      ta_gpl: ta ? parseFloat(ta) : null,
+      temp_c: tempC ? parseFloat(tempC) : null,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
     const { error } = await supabase
       .from("batch_logs")
-      .update({
-        stage,
-        role,
-        title,
-        content,
-        tags,
-        og: og ? parseFloat(og) : null,
-        fg: fg ? parseFloat(fg) : null,
-        ph: ph ? parseFloat(ph) : null,
-        ta_gpl: ta ? parseFloat(ta) : null,
-        temp_c: tempC ? parseFloat(tempC) : null,
-      })
+      .update(validation.data)
       .eq("id", log.id);
 
     if (error) {
-      toast.error("Failed to update log");
+      toast.error(getUserFriendlyError(error));
     } else {
       toast.success("Log updated");
       onUpdate();
@@ -81,7 +92,7 @@ export function BatchLogCard({ log, onUpdate, onDelete }: BatchLogCardProps) {
       .eq("id", log.id);
 
     if (error) {
-      toast.error("Failed to delete log");
+      toast.error(getUserFriendlyError(error));
     } else {
       toast.success("Log deleted");
       onDelete();

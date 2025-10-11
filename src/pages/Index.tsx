@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getUserFriendlyError } from "@/lib/errorHandler";
 import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { BatchDetails } from "@/components/BatchDetails";
@@ -41,8 +42,14 @@ const Index = () => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Handle token refresh
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Session token refreshed successfully');
+      }
+      
+      // Handle sign out or expired sessions
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       } else {
         setUser(session.user);
@@ -83,7 +90,7 @@ const Index = () => {
 
       setBatches(formattedBatches);
     } catch (error: any) {
-      toast.error("Error loading batches: " + error.message);
+      toast.error(getUserFriendlyError(error));
     } finally {
       setLoading(false);
     }
@@ -100,7 +107,7 @@ const Index = () => {
       if (error) throw error;
       setLogs(data as BatchLog[]);
     } catch (error: any) {
-      toast.error("Error loading logs: " + error.message);
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -111,6 +118,14 @@ const Index = () => {
 
   const handleDeleteBatch = async (batchId: string) => {
     if (!confirm("Delete this batch and all its logs?")) return;
+
+    // Verify session before critical operation
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Session expired. Please log in again');
+      navigate('/auth');
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -127,7 +142,7 @@ const Index = () => {
       }
       toast.success("Batch deleted");
     } catch (error: any) {
-      toast.error("Error deleting batch: " + error.message);
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -154,7 +169,7 @@ const Index = () => {
       setLogs([data as BatchLog, ...logs]);
       toast.success("Log entry created");
     } catch (error: any) {
-      toast.error("Error creating log: " + error.message);
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -170,6 +185,14 @@ const Index = () => {
   });
 
   const handleBatchCreated = async (newBatch: Omit<Batch, "id">) => {
+    // Verify session before critical operation
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Session expired. Please log in again');
+      navigate('/auth');
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from("batches")
@@ -203,7 +226,7 @@ const Index = () => {
 
       setBatches([formattedBatch, ...batches]);
     } catch (error: any) {
-      toast.error("Error creating batch: " + error.message);
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -249,7 +272,7 @@ const Index = () => {
 
       toast.success(`Batch advanced to ${newStage}`);
     } catch (error: any) {
-      toast.error("Error updating batch: " + error.message);
+      toast.error(getUserFriendlyError(error));
     }
   };
 

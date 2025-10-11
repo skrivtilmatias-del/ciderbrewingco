@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { batchSchema } from "@/lib/validationSchemas";
 
 interface NewBatchDialogProps {
   onBatchCreated: (batch: any) => void;
@@ -23,14 +24,28 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newBatch = {
-      name: formData.name,
-      variety: formData.variety,
+    // Validate input using Zod
+    const validation = batchSchema.safeParse({
+      name: formData.name.trim(),
+      variety: formData.variety.trim(),
       volume: parseFloat(formData.volume),
+      notes: formData.notes.trim() || undefined,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
+    const newBatch = {
+      name: validation.data.name,
+      variety: validation.data.variety,
+      volume: validation.data.volume,
       startDate: new Date().toISOString(),
       currentStage: "pressing" as const,
       progress: 10,
-      notes: formData.notes,
+      notes: validation.data.notes,
     };
 
     onBatchCreated(newBatch as any);
