@@ -139,36 +139,36 @@ export function TastingAnalysisDialog({
           </div>
 
           <div>
-            <Label htmlFor="colour">Colour</Label>
+            <Label htmlFor="colour">Appearance</Label>
             <Textarea
               id="colour"
               value={colour}
               onChange={(e) => setColour(e.target.value)}
-              placeholder="Describe the appearance and colour..."
+              placeholder="Describe the appearance, clarity, and colour..."
               rows={2}
               maxLength={500}
             />
           </div>
 
           <div>
-            <Label htmlFor="taste">Taste</Label>
+            <Label htmlFor="taste">Aroma / Bouquet</Label>
             <Textarea
               id="taste"
               value={taste}
               onChange={(e) => setTaste(e.target.value)}
-              placeholder="Describe the taste and flavors..."
+              placeholder="Describe the aroma and bouquet..."
               rows={2}
               maxLength={500}
             />
           </div>
 
           <div>
-            <Label htmlFor="palate">Palate</Label>
+            <Label htmlFor="palate">Palate / Flavour</Label>
             <Textarea
               id="palate"
               value={palate}
               onChange={(e) => setPalate(e.target.value)}
-              placeholder="Describe the mouthfeel and finish..."
+              placeholder="Describe the palate, flavour, and finish..."
               rows={2}
               maxLength={500}
             />

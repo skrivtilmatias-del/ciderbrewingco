@@ -72,21 +72,21 @@ export function TastingAnalysisCard({ analysis, onDelete, onEdit }: TastingAnaly
           <div className="grid grid-cols-1 gap-3">
             {analysis.colour && (
               <div className="space-y-1">
-                <Badge variant="outline" className="text-xs">Colour</Badge>
+                <Badge variant="outline" className="text-xs">Appearance</Badge>
                 <p className="text-sm text-muted-foreground">{analysis.colour}</p>
               </div>
             )}
             
             {analysis.taste && (
               <div className="space-y-1">
-                <Badge variant="outline" className="text-xs">Taste</Badge>
+                <Badge variant="outline" className="text-xs">Aroma / Bouquet</Badge>
                 <p className="text-sm text-muted-foreground">{analysis.taste}</p>
               </div>
             )}
             
             {analysis.palate && (
               <div className="space-y-1">
-                <Badge variant="outline" className="text-xs">Palate</Badge>
+                <Badge variant="outline" className="text-xs">Palate / Flavour</Badge>
                 <p className="text-sm text-muted-foreground">{analysis.palate}</p>
               </div>
             )}
