@@ -836,14 +836,20 @@ const Index = () => {
               </TabsList>
             </div>
             
-            {(activeTab === "batches" || activeTab === "production") && userRole === "production" && (
+            {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
               <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
                 <div className="relative w-full sm:w-[300px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={activeTab === "batches" ? "Search batches..." : "Search batches by name, variety, or stage..."}
-                    value={batchSearchQuery}
-                    onChange={(e) => setBatchSearchQuery(e.target.value)}
+                    placeholder={
+                      activeTab === "batches" 
+                        ? "Search batches..." 
+                        : activeTab === "production"
+                        ? "Search batches by name, variety, or stage..."
+                        : "Search blends..."
+                    }
+                    value={activeTab === "blending" ? blendSearchQuery : batchSearchQuery}
+                    onChange={(e) => activeTab === "blending" ? setBlendSearchQuery(e.target.value) : setBatchSearchQuery(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -863,6 +869,12 @@ const Index = () => {
                       <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
                     </SelectContent>
                   </Select>
+                )}
+                {activeTab === "blending" && (
+                  <NewBlendDialog 
+                    availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
+                    onBlendCreated={handleBlendCreated}
+                  />
                 )}
               </div>
             )}
@@ -1101,25 +1113,6 @@ const Index = () => {
           {userRole === "production" && (
             <>
               <TabsContent value="blending" className="mt-4 sm:mt-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                  <h2 className="text-lg font-semibold">Blend Batches</h2>
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:flex-initial">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                      <Input
-                        placeholder="Search blends..."
-                        value={blendSearchQuery}
-                        onChange={(e) => setBlendSearchQuery(e.target.value)}
-                        className="pl-9 w-full sm:w-[250px]"
-                      />
-                    </div>
-                    <NewBlendDialog 
-                      availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
-                      onBlendCreated={handleBlendCreated}
-                    />
-                  </div>
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {blendBatches.length === 0 ? (
                     <Card className="col-span-full p-12 text-center border-dashed">
