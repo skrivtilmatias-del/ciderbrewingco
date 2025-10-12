@@ -7,11 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Wine, Save, Edit, X, Minus, Plus, Star, Calendar, User, ClipboardList } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Wine, Save, Edit, X, Minus, Plus, Star, Calendar as CalendarIcon, User, ClipboardList } from "lucide-react";
 import { ImageUpload } from "./ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getUserFriendlyError } from "@/lib/errorHandler";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface BlendComponent {
   id: string;
@@ -68,6 +72,7 @@ export function BlendBatchDetailsTabbed({
   const [storageLocation, setStorageLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
+  const [createdDate, setCreatedDate] = useState<Date | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
   const [tastingAnalyses, setTastingAnalyses] = useState<TastingAnalysis[]>([]);
   const [loadingTastings, setLoadingTastings] = useState(false);
@@ -87,6 +92,7 @@ export function BlendBatchDetailsTabbed({
       setStorageLocation(blend.storage_location || "");
       setNotes(blend.notes || "");
       setAttachments(blend.attachments || []);
+      setCreatedDate(new Date(blend.created_at));
       setIsEditing(false);
       fetchTastingAnalyses();
     }
@@ -216,6 +222,11 @@ export function BlendBatchDetailsTabbed({
       return;
     }
 
+    if (!createdDate) {
+      toast.error("Creation date is required");
+      return;
+    }
+
     const bottles75 = parseInt(bottles75cl) || 0;
     const bottles150 = parseInt(bottles150cl) || 0;
     
@@ -230,7 +241,8 @@ export function BlendBatchDetailsTabbed({
           bottles_150cl: bottles150,
           storage_location: storageLocation.trim() || null,
           notes: notes.trim() || null,
-          attachments: attachments.length > 0 ? attachments : null
+          attachments: attachments.length > 0 ? attachments : null,
+          created_at: createdDate.toISOString()
         })
         .eq("id", blend.id);
 
@@ -537,6 +549,33 @@ export function BlendBatchDetailsTabbed({
                 </div>
 
                 <div>
+                  <Label htmlFor="created-date">Creation Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !createdDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {createdDate ? format(createdDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={createdDate}
+                        onSelect={setCreatedDate}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div>
                   <Label htmlFor="blend-notes">Production Notes</Label>
                   <Textarea
                     id="blend-notes"
@@ -564,6 +603,7 @@ export function BlendBatchDetailsTabbed({
                       setStorageLocation(blend.storage_location || "");
                       setNotes(blend.notes || "");
                       setAttachments(blend.attachments || []);
+                      setCreatedDate(new Date(blend.created_at));
                       setIsEditing(false);
                     }}
                   >
