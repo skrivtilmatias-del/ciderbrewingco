@@ -800,71 +800,74 @@ const Index = () => {
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 sm:mb-8">
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap justify-start gap-1">
-              {userRole === "production" && (
-                <>
-                  <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <Package className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">All Batches</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <Activity className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Production</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <Wine className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Blending</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="cellar" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <Warehouse className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Cellar</span>
-                  </TabsTrigger>
-                </>
-              )}
-              <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                <Award className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Tasting</span>
-              </TabsTrigger>
-              {userRole === "production" && (
-                <TabsTrigger value="tools" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                  <Settings2 className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Tools</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap justify-start gap-1">
+                {userRole === "production" && (
+                  <>
+                    <TabsTrigger value="batches" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                      <Package className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">All Batches</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                      <Activity className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Production</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="blending" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                      <Wine className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Blending</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="cellar" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                      <Warehouse className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Cellar</span>
+                    </TabsTrigger>
+                  </>
+                )}
+                <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                  <Award className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Tasting</span>
                 </TabsTrigger>
-              )}
-            </TabsList>
+                {userRole === "production" && (
+                  <TabsTrigger value="tools" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <Settings2 className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Tools</span>
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
+            
+            {activeTab === "batches" && userRole === "production" && (
+              <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
+                <div className="relative w-full sm:w-[300px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search batches..."
+                    value={batchSearchQuery}
+                    onChange={(e) => setBatchSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
+                    <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
+                    <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
+                    <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
-              <div className="mb-4 space-y-3">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1 sm:flex-initial sm:w-[400px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search batches by name, variety, or yeast type..."
-                      value={batchSearchQuery}
-                      onChange={(e) => setBatchSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
-                      <SelectValue placeholder="Sort by..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
-                      <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
-                      <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
-                      <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {batches.filter((batch) => {
                   const query = batchSearchQuery.toLowerCase();
