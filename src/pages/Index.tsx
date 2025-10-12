@@ -252,6 +252,7 @@ const Index = () => {
         .select(`
           id,
           blend_batch_id,
+          user_id,
           taste,
           colour,
           palate,
@@ -260,6 +261,9 @@ const Index = () => {
           created_at,
           blend_batches:blend_batch_id (
             name
+          ),
+          profiles:user_id (
+            full_name
           )
         `)
         .order("created_at", { ascending: false });
@@ -269,6 +273,7 @@ const Index = () => {
       const formattedAnalyses = tastingData.map((analysis: any) => ({
         ...analysis,
         blend_name: analysis.blend_batches?.name || "Unknown Blend",
+        user_name: analysis.profiles?.full_name || "Unknown User",
       }));
 
       setTastingAnalyses(formattedAnalyses);

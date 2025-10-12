@@ -8,6 +8,7 @@ interface TastingAnalysis {
   blend_batch_id: string | null;
   competitor_brand: string | null;
   blend_name?: string;
+  user_name?: string;
   taste: string | null;
   colour: string | null;
   palate: string | null;
@@ -106,9 +107,10 @@ export function TastingAnalysisCard({ analysis, onDelete, onEdit }: TastingAnaly
             </div>
           )}
 
-          {/* Date */}
-          <div className="text-xs text-muted-foreground pt-2">
-            Tasted: {new Date(analysis.created_at).toLocaleDateString()}
+          {/* Date and User */}
+          <div className="flex justify-between items-center text-xs text-muted-foreground pt-2">
+            <span>Tasted: {new Date(analysis.created_at).toLocaleDateString()}</span>
+            {analysis.user_name && <span>By: {analysis.user_name}</span>}
           </div>
         </div>
       </CardContent>
