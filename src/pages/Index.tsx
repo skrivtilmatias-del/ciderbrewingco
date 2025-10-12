@@ -41,6 +41,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [batchSearchQuery, setBatchSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
@@ -805,21 +806,49 @@ const Index = () => {
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search batches by name, variety, or yeast type..."
+                    value={batchSearchQuery}
+                    onChange={(e) => setBatchSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                {batches.length === 0 ? (
+                {batches.filter((batch) => {
+                  const query = batchSearchQuery.toLowerCase();
+                  return (
+                    batch.name.toLowerCase().includes(query) ||
+                    batch.variety.toLowerCase().includes(query) ||
+                    batch.yeast_type?.toLowerCase().includes(query)
+                  );
+                }).length === 0 ? (
                   <Card className="col-span-full p-12 text-center border-dashed">
                     <p className="text-muted-foreground">
-                      No batches yet. Click "New Batch" to get started.
+                      {batchSearchQuery ? "No batches match your search." : "No batches yet. Click 'New Batch' to get started."}
                     </p>
                   </Card>
                 ) : (
-                  batches.map((batch) => (
-                    <BatchCard
-                      key={batch.id}
-                      batch={batch}
-                      onClick={() => handleBatchClick(batch)}
-                    />
-                  ))
+                  batches
+                    .filter((batch) => {
+                      const query = batchSearchQuery.toLowerCase();
+                      return (
+                        batch.name.toLowerCase().includes(query) ||
+                        batch.variety.toLowerCase().includes(query) ||
+                        batch.yeast_type?.toLowerCase().includes(query)
+                      );
+                    })
+                    .map((batch) => (
+                      <BatchCard
+                        key={batch.id}
+                        batch={batch}
+                        onClick={() => handleBatchClick(batch)}
+                        onDelete={() => handleDeleteBatch(batch.id)}
+                      />
+                    ))
                 )}
               </div>
             </TabsContent>

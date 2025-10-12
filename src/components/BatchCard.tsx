@@ -2,7 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage } from "@/constants/ciderStages";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export interface Batch {
   id: string;
@@ -43,18 +46,46 @@ const getStageColor = (stage: string) => {
 interface BatchCardProps {
   batch: Batch;
   onClick?: () => void;
+  onDelete?: () => void;
 }
 
-export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
+export const BatchCard = ({ batch, onClick, onDelete }: BatchCardProps) => {
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
 
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete();
+    }
+  };
+
   return (
     <Card 
-      className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border"
+      className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border relative"
       onClick={onClick}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="absolute top-4 right-4" onClick={handleMenuClick}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="z-50">
+            <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Batch
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="flex items-start justify-between mb-4 pr-8">
         <div>
           <h3 className="text-xl font-semibold text-foreground mb-1">{batch.name}</h3>
           <p className="text-sm text-muted-foreground">{batch.variety}</p>
