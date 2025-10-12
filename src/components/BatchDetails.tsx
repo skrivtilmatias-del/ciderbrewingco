@@ -418,9 +418,9 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           </div>
 
           {/* Editable Notes Section */}
-          <div className="bg-muted/50 p-4 rounded-lg border">
+          <div className="bg-muted/50 p-3 rounded-lg border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Notes</p>
+              <p className="text-xs font-medium">Notes</p>
               {!isEditingNotes ? (
                 <Button
                   variant="ghost"
@@ -429,8 +429,9 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     setNotes(batch.notes || "");
                     setIsEditingNotes(true);
                   }}
+                  className="h-7 text-xs"
                 >
-                  <Pencil className="h-4 w-4 mr-1" />
+                  <Pencil className="h-3 w-3 mr-1" />
                   Edit
                 </Button>
               ) : (
@@ -442,6 +443,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                       setNotes(batch.notes || "");
                       setIsEditingNotes(false);
                     }}
+                    className="h-7 text-xs"
                   >
                     Cancel
                   </Button>
@@ -449,21 +451,22 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     size="sm"
                     onClick={handleSaveNotes}
                     disabled={isSaving}
+                    className="h-7 text-xs"
                   >
-                    <Save className="h-4 w-4 mr-1" />
+                    <Save className="h-3 w-3 mr-1" />
                     {isSaving ? "Saving..." : "Save"}
                   </Button>
                 </div>
               )}
             </div>
             {isEditingNotes ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add notes about this batch..."
-                  rows={4}
-                  className="w-full"
+                  rows={3}
+                  className="w-full text-xs"
                 />
                 <ImageUpload
                   images={attachments}
@@ -471,8 +474,8 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 />
               </div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">
                   {batch.notes || "No notes yet. Click Edit to add notes."}
                 </p>
                 {attachments.length > 0 && (
@@ -482,7 +485,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                         key={index}
                         src={imageUrl}
                         alt={`Attachment ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border border-border"
+                        className="w-full h-20 object-cover rounded-lg border border-border"
                       />
                     ))}
                   </div>
