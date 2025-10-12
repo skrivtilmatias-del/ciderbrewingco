@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Wine, Save, Edit, X, Minus, Plus, Star, Calendar as CalendarIcon, User, ClipboardList } from "lucide-react";
 import { ImageUpload } from "./ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
@@ -380,7 +378,7 @@ export function BlendBatchDetailsTabbed({
             </div>
 
             <div className="text-sm text-muted-foreground flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4" />
               Created: {new Date(blend.created_at).toLocaleDateString()}
             </div>
           </TabsContent>
@@ -559,30 +557,15 @@ export function BlendBatchDetailsTabbed({
 
                 <div>
                   <Label htmlFor="created-date">Creation Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="created-date"
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !createdDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {createdDate ? format(createdDate, "MMMM d, yyyy") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={createdDate}
-                        onSelect={setCreatedDate}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Input
+                    id="created-date"
+                    type="date"
+                    value={createdDate ? format(createdDate, "yyyy-MM-dd") : ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCreatedDate(v ? new Date(v + "T00:00:00") : undefined);
+                    }}
+                  />
                 </div>
 
                 <div>
