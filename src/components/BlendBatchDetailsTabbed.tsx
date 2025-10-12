@@ -260,14 +260,22 @@ export function BlendBatchDetailsTabbed({
 
   const renderStars = (score: number | null) => {
     if (!score) return null;
-    const fullStars = Math.floor(score);
+    // Convert 0-100 score to 0-5 stars
+    const normalizedScore = score / 20;
+    const fullStars = Math.floor(normalizedScore);
+    const hasHalfStar = normalizedScore % 1 >= 0.5;
+    
     return (
       <div className="flex gap-1">
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
             className={`w-4 h-4 ${
-              i < fullStars ? 'fill-primary text-primary' : 'text-muted-foreground'
+              i < fullStars 
+                ? 'fill-primary text-primary' 
+                : i === fullStars && hasHalfStar
+                ? 'fill-primary/50 text-primary'
+                : 'text-muted-foreground'
             }`}
           />
         ))}
