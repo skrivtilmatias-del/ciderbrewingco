@@ -21,6 +21,7 @@ export interface Batch {
   target_fg?: number;
   target_ph?: number;
   target_end_ph?: number;
+  target_temp_c?: number;
   yeast_type?: string;
 }
 

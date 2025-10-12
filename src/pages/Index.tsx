@@ -12,6 +12,12 @@ import { BlendBatchDetails } from "@/components/BlendBatchDetails";
 import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
+import { BatchOverviewHeader } from "@/components/BatchOverviewHeader";
+import { BatchTimeline } from "@/components/BatchTimeline";
+import { ParameterTrendChart } from "@/components/ParameterTrendChart";
+import { QuickActionsPanel } from "@/components/QuickActionsPanel";
+import { SmartInsights } from "@/components/SmartInsights";
+import { OrganizedLogsList } from "@/components/OrganizedLogsList";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
@@ -855,9 +861,84 @@ const Index = () => {
           )}
 
           {userRole === "production" && (
-            <TabsContent value="production" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
               {selectedBatch ? (
                 <>
+                  {/* Batch Overview Header */}
+                  <BatchOverviewHeader
+                    batch={selectedBatch}
+                    latestMeasurements={logs.length > 0 ? {
+                      og: logs[0].og || undefined,
+                      fg: logs[0].fg || undefined,
+                      ph: logs[0].ph || undefined,
+                      temp_c: logs[0].temp_c || undefined,
+                    } : undefined}
+                    onEditClick={() => setDetailsOpen(true)}
+                    onViewDetails={() => setDetailsOpen(true)}
+                  />
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Timeline - Takes 2 columns on large screens */}
+                    <div className="lg:col-span-2">
+                      <BatchTimeline
+                        currentStage={selectedBatch.currentStage}
+                        stageHistory={[]}
+                        startDate={selectedBatch.startDate}
+                      />
+                    </div>
+
+                    {/* Smart Insights - Takes 1 column */}
+                    <div>
+                      <SmartInsights
+                        batch={selectedBatch}
+                        logs={logs}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Parameter Trend Charts */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <ParameterTrendChart
+                      title="Original Gravity"
+                      data={logs.map(l => ({
+                        date: l.created_at,
+                        value: l.og || null
+                      }))}
+                      color="hsl(var(--info))"
+                      unit="SG"
+                      targetValue={selectedBatch.target_og}
+                    />
+                    <ParameterTrendChart
+                      title="pH Level"
+                      data={logs.map(l => ({
+                        date: l.created_at,
+                        value: l.ph || null
+                      }))}
+                      color="hsl(var(--warning))"
+                      unit=""
+                      targetValue={selectedBatch.target_ph}
+                    />
+                    <ParameterTrendChart
+                      title="Temperature"
+                      data={logs.map(l => ({
+                        date: l.created_at,
+                        value: l.temp_c || null
+                      }))}
+                      color="hsl(var(--destructive))"
+                      unit="°C"
+                      targetValue={selectedBatch.target_temp_c}
+                    />
+                  </div>
+
+                  {/* Quick Actions Panel */}
+                  <QuickActionsPanel
+                    onAddMeasurement={handleAddLog}
+                    onAddObservation={handleAddLog}
+                    onScheduleTask={handleAddLog}
+                    onAddGeneral={handleAddLog}
+                  />
+
+                  {/* Stage Progression */}
                   <StageProgressionUI
                     currentStage={selectedBatch.currentStage}
                     batchId={selectedBatch.id}
@@ -865,6 +946,7 @@ const Index = () => {
                     onAdvanceStage={handleUpdateStage}
                   />
                   
+                  {/* Search and Filter */}
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
                       <div className="relative flex-1">
@@ -896,6 +978,7 @@ const Index = () => {
                       </Button>
                     </div>
 
+                    {/* Organized Logs List */}
                     {filteredLogs.length === 0 ? (
                       <Card className="p-8 sm:p-12 text-center border-dashed">
                         <p className="text-sm sm:text-base text-muted-foreground">
@@ -903,15 +986,11 @@ const Index = () => {
                         </p>
                       </Card>
                     ) : (
-                      filteredLogs.map((log) => (
-                        <BatchLogCard
-                          key={log.id}
-                          log={log}
-                          onUpdate={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                          onDelete={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                          allowedStages={getAllowedStages(selectedBatch.currentStage)}
-                        />
-                      ))
+                      <OrganizedLogsList
+                        logs={filteredLogs}
+                        onDeleteLog={(logId) => selectedBatch && fetchLogs(selectedBatch.id)}
+                        onUpdateLog={() => selectedBatch && fetchLogs(selectedBatch.id)}
+                      />
                     )}
                   </div>
                 </>
