@@ -27,14 +27,14 @@ const STAGE_TO_KEY_INDEX: Record<string, number> = {
   'Milling': 0,
   'Pressing': 0,
   'Settling': 0,
-  'Enzymes': 0,
+  'Enzymes': 1,
   'Pitching': 1,
   'Fermentation': 1,
   'Cold Crash': 1,
+  'Racking': 2,
   'Malolactic': 2,
   'Stabilisation': 2,
   'Blending': 3,
-  'Racking': 3,
   'Backsweetening': 3,
   'Bottling': 3,
   'Conditioning': 3,
@@ -53,10 +53,10 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
     if (index !== currentKeyStageIndex) {
       // Map key stage to actual stage
       let targetStage: CiderStage | 'Complete';
-      if (keyStage === 'Pressing') targetStage = 'Pressing';
-      else if (keyStage === 'Fermentation') targetStage = 'Pitching';
+      if (keyStage === 'Pressing') targetStage = 'Harvest';
+      else if (keyStage === 'Fermentation') targetStage = 'Enzymes';
       else if (keyStage === 'Ageing') targetStage = 'Racking';
-      else if (keyStage === 'Bottling') targetStage = 'Bottling';
+      else if (keyStage === 'Bottling') targetStage = 'Blending';
       else targetStage = 'Complete';
 
       onSkipToStage(targetStage);
