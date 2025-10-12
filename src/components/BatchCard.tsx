@@ -86,12 +86,11 @@ export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
           <Progress value={batch.progress} className="h-2" />
         </div>
 
-        {(batch.yeast_type || batch.target_og || batch.target_ph) && (
+        {(batch.target_og || batch.target_ph || batch.yeast_type) && (
           <p className="text-sm text-muted-foreground pt-2 border-t border-border">
-            Origin: {batch.variety}
-            {batch.target_ph && <> PH: {batch.target_ph}</>}
-            {batch.target_og && <> OG: {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</>}
-            {batch.yeast_type && <> YH: {batch.yeast_type}</>}
+            {batch.target_og && <>OG: {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</>}
+            {batch.target_ph && <>{batch.target_og && ' '}PH: {batch.target_ph}</>}
+            {batch.yeast_type && <>{(batch.target_og || batch.target_ph) && ' '}YH: {batch.yeast_type}</>}
           </p>
         )}
       </div>
