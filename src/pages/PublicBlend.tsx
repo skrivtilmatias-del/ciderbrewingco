@@ -3,8 +3,28 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wine, Calendar, MapPin, Star, User } from "lucide-react";
+import { Wine, Calendar, MapPin, Star, User, Droplet, FlaskConical, Thermometer, TestTube, Apple, Beaker } from "lucide-react";
 import { toast } from "sonner";
+
+interface BatchDetails {
+  id: string;
+  name: string;
+  variety: string;
+  apple_origin: string | null;
+  apple_mix: string | null;
+  style: string | null;
+  volume: number;
+  yeast_type: string | null;
+  target_og: number | null;
+  target_fg: number | null;
+  target_ph: number | null;
+  target_end_ph: number | null;
+  target_ta: number | null;
+  current_stage: string;
+  started_at: string;
+  completed_at: string | null;
+  notes: string | null;
+}
 
 interface BlendComponent {
   id: string;
@@ -12,6 +32,7 @@ interface BlendComponent {
   batch_variety: string;
   percentage: number | null;
   volume_liters: number | null;
+  batch_details: BatchDetails | null;
 }
 
 interface TastingAnalysis {
@@ -63,26 +84,41 @@ export default function PublicBlend() {
 
       if (blendError) throw blendError;
 
-      // Fetch components
+      // Fetch components with full batch details
       const { data: componentsData, error: componentsError } = await supabase
         .from("blend_components")
         .select(`
           id,
           percentage,
           volume_liters,
-          batches!inner(name, variety)
+          source_batch_id
         `)
         .eq("blend_batch_id", id);
 
       if (componentsError) throw componentsError;
 
-      const components = componentsData.map((comp: any) => ({
-        id: comp.id,
-        batch_name: comp.batches.name,
-        batch_variety: comp.batches.variety,
-        percentage: comp.percentage,
-        volume_liters: comp.volume_liters,
-      }));
+      // Fetch detailed batch information for each component
+      const batchIds = componentsData.map((comp: any) => comp.source_batch_id);
+      const { data: batchesData, error: batchesError } = await supabase
+        .from("batches")
+        .select("*")
+        .in("id", batchIds);
+
+      if (batchesError) throw batchesError;
+
+      const batchesMap = new Map(batchesData.map((batch: any) => [batch.id, batch]));
+
+      const components = componentsData.map((comp: any) => {
+        const batch = batchesMap.get(comp.source_batch_id);
+        return {
+          id: comp.id,
+          batch_name: batch?.name || "Unknown",
+          batch_variety: batch?.variety || "",
+          percentage: comp.percentage,
+          volume_liters: comp.volume_liters,
+          batch_details: batch || null,
+        };
+      });
 
       setBlend({
         ...blendData,
@@ -241,30 +277,185 @@ export default function PublicBlend() {
           </Card>
         )}
 
-        {/* Components */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Blend Components</h2>
-            <div className="space-y-3">
-              {blend.components.map((component) => (
-                <div key={component.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        {/* Components - Detailed View */}
+        <div className="mb-8 space-y-6">
+          <h2 className="text-2xl font-bold">Blend Components</h2>
+          {blend.components.map((component, index) => (
+            <Card key={component.id}>
+              <CardContent className="p-6">
+                {/* Component Header */}
+                <div className="flex items-start justify-between mb-6 pb-4 border-b">
                   <div>
-                    <p className="font-medium">{component.batch_name}</p>
-                    <p className="text-sm text-muted-foreground">{component.batch_variety}</p>
+                    <h3 className="text-xl font-semibold mb-1">{component.batch_name}</h3>
+                    <p className="text-muted-foreground">{component.batch_variety}</p>
                   </div>
                   <div className="flex gap-2">
                     {component.percentage !== null && (
-                      <Badge variant="secondary">{component.percentage}%</Badge>
+                      <Badge variant="secondary" className="text-lg px-3 py-1">
+                        {component.percentage}%
+                      </Badge>
                     )}
                     {component.volume_liters !== null && (
-                      <Badge variant="outline">{component.volume_liters}L</Badge>
+                      <Badge variant="outline" className="text-lg px-3 py-1">
+                        {component.volume_liters}L
+                      </Badge>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
+                {component.batch_details && (
+                  <div className="space-y-6">
+                    {/* Apple & Origin Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {component.batch_details.apple_origin && (
+                        <div className="flex items-start gap-3">
+                          <Apple className="w-5 h-5 text-primary mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Origin</p>
+                            <p className="font-medium">{component.batch_details.apple_origin}</p>
+                          </div>
+                        </div>
+                      )}
+                      {component.batch_details.apple_mix && (
+                        <div className="flex items-start gap-3">
+                          <Apple className="w-5 h-5 text-primary mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Apple Mix</p>
+                            <p className="font-medium">{component.batch_details.apple_mix}</p>
+                          </div>
+                        </div>
+                      )}
+                      {component.batch_details.style && (
+                        <div className="flex items-start gap-3">
+                          <Wine className="w-5 h-5 text-primary mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Style</p>
+                            <p className="font-medium">{component.batch_details.style}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Production Details */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                        Production Details
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="flex items-start gap-2">
+                          <Droplet className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground">Volume</p>
+                            <p className="font-medium">{component.batch_details.volume}L</p>
+                          </div>
+                        </div>
+                        {component.batch_details.yeast_type && (
+                          <div className="flex items-start gap-2">
+                            <Beaker className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Yeast</p>
+                              <p className="font-medium text-sm">{component.batch_details.yeast_type}</p>
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2">
+                          <FlaskConical className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground">Stage</p>
+                            <Badge variant="outline" className="mt-0.5">
+                              {component.batch_details.current_stage}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          <div>
+                            <p className="text-xs text-muted-foreground">Started</p>
+                            <p className="font-medium text-sm">
+                              {new Date(component.batch_details.started_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Target Parameters */}
+                    {(component.batch_details.target_og || 
+                      component.batch_details.target_fg || 
+                      component.batch_details.target_ph ||
+                      component.batch_details.target_end_ph ||
+                      component.batch_details.target_ta) && (
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                          Target Parameters
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          {component.batch_details.target_og && (
+                            <div className="flex items-start gap-2">
+                              <TestTube className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Target OG</p>
+                                <p className="font-medium">{component.batch_details.target_og}</p>
+                              </div>
+                            </div>
+                          )}
+                          {component.batch_details.target_fg && (
+                            <div className="flex items-start gap-2">
+                              <TestTube className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Target FG</p>
+                                <p className="font-medium">{component.batch_details.target_fg}</p>
+                              </div>
+                            </div>
+                          )}
+                          {component.batch_details.target_ph && (
+                            <div className="flex items-start gap-2">
+                              <TestTube className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Target pH</p>
+                                <p className="font-medium">{component.batch_details.target_ph}</p>
+                              </div>
+                            </div>
+                          )}
+                          {component.batch_details.target_end_ph && (
+                            <div className="flex items-start gap-2">
+                              <TestTube className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Target End pH</p>
+                                <p className="font-medium">{component.batch_details.target_end_ph}</p>
+                              </div>
+                            </div>
+                          )}
+                          {component.batch_details.target_ta && (
+                            <div className="flex items-start gap-2">
+                              <TestTube className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Target TA</p>
+                                <p className="font-medium">{component.batch_details.target_ta}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Batch Notes */}
+                    {component.batch_details.notes && (
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
+                          Batch Notes
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                          {component.batch_details.notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Production Notes */}
         {blend.notes && (
