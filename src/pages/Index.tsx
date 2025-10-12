@@ -54,6 +54,7 @@ const Index = () => {
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   const [activeTab, setActiveTab] = useState("batches");
+  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels">("analytics");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
@@ -828,10 +829,30 @@ const Index = () => {
                   <span className="hidden sm:inline">Tasting</span>
                 </TabsTrigger>
                 {userRole === "production" && (
-                  <TabsTrigger value="tools" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <Settings2 className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Tools</span>
-                  </TabsTrigger>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant={activeTab === "tools" ? "default" : "ghost"} size="sm" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                        <Settings2 className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Tools</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
+                      <DropdownMenuLabel>Tools</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("analytics"); }}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Analytics
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("calculators"); }}>
+                        <FlaskConical className="h-4 w-4 mr-2" />
+                        Calculators
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("print-labels"); }}>
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Print Labels
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </TabsList>
             </div>
@@ -1078,35 +1099,25 @@ const Index = () => {
 
           {userRole === "production" && (
             <TabsContent value="tools" className="mt-4 sm:mt-6">
-              <Tabs defaultValue="analytics" className="w-full">
-                <TabsList className="w-full sm:w-auto">
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  <TabsTrigger value="calculators">Calculators</TabsTrigger>
-                  <TabsTrigger value="print-labels">Print Labels</TabsTrigger>
-                </TabsList>
+              {toolsView === "analytics" && batches.length > 0 && (
+                <ProductionAnalytics 
+                  batches={batches} 
+                  blendBatches={blendBatches}
+                  tastingAnalyses={tastingAnalyses}
+                />
+              )}
 
-                <TabsContent value="analytics" className="mt-4">
-                  {batches.length > 0 && (
-                    <ProductionAnalytics 
-                      batches={batches} 
-                      blendBatches={blendBatches}
-                      tastingAnalyses={tastingAnalyses}
-                    />
-                  )}
-                </TabsContent>
+              {toolsView === "calculators" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                  <ABVCalculator />
+                  <PrimingCalculator />
+                  <SO2Calculator />
+                </div>
+              )}
 
-                <TabsContent value="calculators" className="mt-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    <ABVCalculator />
-                    <PrimingCalculator />
-                    <SO2Calculator />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="print-labels" className="mt-4">
-                  <PrintQRCodes blendBatches={blendBatches} />
-                </TabsContent>
-              </Tabs>
+              {toolsView === "print-labels" && (
+                <PrintQRCodes blendBatches={blendBatches} />
+              )}
             </TabsContent>
           )}
 
