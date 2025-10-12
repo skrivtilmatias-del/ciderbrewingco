@@ -18,6 +18,10 @@ interface PrintQRCodesProps {
 }
 
 export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
+  const getBlendUrl = (blendId: string) => {
+    return `${window.location.origin}/blend/${blendId}`;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -92,7 +96,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               <div id={`qr-card-${blend.id}`} className="qr-card flex flex-col items-center space-y-4">
                 <div className="bg-white p-4 rounded-lg">
                   <QRCodeSVG
-                    value={blend.id}
+                    value={getBlendUrl(blend.id)}
                     size={200}
                     level="H"
                   />
