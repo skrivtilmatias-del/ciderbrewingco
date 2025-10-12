@@ -18,6 +18,10 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     name: "",
     variety: "",
     volume: "",
+    startOG: "",
+    endOG: "",
+    startPH: "",
+    endPH: "",
     notes: "",
   });
 
@@ -29,6 +33,9 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       name: formData.name.trim(),
       variety: formData.variety.trim(),
       volume: parseFloat(formData.volume),
+      target_og: formData.startOG ? parseFloat(formData.startOG) : undefined,
+      target_fg: formData.endOG ? parseFloat(formData.endOG) : undefined,
+      target_ph: formData.startPH ? parseFloat(formData.startPH) : undefined,
       notes: formData.notes.trim() || undefined,
     });
 
@@ -42,6 +49,9 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       name: validation.data.name,
       variety: validation.data.variety,
       volume: validation.data.volume,
+      target_og: validation.data.target_og,
+      target_fg: validation.data.target_fg,
+      target_ph: validation.data.target_ph,
       startDate: new Date().toISOString(),
       currentStage: "Harvest" as const,
       progress: 0,
@@ -51,7 +61,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     onBatchCreated(newBatch as any);
     toast.success("Batch created successfully!");
     setOpen(false);
-    setFormData({ name: "", variety: "", volume: "", notes: "" });
+    setFormData({ name: "", variety: "", volume: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
   };
 
   return (
@@ -100,6 +110,58 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
               onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startOG">Start OG (Optional)</Label>
+              <Input
+                id="startOG"
+                type="number"
+                step="0.001"
+                placeholder="e.g., 1.050"
+                value={formData.startOG}
+                onChange={(e) => setFormData({ ...formData, startOG: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endOG">End OG (Optional)</Label>
+              <Input
+                id="endOG"
+                type="number"
+                step="0.001"
+                placeholder="e.g., 1.000"
+                value={formData.endOG}
+                onChange={(e) => setFormData({ ...formData, endOG: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startPH">Start PH (Optional)</Label>
+              <Input
+                id="startPH"
+                type="number"
+                step="0.1"
+                placeholder="e.g., 3.5"
+                value={formData.startPH}
+                onChange={(e) => setFormData({ ...formData, startPH: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endPH">End PH (Optional)</Label>
+              <Input
+                id="endPH"
+                type="number"
+                step="0.1"
+                placeholder="e.g., 3.8"
+                value={formData.endPH}
+                onChange={(e) => setFormData({ ...formData, endPH: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

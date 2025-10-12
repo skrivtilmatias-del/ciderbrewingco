@@ -56,6 +56,21 @@ export const batchSchema = z.object({
     .number({ invalid_type_error: 'Volume must be a number' })
     .positive({ message: 'Volume must be greater than 0' })
     .max(100000, { message: 'Volume must be less than 100,000 liters' }),
+  target_og: z
+    .number()
+    .min(0.9)
+    .max(1.2)
+    .optional(),
+  target_fg: z
+    .number()
+    .min(0.9)
+    .max(1.2)
+    .optional(),
+  target_ph: z
+    .number()
+    .min(0)
+    .max(14)
+    .optional(),
   notes: z
     .string()
     .trim()
