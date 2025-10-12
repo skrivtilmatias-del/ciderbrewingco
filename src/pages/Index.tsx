@@ -692,9 +692,8 @@ const Index = () => {
                 {userProfile?.full_name || user.email}
               </span>
               <Button 
-                variant="outline" 
                 size="sm" 
-                className="text-xs sm:text-sm"
+                className="bg-primary hover:bg-primary/90 text-xs sm:text-sm"
                 onClick={() => setTastingDialogOpen(true)}
               >
                 <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
