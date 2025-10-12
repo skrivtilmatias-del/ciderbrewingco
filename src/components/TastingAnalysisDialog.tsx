@@ -164,7 +164,7 @@ export function TastingAnalysisDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <DialogHeader>
           <DialogTitle>
             {existingAnalysis ? "Edit Tasting Analysis" : "New Tasting Analysis"}
@@ -209,12 +209,12 @@ export function TastingAnalysisDialog({
                 onValueChange={setBlendBatchId}
                 disabled={!!existingAnalysis}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 touch-manipulation">
                   <SelectValue placeholder="Select blend batch" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-card border-border pointer-events-auto max-h-[300px]">
                   {blendBatches.map((blend) => (
-                    <SelectItem key={blend.id} value={blend.id}>
+                    <SelectItem key={blend.id} value={blend.id} className="touch-manipulation min-h-[44px]">
                       {blend.name}
                     </SelectItem>
                   ))}
