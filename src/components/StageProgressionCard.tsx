@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle } from "lucide-react";
+import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { STAGES, CiderStage } from "@/constants/ciderStages";
 import { Batch } from "./BatchCard";
 
@@ -46,6 +46,8 @@ const STAGE_TO_KEY_INDEX: Record<string, number> = {
 export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: StageProgressionCardProps) {
   const currentKeyStageIndex = STAGE_TO_KEY_INDEX[batch.currentStage] ?? 0;
   const isComplete = batch.currentStage === 'Complete';
+  const currentIndex = STAGES.indexOf(batch.currentStage as CiderStage);
+  const canGoPrevious = !isComplete && currentIndex > 0;
 
   const handleKeyStageClick = (keyStage: string, index: number) => {
     if (!onSkipToStage) return;
@@ -60,6 +62,13 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
       else targetStage = 'Complete';
 
       onSkipToStage(targetStage);
+    }
+  };
+
+  const handlePreviousStage = () => {
+    if (canGoPrevious && onSkipToStage) {
+      const previousStage = STAGES[currentIndex - 1];
+      onSkipToStage(previousStage);
     }
   };
 
@@ -97,15 +106,27 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
           })}
         </div>
 
-        {/* Advance Button */}
+        {/* Navigation Buttons */}
         {!isComplete && (
-          <Button
-            onClick={onAdvanceStage}
-            className="w-full bg-primary hover:bg-primary/90"
-            size="lg"
-          >
-            Advance to Next Stage
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handlePreviousStage}
+              disabled={!canGoPrevious}
+              className="flex-1 bg-primary hover:bg-primary/90"
+              size="lg"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Previous Stage
+            </Button>
+            <Button
+              onClick={onAdvanceStage}
+              className="flex-1 bg-primary hover:bg-primary/90"
+              size="lg"
+            >
+              Advance to Next Stage
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>
