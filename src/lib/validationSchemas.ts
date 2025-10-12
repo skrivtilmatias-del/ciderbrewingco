@@ -52,6 +52,11 @@ export const batchSchema = z.object({
     .trim()
     .min(1, { message: 'Apple variety is required' })
     .max(100, { message: 'Apple variety must be less than 100 characters' }),
+  apple_origin: z
+    .string()
+    .trim()
+    .max(100, { message: 'Apple origin must be less than 100 characters' })
+    .optional(),
   volume: z
     .number({ invalid_type_error: 'Volume must be a number' })
     .positive({ message: 'Volume must be greater than 0' })

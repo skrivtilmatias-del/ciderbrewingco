@@ -114,6 +114,7 @@ export type Database = {
       batches: {
         Row: {
           apple_mix: string | null
+          apple_origin: string | null
           attachments: string[] | null
           completed_at: string | null
           created_at: string
@@ -138,6 +139,7 @@ export type Database = {
         }
         Insert: {
           apple_mix?: string | null
+          apple_origin?: string | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
@@ -162,6 +164,7 @@ export type Database = {
         }
         Update: {
           apple_mix?: string | null
+          apple_origin?: string | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string

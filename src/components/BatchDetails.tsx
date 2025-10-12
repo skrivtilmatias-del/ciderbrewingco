@@ -319,9 +319,17 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Apple Variety</p>
-                  <p className="text-lg font-medium">{batch.variety}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Apple Variety</p>
+                    <p className="text-lg font-medium">{batch.variety}</p>
+                  </div>
+                  {batch.apple_origin && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Apple Origin</p>
+                      <p className="text-lg font-medium">{batch.apple_origin}</p>
+                    </div>
+                  )}
                 </div>
                 <Badge className={`${stageColor} text-white`}>
                   <StageIcon className="w-4 h-4 mr-1" />

@@ -11,6 +11,7 @@ export interface Batch {
   id: string;
   name: string;
   variety: string;
+  apple_origin?: string;
   volume: number;
   startDate: string;
   currentStage: CiderStage | 'Complete';

@@ -17,6 +17,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
   const [formData, setFormData] = useState({
     name: "",
     variety: "",
+    appleOrigin: "",
     volume: "",
     yeastType: "",
     startOG: "",
@@ -32,6 +33,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     const validation = batchSchema.safeParse({
       name: formData.name.trim(),
       variety: formData.variety.trim(),
+      apple_origin: formData.appleOrigin.trim() || undefined,
       volume: parseFloat(formData.volume),
       yeast_type: formData.yeastType.trim() || undefined,
       target_og: formData.startOG ? parseFloat(formData.startOG) : undefined,
@@ -50,6 +52,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     const newBatch = {
       name: validation.data.name,
       variety: validation.data.variety,
+      apple_origin: validation.data.apple_origin,
       volume: validation.data.volume,
       yeast_type: validation.data.yeast_type,
       target_og: validation.data.target_og,
@@ -65,7 +68,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     onBatchCreated(newBatch as any);
     toast.success("Batch created successfully!");
     setOpen(false);
-    setFormData({ name: "", variety: "", volume: "", yeastType: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
+    setFormData({ name: "", variety: "", appleOrigin: "", volume: "", yeastType: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
   };
 
   return (
@@ -100,6 +103,16 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
               value={formData.variety}
               onChange={(e) => setFormData({ ...formData, variety: e.target.value })}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="appleOrigin">Apple Origin</Label>
+            <Input
+              id="appleOrigin"
+              placeholder="e.g., Somerset Orchard"
+              value={formData.appleOrigin}
+              onChange={(e) => setFormData({ ...formData, appleOrigin: e.target.value })}
             />
           </div>
 
