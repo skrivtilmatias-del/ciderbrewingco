@@ -65,14 +65,14 @@ export const BatchProductionHeader = ({ batch }: BatchProductionHeaderProps) => 
           const Icon = metric.icon;
           return (
             <Card key={index} className="overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-lg ${metric.bgColor}`}>
-                    <Icon className={`h-6 w-6 ${metric.iconColor}`} />
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`p-2.5 rounded-lg ${metric.bgColor} flex-shrink-0`}>
+                    <Icon className={`h-5 w-5 ${metric.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-muted-foreground mb-1">{metric.label}</p>
-                    <p className="text-2xl font-bold truncate">{metric.value}</p>
+                    <p className="text-xs text-muted-foreground mb-1 truncate">{metric.label}</p>
+                    <p className="text-lg font-bold truncate" title={metric.value}>{metric.value}</p>
                   </div>
                 </div>
               </CardContent>
