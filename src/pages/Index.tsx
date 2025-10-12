@@ -49,6 +49,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [batchSearchQuery, setBatchSearchQuery] = useState("");
   const [tastingSearchQuery, setTastingSearchQuery] = useState("");
+  const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
@@ -813,15 +814,32 @@ const Index = () => {
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
-              <div className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search batches by name, variety, or yeast type..."
-                    value={batchSearchQuery}
-                    onChange={(e) => setBatchSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+              <div className="mb-4 space-y-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search batches by name, variety, or yeast type..."
+                      value={batchSearchQuery}
+                      onChange={(e) => setBatchSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                      <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
+                      <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
+                      <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
+                      <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
@@ -847,6 +865,28 @@ const Index = () => {
                         batch.variety.toLowerCase().includes(query) ||
                         batch.yeast_type?.toLowerCase().includes(query)
                       );
+                    })
+                    .sort((a, b) => {
+                      switch (batchSortOrder) {
+                        case "newest":
+                          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+                        case "oldest":
+                          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+                        case "name-asc":
+                          return a.name.localeCompare(b.name);
+                        case "name-desc":
+                          return b.name.localeCompare(a.name);
+                        case "volume-high":
+                          return (b.volume || 0) - (a.volume || 0);
+                        case "volume-low":
+                          return (a.volume || 0) - (b.volume || 0);
+                        case "progress-high":
+                          return (b.progress || 0) - (a.progress || 0);
+                        case "progress-low":
+                          return (a.progress || 0) - (b.progress || 0);
+                        default:
+                          return 0;
+                      }
                     })
                     .map((batch) => (
                       <BatchCard
