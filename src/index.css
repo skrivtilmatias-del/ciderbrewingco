@@ -97,3 +97,35 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .print\:break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print\:page-break-inside-avoid {
+    page-break-inside: avoid !important;
+  }
+
+  header {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}

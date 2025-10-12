@@ -14,7 +14,8 @@ import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse } from "lucide-react";
+import { PrintQRCodes } from "@/components/PrintQRCodes";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -762,6 +763,10 @@ const Index = () => {
                     <Warehouse className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Cellar</span>
                   </TabsTrigger>
+                  <TabsTrigger value="print-labels" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                    <QrCode className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Print Labels</span>
+                  </TabsTrigger>
                 </>
               )}
               <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
@@ -1040,6 +1045,10 @@ const Index = () => {
                     </Card>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="print-labels" className="mt-4 sm:mt-6">
+                <PrintQRCodes blendBatches={blendBatches} />
               </TabsContent>
             </>
           )}
