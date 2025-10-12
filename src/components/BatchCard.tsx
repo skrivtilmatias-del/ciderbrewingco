@@ -169,30 +169,6 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
             )}
           </div>
         )}
-
-        {/* Stage Navigation Buttons */}
-        {(onAdvanceStage || onPreviousStage) && (
-          <div className="flex gap-2 pt-3 border-t border-border">
-            <Button
-              onClick={handlePrevious}
-              disabled={!canGoPrevious}
-              className="flex-1 bg-primary hover:bg-primary/90"
-              size="sm"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </Button>
-            <Button
-              onClick={handleAdvance}
-              disabled={!canAdvance}
-              className="flex-1 bg-primary hover:bg-primary/90"
-              size="sm"
-            >
-              Advance
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        )}
       </div>
     </Card>
   );
