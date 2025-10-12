@@ -13,6 +13,7 @@ const blendSchema = z.object({
   total_volume: z.number().positive("Total volume must be positive"),
   bottles_75cl: z.number().int().min(0, "Bottles must be a positive number").optional(),
   bottles_150cl: z.number().int().min(0, "Bottles must be a positive number").optional(),
+  storage_location: z.string().trim().max(200, "Storage location must be less than 200 characters").optional(),
   notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
   components: z.array(z.object({
     source_batch_id: z.string().min(1, "Batch is required"),
@@ -44,6 +45,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
   const [totalVolume, setTotalVolume] = useState("");
   const [bottles75cl, setBottles75cl] = useState("");
   const [bottles150cl, setBottles150cl] = useState("");
+  const [storageLocation, setStorageLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [components, setComponents] = useState<BlendComponent[]>([
     { source_batch_id: "", percentage: "", volume_liters: "" }
@@ -78,6 +80,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
       total_volume: parseFloat(totalVolume),
       bottles_75cl: bottles75cl ? parseInt(bottles75cl) : 0,
       bottles_150cl: bottles150cl ? parseInt(bottles150cl) : 0,
+      storage_location: storageLocation.trim(),
       notes: notes.trim(),
       components: parsedComponents,
     });
@@ -92,6 +95,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
       total_volume: validation.data.total_volume,
       bottles_75cl: validation.data.bottles_75cl,
       bottles_150cl: validation.data.bottles_150cl,
+      storage_location: validation.data.storage_location,
       notes: validation.data.notes,
       components: validation.data.components,
     });
@@ -101,6 +105,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
     setTotalVolume("");
     setBottles75cl("");
     setBottles150cl("");
+    setStorageLocation("");
     setNotes("");
     setComponents([{ source_batch_id: "", percentage: "", volume_liters: "" }]);
     setOpen(false);
@@ -174,6 +179,17 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
                 placeholder="0"
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="storage">Storage Location</Label>
+            <Input
+              id="storage"
+              value={storageLocation}
+              onChange={(e) => setStorageLocation(e.target.value)}
+              placeholder="e.g., Rack A3, Cellar Room 2"
+              maxLength={200}
+            />
           </div>
 
           <div>

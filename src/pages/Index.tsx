@@ -995,6 +995,7 @@ const Index = () => {
                                 <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Volume</th>
                                 <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">75cl</th>
                                 <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">150cl</th>
+                                <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden md:table-cell">Location</th>
                                 <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden sm:table-cell">Created</th>
                               </tr>
                             </thead>
@@ -1023,6 +1024,9 @@ const Index = () => {
                                     <span className="font-semibold text-xs sm:text-sm text-foreground">
                                       {blend.bottles_150cl || 0}
                                     </span>
+                                  </td>
+                                  <td className="text-left py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden md:table-cell">
+                                    {blend.storage_location || <span className="italic text-muted-foreground/50">Not set</span>}
                                   </td>
                                   <td className="text-right py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">
                                     {new Date(blend.created_at).toLocaleDateString()}

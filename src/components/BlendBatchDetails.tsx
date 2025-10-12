@@ -29,6 +29,7 @@ interface BlendBatch {
   components: BlendComponent[];
   bottles_75cl?: number;
   bottles_150cl?: number;
+  storage_location?: string | null;
   attachments?: string[];
 }
 
@@ -46,6 +47,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
   const [totalVolume, setTotalVolume] = useState("");
   const [bottles75cl, setBottles75cl] = useState("");
   const [bottles150cl, setBottles150cl] = useState("");
+  const [storageLocation, setStorageLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,6 +60,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
       setTotalVolume(blend.total_volume.toString());
       setBottles75cl((blend.bottles_75cl || 0).toString());
       setBottles150cl((blend.bottles_150cl || 0).toString());
+      setStorageLocation(blend.storage_location || "");
       setNotes(blend.notes || "");
       setAttachments(blend.attachments || []);
       setIsEditing(false);
@@ -150,6 +153,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
           total_volume: volumeNum,
           bottles_75cl: bottles75,
           bottles_150cl: bottles150,
+          storage_location: storageLocation.trim() || null,
           notes: notes.trim() || null,
           attachments: attachments.length > 0 ? attachments : null
         })
@@ -243,6 +247,17 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
               </div>
 
               <div>
+                <Label htmlFor="storage-location">Storage Location</Label>
+                <Input
+                  id="storage-location"
+                  value={storageLocation}
+                  onChange={(e) => setStorageLocation(e.target.value)}
+                  placeholder="e.g., Rack A3, Cellar Room 2"
+                  maxLength={200}
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="blend-notes">Notes</Label>
                 <Textarea
                   id="blend-notes"
@@ -271,6 +286,7 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
                     setTotalVolume(blend.total_volume.toString());
                     setBottles75cl((blend.bottles_75cl || 0).toString());
                     setBottles150cl((blend.bottles_150cl || 0).toString());
+                    setStorageLocation(blend.storage_location || "");
                     setNotes(blend.notes || "");
                     setIsEditing(false);
                   }}
@@ -365,6 +381,14 @@ export function BlendBatchDetails({ blend, open, onOpenChange, onBlendUpdated, s
                 )}
               </div>
             </>
+          )}
+
+          {/* Storage Location - only show in display mode */}
+          {!isEditing && blend.storage_location && (
+            <div className="border border-border rounded-lg p-4">
+              <Label className="text-sm text-muted-foreground">Storage Location</Label>
+              <p className="text-base font-medium mt-1">{blend.storage_location}</p>
+            </div>
           )}
 
           {/* Components */}
