@@ -1028,39 +1028,8 @@ const Index = () => {
                     onAddGeneral={() => handleAddLog('Note', 'General')}
                   />
                   
-                  {/* Search and Filter */}
+                  {/* Organized Logs List */}
                   <div className="space-y-3 sm:space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Search notes, tags..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-8 sm:pl-10 text-sm"
-                        />
-                      </div>
-                      <Select value={stageFilter} onValueChange={setStageFilter}>
-                        <SelectTrigger className="w-full sm:w-[200px] text-sm">
-                          <SelectValue placeholder="All stages" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card border-border z-50 max-h-[300px]">
-                          <SelectItem value="All">All stages</SelectItem>
-                          {getAllowedStages(selectedBatch.currentStage).map((stage) => (
-                            <SelectItem key={stage} value={stage} className="text-sm">
-                              {stage}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button onClick={() => handleAddLog('Note', 'General')} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
-                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Add Note</span>
-                        <span className="sm:hidden">Add</span>
-                      </Button>
-                    </div>
-
-                    {/* Organized Logs List */}
                     {filteredLogs.length === 0 ? (
                       <Card className="p-8 sm:p-12 text-center border-dashed">
                         <p className="text-sm sm:text-base text-muted-foreground">
