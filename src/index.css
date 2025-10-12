@@ -86,6 +86,13 @@ All colors MUST be HSL.
     --info: 200 75% 55%;
     --info-foreground: 0 0% 100%;
   }
+
+  /* Custom breakpoint for extra small devices */
+  @media (min-width: 380px) {
+    .xs\:inline {
+      display: inline;
+    }
+  }
 }
 
 @layer base {

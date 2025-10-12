@@ -772,26 +772,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Apple className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
+      <header className="border-b border-border bg-card sticky top-0 z-50">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Apple className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary flex-shrink-0" />
+              <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
                 {userProfile?.full_name || user.email}
               </span>
               <Button 
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
+                size="sm"
                 onClick={() => setTastingDialogOpen(true)}
               >
-                <Award className="w-4 h-4 mr-2" />
-                New Tasting
+                <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">New </span>Tasting
               </Button>
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
-              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleSignOut} title="Sign Out">
+              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" onClick={handleSignOut} title="Sign Out">
                 <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>

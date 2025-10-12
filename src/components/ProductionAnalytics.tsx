@@ -82,207 +82,207 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
     : 0;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-foreground">Production Analytics</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-semibold text-foreground px-1">Production Analytics</h2>
 
       {/* Primary Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-success/10 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-success" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg flex-shrink-0">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Completion Rate</p>
-              <p className="text-3xl font-bold text-foreground">{completionRate}%</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Completion Rate</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{completionRate}%</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {completedBatches.length} of {batches.length} batches completed
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-primary" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg flex-shrink-0">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Volume</p>
-              <p className="text-3xl font-bold text-foreground">{totalProductionVolume.toFixed(1)}L</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Volume</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalProductionVolume.toFixed(1)}L</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Avg {avgBatchSize}L per batch
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-accent/10 rounded-lg">
-              <CalendarDays className="w-6 h-6 text-accent" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-accent/10 rounded-lg flex-shrink-0">
+              <CalendarDays className="w-5 h-5 sm:w-6 sm:h-6 text-accent" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">This Year</p>
-              <p className="text-3xl font-bold text-foreground">{currentYearBatches.length}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">This Year</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{currentYearBatches.length}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Batches started in {new Date().getFullYear()}
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-chart-2/10 rounded-lg">
-              <Wine className="w-6 h-6 text-chart-2" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-chart-2/10 rounded-lg flex-shrink-0">
+              <Wine className="w-5 h-5 sm:w-6 sm:h-6 text-chart-2" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Blends</p>
-              <p className="text-3xl font-bold text-foreground">{blendBatches.length}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Blends</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{blendBatches.length}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Created blend batches
           </p>
         </Card>
       </div>
 
       {/* Production Efficiency Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-warning/10 rounded-lg">
-              <Timer className="w-6 h-6 text-warning" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg flex-shrink-0">
+              <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Production Time</p>
-              <p className="text-3xl font-bold text-foreground">{avgProductionDays}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Avg Production Time</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{avgProductionDays}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Days from start to completion
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-chart-3/10 rounded-lg">
-              <Zap className="w-6 h-6 text-chart-3" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-chart-3/10 rounded-lg flex-shrink-0">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Active Stages</p>
-              <p className="text-3xl font-bold text-foreground">{activeStages}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Active Stages</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{activeStages}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Production phases in progress
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Activity className="w-6 h-6 text-primary" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg flex-shrink-0">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Batches in Progress</p>
-              <p className="text-3xl font-bold text-foreground">{batchesInProgress}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Batches in Progress</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{batchesInProgress}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Currently active batches
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-success/10 rounded-lg">
-              <Target className="w-6 h-6 text-success" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg flex-shrink-0">
+              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Quality Score</p>
-              <p className="text-3xl font-bold text-foreground">
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Avg Quality Score</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">
                 {avgTastingScore > 0 ? avgTastingScore : "N/A"}
               </p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {tastingAnalyses.length > 0 ? `From ${tastingAnalyses.length} tastings` : "No tastings yet"}
           </p>
         </Card>
       </div>
 
       {/* Bottle Inventory Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-success/10 rounded-lg">
-              <Package className="w-6 h-6 text-success" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg flex-shrink-0">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">75cl Bottles in Cellar</p>
-              <p className="text-3xl font-bold text-foreground">{total75clBottles}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">75cl Bottles in Cellar</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{total75clBottles}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Total standard bottles available
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-chart-2/10 rounded-lg">
-              <Package className="w-6 h-6 text-chart-2" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-chart-2/10 rounded-lg flex-shrink-0">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-chart-2" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">150cl Bottles in Cellar</p>
-              <p className="text-3xl font-bold text-foreground">{total150clBottles}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">150cl Bottles in Cellar</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{total150clBottles}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Total magnum bottles available
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-chart-1/10 rounded-lg">
-              <FlaskConical className="w-6 h-6 text-chart-1" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-chart-1/10 rounded-lg flex-shrink-0">
+              <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 text-chart-1" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Volume Bottled</p>
-              <p className="text-3xl font-bold text-foreground">{totalVolumeBottled.toFixed(1)}L</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Volume Bottled</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalVolumeBottled.toFixed(1)}L</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Total litres in bottles
           </p>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-warning/10 rounded-lg">
-              <Boxes className="w-6 h-6 text-warning" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg flex-shrink-0">
+              <Boxes className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Blend Size</p>
-              <p className="text-3xl font-bold text-foreground">{avgBlendSize}L</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Avg Blend Size</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{avgBlendSize}L</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Average volume per blend
           </p>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {topVariety && (
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-foreground">
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Variety Breakdown
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {Object.entries(varietyBreakdown)
                 .sort((a, b) => b[1] - a[1])
                 .map(([variety, volume]) => {
@@ -290,9 +290,9 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                     (volume / batches.reduce((sum, b) => sum + b.volume, 0)) * 100
                   );
                   return (
-                    <div key={variety} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className="font-medium text-foreground">{variety}</span>
+                    <div key={variety} className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <span className="font-medium text-sm sm:text-base text-foreground truncate">{variety}</span>
                         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                           <div
                             className="h-full bg-primary rounded-full transition-all"
@@ -300,7 +300,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                           />
                         </div>
                       </div>
-                      <span className="text-sm text-muted-foreground ml-4">
+                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-2">
                         {volume}L ({percentage}%)
                       </span>
                     </div>
@@ -311,14 +311,14 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
         )}
 
         {topTastingScores.length > 0 && (
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Award className="w-5 h-5 text-chart-3" />
-              <h3 className="text-lg font-semibold text-foreground">
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-chart-3 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground">
                 Top Tasting Scores
               </h3>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {topTastingScores.map((analysis, index) => {
                 const getScoreColor = (score: number) => {
                   if (score >= 90) return "text-chart-3";
@@ -328,19 +328,19 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                 };
                 
                 return (
-                  <div key={analysis.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-background text-sm font-semibold">
+                  <div key={analysis.id} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-background text-xs sm:text-sm font-semibold flex-shrink-0">
                         {index + 1}
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{analysis.blend_name}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm sm:text-base text-foreground truncate">{analysis.blend_name}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(analysis.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className={`text-2xl font-bold ${getScoreColor(analysis.overall_score)}`}>
+                    <div className={`text-xl sm:text-2xl font-bold ${getScoreColor(analysis.overall_score)} ml-2 flex-shrink-0`}>
                       {analysis.overall_score}
                     </div>
                   </div>
