@@ -137,7 +137,7 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
           </div>
         </div>
 
-        <div className="pt-2">
+        <div>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-muted-foreground">Progress</span>
             <span className="font-medium text-foreground">{batch.progress}%</span>
