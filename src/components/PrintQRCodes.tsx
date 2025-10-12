@@ -19,7 +19,8 @@ interface PrintQRCodesProps {
 
 export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
   const getBlendUrl = (blendId: string) => {
-    return `${window.location.origin}/blend/${blendId}`;
+    const base = (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, '') || window.location.origin;
+    return `${base}/blend/${blendId}`;
   };
 
   const handlePrint = () => {
