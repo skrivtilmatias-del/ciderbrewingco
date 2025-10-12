@@ -88,10 +88,10 @@ export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
 
         {(batch.yeast_type || batch.target_og || batch.target_ph) && (
           <p className="text-sm text-muted-foreground pt-2 border-t border-border">
-            {batch.variety && <span>Origin: {batch.variety}</span>}
-            {batch.target_ph && <span> PH: {batch.target_ph}</span>}
-            {batch.target_og && <span> OG: {Math.round(batch.target_og * 1000)}</span>}
-            {batch.yeast_type && <span> YH: {batch.yeast_type}</span>}
+            Origin: {batch.variety}
+            {batch.target_ph && <> PH: {batch.target_ph}</>}
+            {batch.target_og && <> OG: {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</>}
+            {batch.yeast_type && <> YH: {batch.yeast_type}</>}
           </p>
         )}
       </div>
