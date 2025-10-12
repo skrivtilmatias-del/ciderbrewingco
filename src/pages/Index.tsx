@@ -13,7 +13,6 @@ import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { BatchOverviewHeader } from "@/components/BatchOverviewHeader";
-import { BatchTimeline } from "@/components/BatchTimeline";
 import { ParameterTrendChart } from "@/components/ParameterTrendChart";
 import { QuickActionsPanel } from "@/components/QuickActionsPanel";
 import { SmartInsights } from "@/components/SmartInsights";
@@ -877,24 +876,12 @@ const Index = () => {
                     onViewDetails={() => setDetailsOpen(true)}
                   />
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* Timeline - Takes 2 columns on large screens */}
-                    <div className="lg:col-span-2">
-                      <BatchTimeline
-                        currentStage={selectedBatch.currentStage}
-                        stageHistory={[]}
-                        startDate={selectedBatch.startDate}
-                      />
-                    </div>
 
-                    {/* Smart Insights - Takes 1 column */}
-                    <div>
-                      <SmartInsights
-                        batch={selectedBatch}
-                        logs={logs}
-                      />
-                    </div>
-                  </div>
+                  {/* Smart Insights */}
+                  <SmartInsights
+                    batch={selectedBatch}
+                    logs={logs}
+                  />
 
                   {/* Parameter Trend Charts */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
