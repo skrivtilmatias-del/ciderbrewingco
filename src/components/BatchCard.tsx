@@ -124,16 +124,19 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
       </div>
 
       <div className="space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Volume</span>
-          <span className="font-medium text-foreground">{batch.volume}L</span>
-        </div>
-        
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Started</span>
-          <span className="font-medium text-foreground">
-            {new Date(batch.startDate).toLocaleDateString()}
-          </span>
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Volume</span>
+              <span className="font-medium text-foreground">{batch.volume}L</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Started</span>
+              <span className="font-medium text-foreground">
+                {new Date(batch.startDate).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="pt-2">
