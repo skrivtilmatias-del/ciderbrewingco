@@ -69,6 +69,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [batchName, setBatchName] = useState(batch?.name || "");
   const [variety, setVariety] = useState(batch?.variety || "");
+  const [appleOrigin, setAppleOrigin] = useState(batch?.apple_origin || "");
   const [volume, setVolume] = useState(batch?.volume.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
   const [yeastType, setYeastType] = useState(batch?.yeast_type || "");
@@ -81,6 +82,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     if (batch) {
       setBatchName(batch.name);
       setVariety(batch.variety);
+      setAppleOrigin(batch.apple_origin || "");
       setVolume(batch.volume.toString());
       setStartDate(batch.startDate);
       setYeastType(batch.yeast_type || "");
@@ -141,6 +143,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
         .update({ 
           name: batchName.trim(),
           variety: variety.trim(),
+          apple_origin: appleOrigin.trim() || null,
           volume: parseFloat(volume),
           started_at: startDate,
           yeast_type: yeastType.trim() || null,
@@ -200,6 +203,16 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                   id="variety"
                   value={variety}
                   onChange={(e) => setVariety(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="appleOrigin" className="text-sm font-medium">Apple Origin</Label>
+                <Input
+                  id="appleOrigin"
+                  placeholder="e.g., Somerset Orchard"
+                  value={appleOrigin}
+                  onChange={(e) => setAppleOrigin(e.target.value)}
                   className="mt-1"
                 />
               </div>
