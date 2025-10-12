@@ -743,45 +743,6 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
-                <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Active Batches</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground">{activeBatches}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-info/10 rounded-lg">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-info" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Total Volume</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalVolume}L</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
-                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Avg. Progress</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground">{avgProgress}%</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 sm:mb-8">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap justify-start gap-1">
