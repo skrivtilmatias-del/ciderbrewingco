@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -290,6 +290,7 @@ export function BlendBatchDetailsTabbed({
               <Wine className="w-6 h-6 text-primary" />
               <div>
                 <DialogTitle className="text-2xl">{blend.name}</DialogTitle>
+                <DialogDescription className="sr-only">Edit blend details, tasting notes, inventory and images.</DialogDescription>
                 {averageScore && (
                   <div className="flex items-center gap-2 mt-1">
                     {renderStars(averageScore)}
