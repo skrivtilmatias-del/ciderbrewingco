@@ -1,19 +1,23 @@
 export const STAGES = [
   "Harvest",
-  "Sorting & Washing",
+  "Sorting",
+  "Washing",
   "Milling",
   "Pressing",
-  "Settling/Enzymes",
-  "Pitching & Fermentation",
+  "Settling",
+  "Enzymes",
+  "Pitching",
+  "Fermentation",
   "Cold Crash",
   "Racking",
   "Malolactic",
-  "Stabilisation/Finings",
+  "Stabilisation",
   "Blending",
   "Backsweetening",
   "Bottling",
-  "Conditioning/Lees Aging",
-  "Tasting/QA"
+  "Conditioning",
+  "Lees Aging",
+  "Tasting"
 ] as const;
 
 export type CiderStage = typeof STAGES[number];
@@ -24,10 +28,15 @@ export const DEFAULT_CHECKLISTS: Record<string, string[]> = {
     "Measure starch/iodine if needed",
     "Note fruit condition (brix, firmness, rot %)"
   ],
-  "Sorting & Washing": [
+  Sorting: [
     "Remove rotten/moldy fruit",
-    "Rinse and inspect crates",
+    "Inspect crates",
     "Log losses (%)"
+  ],
+  Washing: [
+    "Rinse thoroughly",
+    "Check water quality",
+    "Document wash process"
   ],
   Milling: [
     "Target grist texture logged",
@@ -37,12 +46,17 @@ export const DEFAULT_CHECKLISTS: Record<string, string[]> = {
   Pressing: [
     "Press pressure profile",
     "Yield (L/kg)",
-    "Clarify plan (settle/enzymes)"
+    "Clarify plan"
   ],
-  "Pitching & Fermentation": [
+  Pitching: [
     "Yeast strain, lot, rehydration",
     "Nutrients (YAN target)",
-    "Fermentation temp target"
+    "Starter preparation"
+  ],
+  Fermentation: [
+    "Fermentation temp target",
+    "Monitor gravity drop",
+    "Track fermentation curve"
   ],
   Racking: [
     "Rack date & lees volume",
@@ -59,7 +73,7 @@ export const DEFAULT_CHECKLISTS: Record<string, string[]> = {
     "Prime sugar or tirage",
     "Closure & lot codes"
   ],
-  "Tasting/QA": [
+  Tasting: [
     "Appearance, aroma, palate",
     "Faults check",
     "Action items"
@@ -73,14 +87,16 @@ export const ROLE_CHECKLISTS: Record<string, Record<string, string[]>> = {
     Bottling: ["Filter integrity test", "Closures sanitized", "Line purge complete"]
   },
   Lab: {
-    "Pitching & Fermentation": ["YAN measured", "Viability/Vitality check", "Gravity & pH logged"],
-    "Tasting/QA": ["Triangle test scheduled", "SO₂ (free/total) check", "Turbidity noted"],
+    Pitching: ["YAN measured", "Viability/Vitality check", "Starter preparation"],
+    Fermentation: ["Gravity & pH logged", "Temperature monitoring", "Nutrient schedule"],
+    Tasting: ["Triangle test scheduled", "SO₂ (free/total) check", "Turbidity noted"],
     Blending: ["Bench trials documented", "Post-blend pH/TA", "Stability tests"]
   }
 };
 
 export const STAGE_TEMPLATES: Record<string, string> = {
-  "Pitching & Fermentation": `Yeast: \nNutrient plan (YAN target): \nTemp target: \nOG: \npH: \nTA (g/L): \nNotes:`,
+  Pitching: `Yeast: \nNutrient plan (YAN target): \nStarter volume: \nOG: \npH: \nTA (g/L): \nNotes:`,
+  Fermentation: `Temp target: \nGravity readings: \nFermentation progress: \nNotes:`,
   Bottling: `Clarified by: \nSO₂ free/total: \nPrime sugar: \nTarget CO₂ vols: \nFinal gravity: \nActions:`,
-  "Tasting/QA": `Appearance: \nAroma: \nPalate: \nBalance/Structure: \nFaults: \nSummary:`
+  Tasting: `Appearance: \nAroma: \nPalate: \nBalance/Structure: \nFaults: \nSummary:`
 };
