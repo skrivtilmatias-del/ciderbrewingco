@@ -1161,7 +1161,7 @@ const Index = () => {
                 ) : (
                   <div className="space-y-4">
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <Card className="p-6">
                         <div className="flex items-center gap-4">
                           <div className="p-3 bg-primary/10 rounded-lg">
@@ -1170,6 +1170,20 @@ const Index = () => {
                           <div>
                             <p className="text-sm text-muted-foreground">Total Blends</p>
                             <p className="text-3xl font-bold text-foreground">{blendBatches.length}</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-accent/10 rounded-lg">
+                            <FlaskConical className="w-6 h-6 text-accent" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Total Liters</p>
+                            <p className="text-3xl font-bold text-foreground">
+                              {blendBatches.reduce((sum, b) => sum + (b.total_volume || 0), 0).toFixed(1)}
+                            </p>
                           </div>
                         </div>
                       </Card>
