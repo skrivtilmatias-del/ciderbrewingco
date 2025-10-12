@@ -691,29 +691,15 @@ const Index = () => {
               <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-none">
                 {userProfile?.full_name || user.email}
               </span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-                    <Settings2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="truncate max-w-[100px] sm:max-w-[150px]">{selectedBatch?.name || "Select Batch"}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                  <DropdownMenuLabel>Switch Batch</DropdownMenuLabel>
-                  {batches.map((b) => (
-                    <DropdownMenuItem
-                      key={b.id}
-                      onClick={() => handleBatchSelect(b)}
-                    >
-                      {b.name}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => selectedBatch && handleDeleteBatch(selectedBatch.id)}>
-                    Delete Current Batch
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs sm:text-sm"
+                onClick={() => setTastingDialogOpen(true)}
+              >
+                <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                New Tasting
+              </Button>
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
               <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleSignOut} title="Sign Out">
                 <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -863,6 +849,33 @@ const Index = () => {
             <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
               {selectedBatch ? (
                 <>
+                  {/* Batch Selector */}
+                  <div className="flex justify-start">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                          <FlaskConical className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="truncate max-w-[100px] sm:max-w-[150px]">{selectedBatch?.name || "Select Batch"}</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56 bg-background z-50">
+                        <DropdownMenuLabel>Switch Batch</DropdownMenuLabel>
+                        {batches.map((b) => (
+                          <DropdownMenuItem
+                            key={b.id}
+                            onClick={() => handleBatchSelect(b)}
+                          >
+                            {b.name}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => selectedBatch && handleDeleteBatch(selectedBatch.id)}>
+                          Delete Current Batch
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
                   {/* Stage Progression */}
                   <StageProgressionUI
                     currentStage={selectedBatch.currentStage}
