@@ -47,6 +47,7 @@ const Index = () => {
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [batchSearchQuery, setBatchSearchQuery] = useState("");
+  const [tastingSearchQuery, setTastingSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
@@ -1175,23 +1176,50 @@ const Index = () => {
           )}
 
           <TabsContent value="tasting" className="mt-4 sm:mt-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Tasting Analysis</h2>
-              <Button size="sm" onClick={handleNewTasting}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Tasting
-              </Button>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-4">Tasting Analysis</h2>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tastings by blend name, notes, or descriptors..."
+                  value={tastingSearchQuery}
+                  onChange={(e) => setTastingSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-              {tastingAnalyses.length === 0 ? (
+              {tastingAnalyses.filter((analysis) => {
+                if (!tastingSearchQuery) return true;
+                const query = tastingSearchQuery.toLowerCase();
+                const blendName = blendBatches.find(b => b.id === analysis.blend_batch_id)?.name || '';
+                return (
+                  blendName.toLowerCase().includes(query) ||
+                  analysis.notes?.toLowerCase().includes(query) ||
+                  analysis.colour?.toLowerCase().includes(query) ||
+                  analysis.palate?.toLowerCase().includes(query) ||
+                  analysis.taste?.toLowerCase().includes(query)
+                );
+              }).length === 0 ? (
                 <Card className="col-span-full p-12 text-center border-dashed">
                   <p className="text-muted-foreground">
-                    No tasting analyses yet. Click "New Tasting" to get started.
+                    {tastingSearchQuery ? "No tastings match your search." : "No tasting analyses yet. Click 'New Tasting' in the header to get started."}
                   </p>
                 </Card>
               ) : (
-                tastingAnalyses.map((analysis) => (
+                tastingAnalyses.filter((analysis) => {
+                  if (!tastingSearchQuery) return true;
+                  const query = tastingSearchQuery.toLowerCase();
+                  const blendName = blendBatches.find(b => b.id === analysis.blend_batch_id)?.name || '';
+                  return (
+                    blendName.toLowerCase().includes(query) ||
+                    analysis.notes?.toLowerCase().includes(query) ||
+                    analysis.colour?.toLowerCase().includes(query) ||
+                    analysis.palate?.toLowerCase().includes(query) ||
+                    analysis.taste?.toLowerCase().includes(query)
+                  );
+                }).map((analysis) => (
                   <TastingAnalysisCard
                     key={analysis.id}
                     analysis={analysis}
