@@ -155,6 +155,10 @@ const Index = () => {
         progress: batch.progress,
         notes: batch.notes || undefined,
         attachments: batch.attachments || undefined,
+        target_og: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
+        target_fg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
+        target_ph: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
+        target_end_ph: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
       }));
 
       setBatches(formattedBatches);
@@ -414,6 +418,10 @@ const Index = () => {
             notes: newBatch.notes,
             started_at: newBatch.startDate,
             user_id: user.id,
+            target_og: newBatch.target_og,
+            target_fg: newBatch.target_fg,
+            target_ph: newBatch.target_ph,
+            target_end_ph: newBatch.target_end_ph,
           },
         ])
         .select()
@@ -430,6 +438,10 @@ const Index = () => {
         currentStage: data.current_stage as Batch["currentStage"],
         progress: data.progress,
         notes: data.notes || undefined,
+        target_og: data.target_og ? parseFloat(data.target_og.toString()) : undefined,
+        target_fg: data.target_fg ? parseFloat(data.target_fg.toString()) : undefined,
+        target_ph: data.target_ph ? parseFloat(data.target_ph.toString()) : undefined,
+        target_end_ph: data.target_end_ph ? parseFloat(data.target_end_ph.toString()) : undefined,
       };
 
       setBatches([formattedBatch, ...batches]);

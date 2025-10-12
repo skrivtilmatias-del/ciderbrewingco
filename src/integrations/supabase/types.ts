@@ -124,6 +124,7 @@ export type Database = {
           progress: number
           started_at: string
           style: string | null
+          target_end_ph: number | null
           target_fg: number | null
           target_og: number | null
           target_ph: number | null
@@ -146,6 +147,7 @@ export type Database = {
           progress?: number
           started_at?: string
           style?: string | null
+          target_end_ph?: number | null
           target_fg?: number | null
           target_og?: number | null
           target_ph?: number | null
@@ -168,6 +170,7 @@ export type Database = {
           progress?: number
           started_at?: string
           style?: string | null
+          target_end_ph?: number | null
           target_fg?: number | null
           target_og?: number | null
           target_ph?: number | null

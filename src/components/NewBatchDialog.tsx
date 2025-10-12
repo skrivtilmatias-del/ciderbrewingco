@@ -28,7 +28,6 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate input using Zod
     const validation = batchSchema.safeParse({
       name: formData.name.trim(),
       variety: formData.variety.trim(),
@@ -36,6 +35,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       target_og: formData.startOG ? parseFloat(formData.startOG) : undefined,
       target_fg: formData.endOG ? parseFloat(formData.endOG) : undefined,
       target_ph: formData.startPH ? parseFloat(formData.startPH) : undefined,
+      target_end_ph: formData.endPH ? parseFloat(formData.endPH) : undefined,
       notes: formData.notes.trim() || undefined,
     });
 
@@ -52,6 +52,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       target_og: validation.data.target_og,
       target_fg: validation.data.target_fg,
       target_ph: validation.data.target_ph,
+      target_end_ph: validation.data.target_end_ph,
       startDate: new Date().toISOString(),
       currentStage: "Harvest" as const,
       progress: 0,

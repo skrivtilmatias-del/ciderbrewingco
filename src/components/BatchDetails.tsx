@@ -70,6 +70,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [variety, setVariety] = useState(batch?.variety || "");
   const [volume, setVolume] = useState(batch?.volume.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
+  const [targetOG, setTargetOG] = useState(batch?.target_og?.toString() || "");
+  const [targetFG, setTargetFG] = useState(batch?.target_fg?.toString() || "");
+  const [targetPH, setTargetPH] = useState(batch?.target_ph?.toString() || "");
+  const [targetEndPH, setTargetEndPH] = useState(batch?.target_end_ph?.toString() || "");
 
   useEffect(() => {
     if (batch) {
@@ -77,6 +81,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
       setVariety(batch.variety);
       setVolume(batch.volume.toString());
       setStartDate(batch.startDate);
+      setTargetOG(batch.target_og?.toString() || "");
+      setTargetFG(batch.target_fg?.toString() || "");
+      setTargetPH(batch.target_ph?.toString() || "");
+      setTargetEndPH(batch.target_end_ph?.toString() || "");
       setNotes(batch.notes || "");
       setAttachments(batch.attachments || []);
     }
@@ -131,7 +139,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           name: batchName.trim(),
           variety: variety.trim(),
           volume: parseFloat(volume),
-          started_at: startDate
+          started_at: startDate,
+          target_og: targetOG ? parseFloat(targetOG) : null,
+          target_fg: targetFG ? parseFloat(targetFG) : null,
+          target_ph: targetPH ? parseFloat(targetPH) : null,
+          target_end_ph: targetEndPH ? parseFloat(targetEndPH) : null
         })
         .eq("id", batch.id);
 
@@ -210,6 +222,61 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                   />
                 </div>
               </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="targetOG" className="text-sm font-medium">Start OG</Label>
+                  <Input
+                    id="targetOG"
+                    type="number"
+                    step="0.001"
+                    placeholder="e.g., 1.050"
+                    value={targetOG}
+                    onChange={(e) => setTargetOG(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="targetFG" className="text-sm font-medium">End OG</Label>
+                  <Input
+                    id="targetFG"
+                    type="number"
+                    step="0.001"
+                    placeholder="e.g., 1.000"
+                    value={targetFG}
+                    onChange={(e) => setTargetFG(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="targetPH" className="text-sm font-medium">Start PH</Label>
+                  <Input
+                    id="targetPH"
+                    type="number"
+                    step="0.1"
+                    placeholder="e.g., 3.5"
+                    value={targetPH}
+                    onChange={(e) => setTargetPH(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="targetEndPH" className="text-sm font-medium">End PH</Label>
+                  <Input
+                    id="targetEndPH"
+                    type="number"
+                    step="0.1"
+                    placeholder="e.g., 3.8"
+                    value={targetEndPH}
+                    onChange={(e) => setTargetEndPH(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
               <div className="flex gap-2 justify-end pt-2">
                 <Button
                   variant="outline"
@@ -218,6 +285,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     setVariety(batch.variety);
                     setVolume(batch.volume.toString());
                     setStartDate(batch.startDate);
+                    setTargetOG(batch.target_og?.toString() || "");
+                    setTargetFG(batch.target_fg?.toString() || "");
+                    setTargetPH(batch.target_ph?.toString() || "");
+                    setTargetEndPH(batch.target_end_ph?.toString() || "");
                     setIsEditingDetails(false);
                   }}
                 >
@@ -260,6 +331,35 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                   </p>
                 </div>
               </div>
+
+              {(batch.target_og || batch.target_fg || batch.target_ph || batch.target_end_ph) && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2 border-t">
+                  {batch.target_og && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Start OG</p>
+                      <p className="text-sm font-semibold">{batch.target_og}</p>
+                    </div>
+                  )}
+                  {batch.target_fg && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">End OG</p>
+                      <p className="text-sm font-semibold">{batch.target_fg}</p>
+                    </div>
+                  )}
+                  {batch.target_ph && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Start PH</p>
+                      <p className="text-sm font-semibold">{batch.target_ph}</p>
+                    </div>
+                  )}
+                  {batch.target_end_ph && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">End PH</p>
+                      <p className="text-sm font-semibold">{batch.target_end_ph}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 

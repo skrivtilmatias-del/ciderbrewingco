@@ -14,6 +14,10 @@ export interface Batch {
   progress: number;
   notes?: string;
   attachments?: string[];
+  target_og?: number;
+  target_fg?: number;
+  target_ph?: number;
+  target_end_ph?: number;
 }
 
 const getStageIcon = (stage: string) => {

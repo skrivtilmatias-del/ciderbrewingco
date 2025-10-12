@@ -71,6 +71,11 @@ export const batchSchema = z.object({
     .min(0)
     .max(14)
     .optional(),
+  target_end_ph: z
+    .number()
+    .min(0)
+    .max(14)
+    .optional(),
   notes: z
     .string()
     .trim()
