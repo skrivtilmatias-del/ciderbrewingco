@@ -261,19 +261,30 @@ const Index = () => {
           created_at,
           blend_batches:blend_batch_id (
             name
-          ),
-          profiles:user_id (
-            full_name
           )
         `)
         .order("created_at", { ascending: false });
 
       if (tastingError) throw tastingError;
 
+      // Fetch all unique user profiles
+      const userIds = [...new Set(tastingData.map((t: any) => t.user_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user profiles for quick lookup
+      const profilesMap = new Map(
+        profilesData?.map((p: any) => [p.id, p.full_name]) || []
+      );
+
       const formattedAnalyses = tastingData.map((analysis: any) => ({
         ...analysis,
         blend_name: analysis.blend_batches?.name || "Unknown Blend",
-        user_name: analysis.profiles?.full_name || "Unknown User",
+        user_name: profilesMap.get(analysis.user_id) || "Unknown User",
       }));
 
       setTastingAnalyses(formattedAnalyses);
