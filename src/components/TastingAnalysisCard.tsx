@@ -5,8 +5,9 @@ import { Wine, Trash2, Edit } from "lucide-react";
 
 interface TastingAnalysis {
   id: string;
-  blend_batch_id: string;
-  blend_name: string;
+  blend_batch_id: string | null;
+  competitor_brand: string | null;
+  blend_name?: string;
   taste: string | null;
   colour: string | null;
   palate: string | null;
@@ -34,9 +35,14 @@ export function TastingAnalysisCard({ analysis, onDelete, onEdit }: TastingAnaly
     <Card className="hover:border-primary transition-colors">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Wine className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-lg">{analysis.blend_name}</h3>
+            <h3 className="font-semibold text-lg">
+              {analysis.competitor_brand || analysis.blend_name}
+            </h3>
+            {analysis.competitor_brand && (
+              <Badge variant="secondary" className="text-xs">Competitor</Badge>
+            )}
           </div>
           <div className="flex gap-2">
             <Button

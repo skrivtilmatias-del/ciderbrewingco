@@ -36,14 +36,18 @@ const PALATE_DESCRIPTORS = [
 ];
 
 const tastingSchema = z.object({
-  blend_batch_id: z.string().min(1, "Blend batch is required"),
+  blend_batch_id: z.string().optional(),
+  competitor_brand: z.string().optional(),
   taste: z.string().max(500, "Taste must be less than 500 characters").optional(),
   colour: z.string().max(500, "Colour must be less than 500 characters").optional(),
   palate: z.string().max(500, "Palate must be less than 500 characters").optional(),
   overall_score: z.number().min(0).max(100).optional(),
   notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
   attachments: z.array(z.string()).optional(),
-});
+}).refine(
+  (data) => data.blend_batch_id || data.competitor_brand,
+  { message: "Either blend batch or competitor brand is required" }
+);
 
 interface BlendBatch {
   id: string;
@@ -52,7 +56,8 @@ interface BlendBatch {
 
 interface TastingAnalysis {
   id: string;
-  blend_batch_id: string;
+  blend_batch_id: string | null;
+  competitor_brand: string | null;
   taste: string | null;
   colour: string | null;
   palate: string | null;
@@ -76,7 +81,9 @@ export function TastingAnalysisDialog({
   existingAnalysis,
   onSave 
 }: TastingAnalysisDialogProps) {
+  const [sourceType, setSourceType] = useState<"blend" | "competitor">("blend");
   const [blendBatchId, setBlendBatchId] = useState("");
+  const [competitorBrand, setCompetitorBrand] = useState("");
   const [taste, setTaste] = useState("");
   const [colour, setColour] = useState("");
   const [palate, setPalate] = useState("");
@@ -87,7 +94,15 @@ export function TastingAnalysisDialog({
 
   useEffect(() => {
     if (existingAnalysis) {
-      setBlendBatchId(existingAnalysis.blend_batch_id);
+      if (existingAnalysis.blend_batch_id) {
+        setSourceType("blend");
+        setBlendBatchId(existingAnalysis.blend_batch_id);
+        setCompetitorBrand("");
+      } else if (existingAnalysis.competitor_brand) {
+        setSourceType("competitor");
+        setCompetitorBrand(existingAnalysis.competitor_brand);
+        setBlendBatchId("");
+      }
       setTaste(existingAnalysis.taste || "");
       setColour(existingAnalysis.colour || "");
       setPalate(existingAnalysis.palate || "");
@@ -100,7 +115,9 @@ export function TastingAnalysisDialog({
   }, [existingAnalysis, open]);
 
   const resetForm = () => {
+    setSourceType("blend");
     setBlendBatchId("");
+    setCompetitorBrand("");
     setTaste("");
     setColour("");
     setPalate("");
@@ -125,7 +142,8 @@ export function TastingAnalysisDialog({
     setErrors([]);
 
     const validation = tastingSchema.safeParse({
-      blend_batch_id: blendBatchId,
+      blend_batch_id: sourceType === "blend" ? blendBatchId : undefined,
+      competitor_brand: sourceType === "competitor" ? competitorBrand.trim() : undefined,
       taste: taste.trim() || undefined,
       colour: colour.trim() || undefined,
       palate: palate.trim() || undefined,
@@ -163,23 +181,53 @@ export function TastingAnalysisDialog({
           )}
 
           <div>
-            <Label htmlFor="blend">Blend Batch</Label>
-            <Select 
-              value={blendBatchId} 
-              onValueChange={setBlendBatchId}
-              disabled={!!existingAnalysis}
-            >
-              <SelectTrigger id="blend">
-                <SelectValue placeholder="Select blend batch" />
-              </SelectTrigger>
-              <SelectContent>
-                {blendBatches.map((blend) => (
-                  <SelectItem key={blend.id} value={blend.id}>
-                    {blend.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Tasting Source</Label>
+            <div className="flex gap-2 mb-2">
+              <Button
+                type="button"
+                variant={sourceType === "blend" ? "default" : "outline"}
+                onClick={() => setSourceType("blend")}
+                disabled={!!existingAnalysis}
+                className="flex-1"
+              >
+                Blend Batch
+              </Button>
+              <Button
+                type="button"
+                variant={sourceType === "competitor" ? "default" : "outline"}
+                onClick={() => setSourceType("competitor")}
+                disabled={!!existingAnalysis}
+                className="flex-1"
+              >
+                Competitor Brand
+              </Button>
+            </div>
+
+            {sourceType === "blend" ? (
+              <Select 
+                value={blendBatchId} 
+                onValueChange={setBlendBatchId}
+                disabled={!!existingAnalysis}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select blend batch" />
+                </SelectTrigger>
+                <SelectContent>
+                  {blendBatches.map((blend) => (
+                    <SelectItem key={blend.id} value={blend.id}>
+                      {blend.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                placeholder="Enter competitor brand name"
+                value={competitorBrand}
+                onChange={(e) => setCompetitorBrand(e.target.value)}
+                disabled={!!existingAnalysis}
+              />
+            )}
           </div>
 
           <div>

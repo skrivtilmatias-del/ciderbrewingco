@@ -299,8 +299,9 @@ export type Database = {
       tasting_analysis: {
         Row: {
           attachments: string[] | null
-          blend_batch_id: string
+          blend_batch_id: string | null
           colour: string | null
+          competitor_brand: string | null
           created_at: string
           id: string
           notes: string | null
@@ -312,8 +313,9 @@ export type Database = {
         }
         Insert: {
           attachments?: string[] | null
-          blend_batch_id: string
+          blend_batch_id?: string | null
           colour?: string | null
+          competitor_brand?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -325,8 +327,9 @@ export type Database = {
         }
         Update: {
           attachments?: string[] | null
-          blend_batch_id?: string
+          blend_batch_id?: string | null
           colour?: string | null
+          competitor_brand?: string | null
           created_at?: string
           id?: string
           notes?: string | null
