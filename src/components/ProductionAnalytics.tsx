@@ -50,12 +50,6 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
 
   return (
     <div className="space-y-6">
-      <AIInsights 
-        batches={batches} 
-        blendBatches={blendBatches} 
-        tastingAnalyses={tastingAnalyses}
-      />
-
       <h2 className="text-2xl font-semibold text-foreground">Production Analytics</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -227,6 +221,12 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
           </Card>
         )}
       </div>
+
+      <AIInsights 
+        batches={batches} 
+        blendBatches={blendBatches} 
+        tastingAnalyses={tastingAnalyses}
+      />
     </div>
   );
 };
