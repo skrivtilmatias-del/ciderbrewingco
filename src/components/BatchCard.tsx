@@ -86,9 +86,12 @@ export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
           <Progress value={batch.progress} className="h-2" />
         </div>
 
-        {batch.notes && (
-          <p className="text-sm text-muted-foreground italic pt-2 border-t border-border">
-            {batch.notes}
+        {(batch.yeast_type || batch.target_og || batch.target_ph) && (
+          <p className="text-sm text-muted-foreground pt-2 border-t border-border">
+            {batch.variety && <span>Origin: {batch.variety}</span>}
+            {batch.target_ph && <span> PH: {batch.target_ph}</span>}
+            {batch.target_og && <span> OG: {Math.round(batch.target_og * 1000)}</span>}
+            {batch.yeast_type && <span> YH: {batch.yeast_type}</span>}
           </p>
         )}
       </div>
