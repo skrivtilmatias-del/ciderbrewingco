@@ -1151,11 +1151,6 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="cellar" className="mt-4 sm:mt-6">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-semibold text-foreground mb-2">Cellar Overview</h2>
-                  <p className="text-sm text-muted-foreground">Complete inventory of bottled blends</p>
-                </div>
-
                 {blendBatches.length === 0 ? (
                   <Card className="p-12 text-center border-dashed">
                     <Warehouse className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
