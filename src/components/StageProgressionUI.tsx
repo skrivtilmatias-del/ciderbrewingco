@@ -64,12 +64,7 @@ export const StageProgressionUI = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base sm:text-lg">
-          Production Progress: {batchName}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         <p className="text-sm font-medium text-muted-foreground">Production Stages</p>
         
         {/* Horizontal Key Stages - Responsive Grid */}

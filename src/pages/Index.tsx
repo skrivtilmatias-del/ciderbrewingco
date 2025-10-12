@@ -863,6 +863,14 @@ const Index = () => {
             <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
               {selectedBatch ? (
                 <>
+                  {/* Stage Progression */}
+                  <StageProgressionUI
+                    currentStage={selectedBatch.currentStage}
+                    batchId={selectedBatch.id}
+                    batchName={selectedBatch.name}
+                    onAdvanceStage={handleUpdateStage}
+                  />
+
                   {/* Batch Overview Header */}
                   <BatchOverviewHeader
                     batch={selectedBatch}
@@ -923,14 +931,6 @@ const Index = () => {
                     onAddObservation={() => handleAddLog('Observation', 'Observation')}
                     onScheduleTask={() => handleAddLog('Note', 'General')}
                     onAddGeneral={() => handleAddLog('Note', 'General')}
-                  />
-
-                  {/* Stage Progression */}
-                  <StageProgressionUI
-                    currentStage={selectedBatch.currentStage}
-                    batchId={selectedBatch.id}
-                    batchName={selectedBatch.name}
-                    onAdvanceStage={handleUpdateStage}
                   />
                   
                   {/* Search and Filter */}
