@@ -171,6 +171,7 @@ const Index = () => {
         id: batch.id,
         name: batch.name,
         variety: batch.variety,
+        apple_origin: batch.apple_origin || undefined,
         volume: parseFloat(batch.volume.toString()),
         startDate: batch.started_at,
         currentStage: batch.current_stage as Batch["currentStage"],
