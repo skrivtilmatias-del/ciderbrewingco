@@ -204,22 +204,45 @@ export function TastingAnalysisDialog({
             </div>
 
             {sourceType === "blend" ? (
-              <Select 
-                value={blendBatchId} 
-                onValueChange={setBlendBatchId}
-                disabled={!!existingAnalysis}
-              >
-                <SelectTrigger className="h-12 touch-manipulation">
-                  <SelectValue placeholder="Select blend batch" />
-                </SelectTrigger>
-                <SelectContent className="z-[100] bg-card border-border pointer-events-auto max-h-[300px]">
-                  {blendBatches.map((blend) => (
-                    <SelectItem key={blend.id} value={blend.id} className="touch-manipulation min-h-[44px]">
-                      {blend.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              (() => {
+                const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (isIOS) {
+                  return (
+                    <div className="relative">
+                      <Label className="sr-only">Blend Batch</Label>
+                      <select
+                        value={blendBatchId}
+                        onChange={(e) => setBlendBatchId(e.target.value)}
+                        disabled={!!existingAnalysis}
+                        className="h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option value="" disabled>Select blend batch</option>
+                        {blendBatches.map((blend) => (
+                          <option key={blend.id} value={blend.id}>{blend.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                }
+                return (
+                  <Select 
+                    value={blendBatchId} 
+                    onValueChange={setBlendBatchId}
+                    disabled={!!existingAnalysis}
+                  >
+                    <SelectTrigger className="h-12 touch-manipulation">
+                      <SelectValue placeholder="Select blend batch" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[100] bg-card border-border pointer-events-auto max-h-[300px]">
+                      {blendBatches.map((blend) => (
+                        <SelectItem key={blend.id} value={blend.id} className="touch-manipulation min-h-[44px]">
+                          {blend.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              })()
             ) : (
               <Input
                 placeholder="Enter competitor brand name"
