@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package, Timer, Activity, Zap, Target } from "lucide-react";
+import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package, Timer, Activity, Zap, Target, Boxes, FlaskConical } from "lucide-react";
 import type { Batch } from "@/components/BatchCard";
 import { AIInsights } from "./AIInsights";
 
@@ -41,6 +41,12 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
   // Calculate bottle inventory
   const total75clBottles = blendBatches.reduce((sum, b) => sum + (b.bottles_75cl || 0), 0);
   const total150clBottles = blendBatches.reduce((sum, b) => sum + (b.bottles_150cl || 0), 0);
+  
+  // Calculate total volume bottled and average blend size
+  const totalVolumeBottled = blendBatches.reduce((sum, b) => sum + (b.total_volume || 0), 0);
+  const avgBlendSize = blendBatches.length > 0 
+    ? Math.round(totalVolumeBottled / blendBatches.length) 
+    : 0;
 
   // Calculate average production time for completed batches (estimate based on start date)
   const avgProductionDays = completedBatches.length > 0
@@ -208,7 +214,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
       </div>
 
       {/* Bottle Inventory Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-success/10 rounded-lg">
@@ -236,6 +242,36 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
           </div>
           <p className="text-sm text-muted-foreground">
             Total magnum bottles available
+          </p>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-chart-1/10 rounded-lg">
+              <FlaskConical className="w-6 h-6 text-chart-1" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Volume Bottled</p>
+              <p className="text-3xl font-bold text-foreground">{totalVolumeBottled.toFixed(1)}L</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Total litres in bottles
+          </p>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-warning/10 rounded-lg">
+              <Boxes className="w-6 h-6 text-warning" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Avg Blend Size</p>
+              <p className="text-3xl font-bold text-foreground">{avgBlendSize}L</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Average volume per blend
           </p>
         </Card>
       </div>
