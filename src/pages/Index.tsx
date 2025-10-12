@@ -820,10 +820,6 @@ const Index = () => {
                     <Warehouse className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Cellar</span>
                   </TabsTrigger>
-                  <TabsTrigger value="print-labels" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <QrCode className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Print Labels</span>
-                  </TabsTrigger>
                 </>
               )}
               <TabsTrigger value="tasting" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
@@ -831,16 +827,10 @@ const Index = () => {
                 <span className="hidden sm:inline">Tasting</span>
               </TabsTrigger>
               {userRole === "production" && (
-                <>
-                  <TabsTrigger value="analytics" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <TrendingUp className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Analytics</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="calculators" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
-                    <FlaskConical className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Calculators</span>
-                  </TabsTrigger>
-                </>
+                <TabsTrigger value="tools" className="text-xs sm:text-sm whitespace-nowrap px-3 py-2">
+                  <Settings2 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Tools</span>
+                </TabsTrigger>
               )}
             </TabsList>
           </div>
@@ -1081,25 +1071,41 @@ const Index = () => {
           )}
 
           {userRole === "production" && (
+            <TabsContent value="tools" className="mt-4 sm:mt-6">
+              <Tabs defaultValue="analytics" className="w-full">
+                <TabsList className="w-full sm:w-auto">
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="calculators">Calculators</TabsTrigger>
+                  <TabsTrigger value="print-labels">Print Labels</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="analytics" className="mt-4">
+                  {batches.length > 0 && (
+                    <ProductionAnalytics 
+                      batches={batches} 
+                      blendBatches={blendBatches}
+                      tastingAnalyses={tastingAnalyses}
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="calculators" className="mt-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                    <ABVCalculator />
+                    <PrimingCalculator />
+                    <SO2Calculator />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="print-labels" className="mt-4">
+                  <PrintQRCodes blendBatches={blendBatches} />
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+          )}
+
+          {userRole === "production" && (
             <>
-              <TabsContent value="analytics" className="mt-4 sm:mt-6">
-                {batches.length > 0 && (
-                  <ProductionAnalytics 
-                    batches={batches} 
-                    blendBatches={blendBatches}
-                    tastingAnalyses={tastingAnalyses}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="calculators" className="mt-4 sm:mt-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                  <ABVCalculator />
-                  <PrimingCalculator />
-                  <SO2Calculator />
-                </div>
-              </TabsContent>
-
               <TabsContent value="blending" className="mt-4 sm:mt-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <h2 className="text-lg font-semibold">Blend Batches</h2>
@@ -1272,10 +1278,6 @@ const Index = () => {
                     </Card>
                   </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="print-labels" className="mt-4 sm:mt-6">
-                <PrintQRCodes blendBatches={blendBatches} />
               </TabsContent>
             </>
           )}
