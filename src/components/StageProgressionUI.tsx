@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle } from "lucide-react";
+import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 
 interface StageProgressionUIProps {
@@ -72,6 +72,16 @@ export const StageProgressionUI = ({
     onAdvanceStage(batchId, nextStage);
   };
 
+  const handlePreviousStage = () => {
+    const currentIndex = STAGES.indexOf(currentStage as CiderStage);
+    if (currentIndex > 0) {
+      const previousStage = STAGES[currentIndex - 1];
+      onAdvanceStage(batchId, previousStage);
+    }
+  };
+
+  const canGoPrevious = currentStage !== 'Complete' && STAGES.indexOf(currentStage as CiderStage) > 0;
+
   return (
     <Card>
       <CardContent className="space-y-4 pt-6">
@@ -106,15 +116,28 @@ export const StageProgressionUI = ({
           })}
         </div>
 
-        {/* Advance Button */}
+        {/* Navigation Buttons */}
         {!isComplete && (
-          <Button
-            onClick={handleAdvanceStage}
-            className="w-full bg-primary hover:bg-primary/90"
-            size="lg"
-          >
-            Advance to Next Stage
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handlePreviousStage}
+              variant="outline"
+              disabled={!canGoPrevious}
+              className="flex-1"
+              size="lg"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Previous Stage
+            </Button>
+            <Button
+              onClick={handleAdvanceStage}
+              className="flex-1 bg-primary hover:bg-primary/90"
+              size="lg"
+            >
+              Advance to Next Stage
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         )}
 
         {isComplete && (

@@ -876,6 +876,8 @@ const Index = () => {
                         batch={batch}
                         onClick={() => handleBatchClick(batch)}
                         onDelete={() => handleDeleteBatch(batch.id)}
+                        onAdvanceStage={(newStage) => handleUpdateStage(batch.id, newStage)}
+                        onPreviousStage={(newStage) => handleUpdateStage(batch.id, newStage)}
                       />
                     ))
                 )}

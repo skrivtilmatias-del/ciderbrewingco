@@ -1,9 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, ChevronLeft, ChevronRight } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { CiderStage } from "@/constants/ciderStages";
+import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
@@ -49,11 +49,17 @@ interface BatchCardProps {
   batch: Batch;
   onClick?: () => void;
   onDelete?: () => void;
+  onAdvanceStage?: (newStage: CiderStage | 'Complete') => void;
+  onPreviousStage?: (newStage: CiderStage) => void;
 }
 
-export const BatchCard = ({ batch, onClick, onDelete }: BatchCardProps) => {
+export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPreviousStage }: BatchCardProps) => {
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
+  const isComplete = batch.currentStage === 'Complete';
+  const currentIndex = STAGES.indexOf(batch.currentStage as CiderStage);
+  const canGoPrevious = !isComplete && currentIndex > 0;
+  const canAdvance = !isComplete;
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -63,6 +69,22 @@ export const BatchCard = ({ batch, onClick, onDelete }: BatchCardProps) => {
     e.stopPropagation();
     if (onDelete) {
       onDelete();
+    }
+  };
+
+  const handleAdvance = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAdvanceStage && !isComplete) {
+      const nextStage: CiderStage | 'Complete' = currentIndex >= STAGES.length - 1 ? 'Complete' : STAGES[currentIndex + 1];
+      onAdvanceStage(nextStage);
+    }
+  };
+
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPreviousStage && canGoPrevious) {
+      const previousStage = STAGES[currentIndex - 1];
+      onPreviousStage(previousStage);
     }
   };
 
@@ -145,6 +167,31 @@ export const BatchCard = ({ batch, onClick, onDelete }: BatchCardProps) => {
                 <span className="text-foreground">{batch.yeast_type}</span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Stage Navigation Buttons */}
+        {(onAdvanceStage || onPreviousStage) && (
+          <div className="flex gap-2 pt-3 border-t border-border">
+            <Button
+              onClick={handlePrevious}
+              variant="outline"
+              disabled={!canGoPrevious}
+              className="flex-1"
+              size="sm"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              onClick={handleAdvance}
+              disabled={!canAdvance}
+              className="flex-1 bg-primary hover:bg-primary/90"
+              size="sm"
+            >
+              Advance
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
         )}
       </div>
