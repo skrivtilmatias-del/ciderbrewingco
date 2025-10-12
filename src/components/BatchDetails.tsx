@@ -328,7 +328,16 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {batch.yeast_type && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <FlaskConical className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm">Yeast Type</span>
+                    </div>
+                    <p className="text-lg sm:text-xl font-semibold">{batch.yeast_type}</p>
+                  </div>
+                )}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Beaker className="w-3 h-3 sm:w-4 sm:h-4" />
