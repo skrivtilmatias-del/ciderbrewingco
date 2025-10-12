@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Apple, Droplets, Clock, Wine, CheckCircle } from "lucide-react";
-import { CiderStage } from "@/constants/ciderStages";
+import { CiderStage, STAGES } from "@/constants/ciderStages";
 
 interface StageProgressionUIProps {
   currentStage: CiderStage | "Complete";
@@ -66,6 +66,12 @@ export const StageProgressionUI = ({
     }
   };
 
+  const handleAdvanceStage = () => {
+    const currentIndex = STAGES.indexOf(currentStage as CiderStage);
+    const nextStage: CiderStage | 'Complete' = currentIndex >= STAGES.length - 1 ? 'Complete' : STAGES[currentIndex + 1];
+    onAdvanceStage(batchId, nextStage);
+  };
+
   return (
     <Card>
       <CardContent className="space-y-4 pt-6">
@@ -99,6 +105,17 @@ export const StageProgressionUI = ({
             );
           })}
         </div>
+
+        {/* Advance Button */}
+        {!isComplete && (
+          <Button
+            onClick={handleAdvanceStage}
+            className="w-full bg-primary hover:bg-primary/90"
+            size="lg"
+          >
+            Advance to Next Stage
+          </Button>
+        )}
 
         {isComplete && (
           <div className="bg-success/10 border border-success rounded-lg p-4 text-center">
