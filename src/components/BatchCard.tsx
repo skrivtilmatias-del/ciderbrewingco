@@ -175,9 +175,8 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
           <div className="flex gap-2 pt-3 border-t border-border">
             <Button
               onClick={handlePrevious}
-              variant="outline"
               disabled={!canGoPrevious}
-              className="flex-1"
+              className="flex-1 bg-primary hover:bg-primary/90"
               size="sm"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />

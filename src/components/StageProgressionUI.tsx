@@ -121,9 +121,8 @@ export const StageProgressionUI = ({
           <div className="flex gap-2">
             <Button
               onClick={handlePreviousStage}
-              variant="outline"
               disabled={!canGoPrevious}
-              className="flex-1"
+              className="flex-1 bg-primary hover:bg-primary/90"
               size="lg"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
