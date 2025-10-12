@@ -940,49 +940,47 @@ const Index = () => {
                   </Card>
                 ) : (
                   <div className="space-y-4">
-                    {/* Summary Cards - Centered symmetrical layout */}
-                    <div className="flex justify-center">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full">
-                        <Card className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                              <Wine className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Total Blends</p>
-                              <p className="text-3xl font-bold text-foreground">{blendBatches.length}</p>
-                            </div>
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-primary/10 rounded-lg">
+                            <Wine className="w-6 h-6 text-primary" />
                           </div>
-                        </Card>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Total Blends</p>
+                            <p className="text-3xl font-bold text-foreground">{blendBatches.length}</p>
+                          </div>
+                        </div>
+                      </Card>
 
-                        <Card className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-success/10 rounded-lg">
-                              <Package className="w-6 h-6 text-success" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">75cl Bottles</p>
-                              <p className="text-3xl font-bold text-foreground">
-                                {blendBatches.reduce((sum, b) => sum + (b.bottles_75cl || 0), 0)}
-                              </p>
-                            </div>
+                      <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-success/10 rounded-lg">
+                            <Package className="w-6 h-6 text-success" />
                           </div>
-                        </Card>
+                          <div>
+                            <p className="text-sm text-muted-foreground">75cl Bottles</p>
+                            <p className="text-3xl font-bold text-foreground">
+                              {blendBatches.reduce((sum, b) => sum + (b.bottles_75cl || 0), 0)}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
 
-                        <Card className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-chart-2/10 rounded-lg">
-                              <Package className="w-6 h-6 text-chart-2" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">150cl Bottles</p>
-                              <p className="text-3xl font-bold text-foreground">
-                                {blendBatches.reduce((sum, b) => sum + (b.bottles_150cl || 0), 0)}
-                              </p>
-                            </div>
+                      <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-chart-2/10 rounded-lg">
+                            <Package className="w-6 h-6 text-chart-2" />
                           </div>
-                        </Card>
-                      </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">150cl Bottles</p>
+                            <p className="text-3xl font-bold text-foreground">
+                              {blendBatches.reduce((sum, b) => sum + (b.bottles_150cl || 0), 0)}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
                     </div>
 
                     {/* Blend Inventory Table */}
