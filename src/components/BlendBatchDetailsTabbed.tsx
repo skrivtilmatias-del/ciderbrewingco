@@ -307,8 +307,11 @@ export function BlendBatchDetailsTabbed({
                 )}
               </div>
             </div>
-            {!isEditing && activeTab === "notes" && (
-              <Button onClick={() => setIsEditing(true)} size="sm">
+            {!isEditing && (
+              <Button onClick={() => {
+                setIsEditing(true);
+                setActiveTab("notes");
+              }} size="sm">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
