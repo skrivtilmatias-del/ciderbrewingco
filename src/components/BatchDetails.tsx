@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save, Activity } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { StageProgressionCard } from "./StageProgressionCard";
 import { ImageUpload } from "./ImageUpload";
@@ -57,9 +57,10 @@ interface BatchDetailsProps {
   onOpenChange: (open: boolean) => void;
   onUpdateStage: (batchId: string, newStage: Batch["currentStage"]) => void;
   onBatchUpdated?: () => void;
+  onGoToProduction?: (batch: Batch) => void;
 }
 
-export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated }: BatchDetailsProps) => {
+export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated, onGoToProduction }: BatchDetailsProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(batch?.notes || "");
   const [attachments, setAttachments] = useState<string[]>(batch?.attachments || []);
@@ -468,6 +469,18 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
               </div>
             )}
           </div>
+
+          {/* Go to Production Button */}
+          {onGoToProduction && (
+            <Button 
+              onClick={() => onGoToProduction(batch)}
+              className="w-full"
+              size="lg"
+            >
+              <Activity className="h-4 w-4 mr-2" />
+              Go to Production
+            </Button>
+          )}
 
           {/* Stage Progression Card */}
           <StageProgressionCard

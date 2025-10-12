@@ -51,6 +51,7 @@ const Index = () => {
   const [tastingSearchQuery, setTastingSearchQuery] = useState("");
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState("batches");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
@@ -130,6 +131,13 @@ const Index = () => {
       if (error) throw error;
       setUserRole(data?.role || null);
       setUserProfile(data);
+      
+      // Set initial active tab based on role
+      if (data?.role === "taster") {
+        setActiveTab("tasting");
+      } else {
+        setActiveTab("batches");
+      }
     } catch (error) {
       console.error("Error fetching user profile:", error);
       setUserRole(null);
@@ -681,6 +689,13 @@ const Index = () => {
     setTastingDialogOpen(true);
   };
 
+  const handleGoToProduction = (batch: Batch) => {
+    setSelectedBatch(batch);
+    fetchLogs(batch.id);
+    setDetailsOpen(false);
+    setActiveTab("production");
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -766,7 +781,7 @@ const Index = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue={userRole === "taster" ? "tasting" : "batches"} className="mb-6 sm:mb-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 sm:mb-8">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap justify-start gap-1">
               {userRole === "production" && (
@@ -1291,6 +1306,7 @@ const Index = () => {
         onOpenChange={setDetailsOpen}
         onUpdateStage={handleUpdateStage}
         onBatchUpdated={fetchBatches}
+        onGoToProduction={handleGoToProduction}
       />
       
       <BlendBatchDetails
