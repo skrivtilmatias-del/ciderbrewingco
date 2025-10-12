@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BatchLogCard, type BatchLog } from "./BatchLogCard";
 import { isToday, isYesterday, isThisWeek, format } from "date-fns";
-import { Pin, FlaskConical, Eye, FileText, ChevronRight } from "lucide-react";
+import { FlaskConical, Eye, FileText, Edit, Image } from "lucide-react";
 import { useState } from "react";
 
 interface OrganizedLogsListProps {
@@ -12,18 +13,12 @@ interface OrganizedLogsListProps {
 }
 
 export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedLogsListProps) => {
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
+
   const getLogType = (log: BatchLog): 'measurement' | 'observation' | 'general' => {
     if (log.og || log.fg || log.ph || log.temp_c || log.ta_gpl) return 'measurement';
     if (log.role === 'Observation') return 'observation';
     return 'general';
-  };
-
-  const getLogTypeColor = (type: string) => {
-    switch (type) {
-      case 'measurement': return 'bg-info/10 text-info';
-      case 'observation': return 'bg-warning/10 text-warning';
-      default: return 'bg-muted text-muted-foreground';
-    }
   };
 
   const getLogTypeIcon = (type: string) => {
@@ -60,72 +55,135 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
 
   const groupedLogs = groupLogsByDate(logs);
 
-  const LogEntryCompact = ({ log }: { log: BatchLog }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+  const LogEntry = ({ log }: { log: BatchLog }) => {
+    const logType = getLogType(log);
+    const Icon = getLogTypeIcon(logType);
+    const isEditing = editingLogId === log.id;
 
-    if (isExpanded) {
+    if (isEditing) {
       return (
         <BatchLogCard
           log={log}
-          onDelete={() => onDeleteLog(log.id)}
-          onUpdate={onUpdateLog ? () => onUpdateLog(log) : () => {}}
+          onDelete={() => {
+            onDeleteLog(log.id);
+            setEditingLogId(null);
+          }}
+          onUpdate={() => {
+            if (onUpdateLog) onUpdateLog(log);
+            setEditingLogId(null);
+          }}
+          onClose={() => setEditingLogId(null)}
         />
       );
     }
 
     return (
-      <Card 
-        className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
-        onClick={() => setIsExpanded(true)}
-      >
-        <div className="flex items-start gap-3">
-          <ChevronRight className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-          <div className="flex-1 min-w-0 space-y-2">
-            {/* Date and Stage Row */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-medium">
-                {format(new Date(log.created_at), "MM/dd/yyyy, h:mm:ss a")}
-              </span>
-              <Badge variant="outline" className="text-xs">
-                {log.stage}
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                {log.role}
-              </Badge>
+      <Card className="p-4 hover:shadow-md transition-shadow">
+        <div className="flex gap-3">
+          {/* Icon */}
+          <div className={`p-2 rounded-lg h-fit ${
+            logType === 'measurement' ? 'bg-info/10' :
+            logType === 'observation' ? 'bg-warning/10' :
+            'bg-muted'
+          }`}>
+            <Icon className={`h-4 w-4 ${
+              logType === 'measurement' ? 'text-info' :
+              logType === 'observation' ? 'text-warning' :
+              'text-muted-foreground'
+            }`} />
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(log.created_at), "MMM d, h:mm a")}
+                  </span>
+                  <Badge variant="outline" className="text-xs h-5">
+                    {log.stage}
+                  </Badge>
+                  {log.role !== 'General' && (
+                    <Badge variant="secondary" className="text-xs h-5">
+                      {log.role}
+                    </Badge>
+                  )}
+                </div>
+                {log.title && (
+                  <h4 className="font-semibold text-sm">{log.title}</h4>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingLogId(log.id)}
+                className="h-7 px-2"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
             </div>
-            
-            {/* Title */}
-            {log.title && (
-              <div className="text-sm font-medium text-foreground">
-                {log.title}
-              </div>
-            )}
-            
-            {/* Content Preview */}
+
+            {/* Content */}
             {log.content && (
-              <div className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap">
                 {log.content}
+              </p>
+            )}
+
+            {/* Measurements Grid */}
+            {(log.og || log.fg || log.ph || log.temp_c || log.ta_gpl) && (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-2 p-2 bg-muted/50 rounded">
+                {log.og && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">OG:</span>
+                    <span className="ml-1 font-medium">{log.og}</span>
+                  </div>
+                )}
+                {log.fg && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">FG:</span>
+                    <span className="ml-1 font-medium">{log.fg}</span>
+                  </div>
+                )}
+                {log.ph && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">pH:</span>
+                    <span className="ml-1 font-medium">{log.ph}</span>
+                  </div>
+                )}
+                {log.temp_c && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">Temp:</span>
+                    <span className="ml-1 font-medium">{log.temp_c}°C</span>
+                  </div>
+                )}
+                {log.ta_gpl && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">TA:</span>
+                    <span className="ml-1 font-medium">{log.ta_gpl} g/L</span>
+                  </div>
+                )}
               </div>
             )}
-            
+
             {/* Tags */}
             {log.tags && log.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 mb-2">
                 {log.tags.map((tag, i) => (
-                  <Badge key={i} variant="outline" className="text-xs bg-primary/5">
+                  <Badge key={i} variant="secondary" className="text-xs">
                     {tag}
                   </Badge>
                 ))}
               </div>
             )}
-            
-            {/* Measurements */}
-            {(log.og || log.fg || log.ph || log.temp_c) && (
-              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                {log.og && <span>OG: {log.og}</span>}
-                {log.fg && <span>FG: {log.fg}</span>}
-                {log.ph && <span>pH: {log.ph}</span>}
-                {log.temp_c && <span>Temp: {log.temp_c}°C</span>}
+
+            {/* Attachments indicator */}
+            {log.attachments && log.attachments.length > 0 && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Image className="h-3 w-3" />
+                <span>{log.attachments.length} image{log.attachments.length > 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
@@ -138,13 +196,14 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
     if (logs.length === 0) return null;
 
     return (
-      <div key={title} className="space-y-2">
-        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          {title}
-        </h4>
+      <div key={title} className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h4 className="text-sm font-semibold">{title}</h4>
+          <div className="h-px flex-1 bg-border" />
+        </div>
         <div className="space-y-2">
           {logs.map((log) => (
-            <LogEntryCompact key={log.id} log={log} />
+            <LogEntry key={log.id} log={log} />
           ))}
         </div>
       </div>
@@ -152,7 +211,7 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {renderGroup("Today", groupedLogs.today)}
       {renderGroup("Yesterday", groupedLogs.yesterday)}
       {renderGroup("This Week", groupedLogs.thisWeek)}

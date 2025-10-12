@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Trash2, Tag, Upload, X } from "lucide-react";
+import { Trash2, Tag, Upload, X } from "lucide-react";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -34,11 +34,11 @@ interface BatchLogCardProps {
   log: BatchLog;
   onUpdate: () => void;
   onDelete: () => void;
+  onClose?: () => void;
   allowedStages?: string[];
 }
 
-export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLogCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function BatchLogCard({ log, onUpdate, onDelete, onClose, allowedStages }: BatchLogCardProps) {
   const [stage, setStage] = useState(log.stage);
   const [role, setRole] = useState(log.role || "General");
   const [title, setTitle] = useState(log.title || "");
@@ -94,11 +94,12 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
       } else {
         toast.success("Log updated");
         onUpdate();
+        if (onClose) onClose();
       }
     } finally {
       setIsUpdating(false);
     }
-  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, attachments, log.id, onUpdate, isUpdating]);
+  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, attachments, log.id, onUpdate, onClose, isUpdating]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this log entry?")) return;
@@ -213,201 +214,217 @@ export function BatchLogCard({ log, onUpdate, onDelete, allowedStages }: BatchLo
     return "–";
   };
 
+  const hasLab = og || fg || ph || ta || tempC;
+
   return (
-    <Card className="mb-3">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+    <Card className="mb-3 border-primary/20 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              className="p-1 rounded hover:bg-accent"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {new Date(log.created_at).toLocaleString()}
             </span>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger className="w-[220px] h-8">
+              <SelectTrigger className="w-[180px] h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {(allowedStages || STAGES).map((s) => (
-                  <SelectItem key={s} value={s}>
+                  <SelectItem key={s} value={s} className="text-xs">
                     {s}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger className="w-[140px] h-8">
+              <SelectTrigger className="w-[110px] h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="General">General</SelectItem>
-                <SelectItem value="Cellar">Cellar</SelectItem>
-                <SelectItem value="Lab">Lab</SelectItem>
+                <SelectItem value="General" className="text-xs">General</SelectItem>
+                <SelectItem value="Cellar" className="text-xs">Cellar</SelectItem>
+                <SelectItem value="Lab" className="text-xs">Lab</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleUpdate} disabled={isUpdating}>
-              {isUpdating ? "Saving..." : "Save"}
+          <div className="flex items-center gap-1">
+            <Button variant="default" size="sm" onClick={handleUpdate} disabled={isUpdating}>
+              {isUpdating ? "Saving..." : "Save & Close"}
             </Button>
+            {onClose && (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                Cancel
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Short title"
-        />
-        <Textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Write your note..."
-          rows={isExpanded ? 6 : 3}
-        />
-        
-        <div className="flex gap-2">
+      <CardContent className="space-y-3">
+        {/* Title and Content */}
+        <div className="space-y-2">
           <Input
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            placeholder="Add tag"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addTag();
-              }
-            }}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title (optional)"
+            className="font-medium"
           />
-          <Button type="button" size="icon" onClick={addTag}>
-            <Tag className="h-4 w-4" />
-          </Button>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Add notes..."
+            rows={4}
+          />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag, i) => (
-            <Badge
-              key={i}
-              variant="secondary"
-              className="cursor-pointer"
-              onClick={() => removeTag(tag)}
-            >
-              {tag} ✕
-            </Badge>
-          ))}
+        
+        {/* Tags */}
+        <div className="space-y-2">
+          <Label className="text-xs">Tags</Label>
+          <div className="flex gap-2">
+            <Input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="Add tag and press Enter"
+              className="text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
+            />
+            <Button type="button" size="sm" onClick={addTag}>
+              <Tag className="h-3 w-3" />
+            </Button>
+          </div>
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {tags.map((tag, i) => (
+                <Badge
+                  key={i}
+                  variant="secondary"
+                  className="cursor-pointer text-xs"
+                  onClick={() => removeTag(tag)}
+                >
+                  {tag} ✕
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
-        {isExpanded && (
-          <div className="grid md:grid-cols-3 gap-3 border rounded-lg p-3">
-            <div className="grid gap-2">
-              <Label className="text-xs">OG (SG)</Label>
+        {/* Lab Measurements */}
+        <div className="space-y-2">
+          <Label className="text-xs">Lab Measurements (optional)</Label>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">OG</Label>
               <Input
                 type="number"
                 step="0.001"
                 value={og}
                 onChange={(e) => setOg(e.target.value)}
                 placeholder="1.050"
+                className="h-8 text-xs"
               />
             </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">FG (SG)</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">FG</Label>
               <Input
                 type="number"
                 step="0.001"
                 value={fg}
                 onChange={(e) => setFg(e.target.value)}
                 placeholder="0.998"
+                className="h-8 text-xs"
               />
             </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">ABV (%)</Label>
-              <Input value={calculateABV()} readOnly />
-            </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">pH</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">pH</Label>
               <Input
                 type="number"
                 step="0.1"
                 value={ph}
                 onChange={(e) => setPh(e.target.value)}
                 placeholder="3.3"
+                className="h-8 text-xs"
               />
             </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">TA (g/L)</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">TA (g/L)</Label>
               <Input
                 type="number"
                 step="0.1"
                 value={ta}
                 onChange={(e) => setTa(e.target.value)}
                 placeholder="5.5"
+                className="h-8 text-xs"
               />
             </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">Temp (°C)</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Temp (°C)</Label>
               <Input
                 type="number"
                 step="0.1"
                 value={tempC}
                 onChange={(e) => setTempC(e.target.value)}
                 placeholder="14"
+                className="h-8 text-xs"
               />
             </div>
           </div>
-        )}
+          {og && fg && (
+            <div className="text-xs text-muted-foreground">
+              Calculated ABV: <span className="font-medium text-foreground">{calculateABV()}%</span>
+            </div>
+          )}
+        </div>
         
         {/* Image Attachments */}
-        {isExpanded && (
-          <div className="space-y-2">
-            <Label>Images</Label>
-            {attachments.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                {attachments.map((imageUrl, index) => (
-                  <div key={index} className="relative group">
-                    <img 
-                      src={imageUrl} 
-                      alt={`Attachment ${index + 1}`}
-                      className="w-full h-24 object-cover rounded border"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeImage(imageUrl)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : "Upload Images"}
-              </Button>
+        <div className="space-y-2">
+          <Label className="text-xs">Images (optional)</Label>
+          {attachments.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {attachments.map((imageUrl, index) => (
+                <div key={index} className="relative group aspect-square">
+                  <img 
+                    src={imageUrl} 
+                    alt={`Attachment ${index + 1}`}
+                    className="w-full h-full object-cover rounded border"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeImage(imageUrl)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            <Upload className="h-3 w-3 mr-2" />
+            {uploading ? "Uploading..." : "Upload Images"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
