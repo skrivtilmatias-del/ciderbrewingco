@@ -687,6 +687,31 @@ const Index = () => {
         toast.success("Tasting analysis created");
       }
 
+      // If tasting has attachments and a blend_batch_id, add them to the blend batch
+      if (data.attachments && data.attachments.length > 0 && data.blend_batch_id) {
+        const { data: blendData } = await supabase
+          .from("blend_batches")
+          .select("attachments")
+          .eq("id", data.blend_batch_id)
+          .single();
+
+        if (blendData) {
+          const existingAttachments = blendData.attachments || [];
+          const newAttachments = data.attachments.filter(
+            (att: string) => !existingAttachments.includes(att)
+          );
+
+          if (newAttachments.length > 0) {
+            await supabase
+              .from("blend_batches")
+              .update({
+                attachments: [...existingAttachments, ...newAttachments]
+              })
+              .eq("id", data.blend_batch_id);
+          }
+        }
+      }
+
       fetchTastingAnalyses();
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
