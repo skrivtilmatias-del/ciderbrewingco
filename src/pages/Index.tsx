@@ -24,6 +24,7 @@ import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, F
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import type { Batch } from "@/components/BatchCard";
 import { BatchLogCard, type BatchLog } from "@/components/BatchLogCard";
@@ -864,32 +865,92 @@ const Index = () => {
             <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
               {selectedBatch ? (
                 <>
-                  {/* Batch Selector */}
-                  <div className="flex justify-start">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-                          <FlaskConical className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="truncate max-w-[100px] sm:max-w-[150px]">{selectedBatch?.name || "Select Batch"}</span>
+                  {/* Enhanced Batch Selector */}
+                  <Card className="p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                          Current Batch
+                        </label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                          <Input
+                            placeholder="Search batches..."
+                            value={batchSearchQuery}
+                            onChange={(e) => setBatchSearchQuery(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 sm:pt-5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setBatchSearchQuery("")}
+                        >
+                          Clear
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56 bg-background z-50">
-                        <DropdownMenuLabel>Switch Batch</DropdownMenuLabel>
-                        {batches.map((b) => (
-                          <DropdownMenuItem
-                            key={b.id}
-                            onClick={() => handleBatchSelect(b)}
+                      </div>
+                    </div>
+                    
+                    {/* Filtered Batches List */}
+                    <div className="mt-3 max-h-[200px] overflow-y-auto space-y-1">
+                      {batches
+                        .filter((batch) => {
+                          const query = batchSearchQuery.toLowerCase();
+                          return (
+                            batch.name.toLowerCase().includes(query) ||
+                            batch.variety.toLowerCase().includes(query) ||
+                            batch.currentStage.toLowerCase().includes(query)
+                          );
+                        })
+                        .map((batch) => (
+                          <button
+                            key={batch.id}
+                            onClick={() => {
+                              handleBatchSelect(batch);
+                              setBatchSearchQuery("");
+                            }}
+                            className={`w-full text-left p-3 rounded-lg border transition-all hover:bg-muted/50 ${
+                              selectedBatch?.id === batch.id
+                                ? "bg-primary/10 border-primary"
+                                : "border-border"
+                            }`}
                           >
-                            {b.name}
-                          </DropdownMenuItem>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <FlaskConical className="h-4 w-4 text-primary flex-shrink-0" />
+                                  <span className="font-semibold text-sm truncate">{batch.name}</span>
+                                  {selectedBatch?.id === batch.id && (
+                                    <Badge variant="default" className="text-xs">Active</Badge>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  <span className="text-xs text-muted-foreground">{batch.variety}</span>
+                                  <span className="text-xs text-muted-foreground">•</span>
+                                  <Badge variant="outline" className="text-xs">{batch.currentStage}</Badge>
+                                  <span className="text-xs text-muted-foreground">•</span>
+                                  <span className="text-xs text-muted-foreground">{batch.volume}L</span>
+                                </div>
+                              </div>
+                            </div>
+                          </button>
                         ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => selectedBatch && handleDeleteBatch(selectedBatch.id)}>
-                          Delete Current Batch
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                      {batches.filter((batch) => {
+                        const query = batchSearchQuery.toLowerCase();
+                        return (
+                          batch.name.toLowerCase().includes(query) ||
+                          batch.variety.toLowerCase().includes(query) ||
+                          batch.currentStage.toLowerCase().includes(query)
+                        );
+                      }).length === 0 && (
+                        <p className="text-center text-sm text-muted-foreground py-4">
+                          No batches found matching "{batchSearchQuery}"
+                        </p>
+                      )}
+                    </div>
+                  </Card>
 
                   {/* Stage Progression */}
                   <StageProgressionUI
