@@ -63,38 +63,26 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
     if (logs.length === 0) return null;
 
     return (
-      <div key={title} className="space-y-3">
-        <h4 className="text-sm font-semibold text-muted-foreground sticky top-0 bg-background py-2 z-10">
-          {title} ({logs.length})
+      <div key={title} className="space-y-2">
+        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {title}
         </h4>
-        <div className="space-y-3">
-          {logs.map((log) => {
-            const logType = getLogType(log);
-            const TypeIcon = getLogTypeIcon(logType);
-            
-            return (
-              <div key={log.id} className="relative">
-                <Badge 
-                  className={`absolute -top-2 -right-2 z-10 ${getLogTypeColor(logType)}`}
-                  variant="outline"
-                >
-                  <TypeIcon className="h-3 w-3" />
-                </Badge>
-                <BatchLogCard
-                  log={log}
-                  onDelete={() => onDeleteLog(log.id)}
-                  onUpdate={onUpdateLog ? () => onUpdateLog(log) : () => {}}
-                />
-              </div>
-            );
-          })}
+        <div className="space-y-2">
+          {logs.map((log) => (
+            <BatchLogCard
+              key={log.id}
+              log={log}
+              onDelete={() => onDeleteLog(log.id)}
+              onUpdate={onUpdateLog ? () => onUpdateLog(log) : () => {}}
+            />
+          ))}
         </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {renderGroup("Today", groupedLogs.today)}
       {renderGroup("Yesterday", groupedLogs.yesterday)}
       {renderGroup("This Week", groupedLogs.thisWeek)}
