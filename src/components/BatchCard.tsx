@@ -90,7 +90,10 @@ export const BatchCard = ({ batch, onClick, onDelete }: BatchCardProps) => {
       <div className="flex items-start justify-between mb-4 pr-8">
         <div>
           <h3 className="text-xl font-semibold text-foreground mb-1">{batch.name}</h3>
-          <p className="text-sm text-muted-foreground">{batch.variety}</p>
+          <p className="text-sm text-muted-foreground">
+            {batch.variety}
+            {batch.apple_origin && <> from {batch.apple_origin}</>}
+          </p>
         </div>
         <Badge className={`${stageColor} text-white`}>
           <StageIcon className="w-3 h-3 mr-1" />
