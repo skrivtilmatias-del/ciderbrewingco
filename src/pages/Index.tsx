@@ -327,7 +327,7 @@ const Index = () => {
     }
   };
 
-  const handleAddLog = async () => {
+  const handleAddLog = async (title: string = '', role: string = 'General') => {
     if (!selectedBatch) return;
 
     // Verify session before critical operation
@@ -369,8 +369,8 @@ const Index = () => {
             batch_id: freshSelected.id,
             user_id: session.user.id,
             stage: defaultStage,
-            role: 'General',
-            title: '',
+            role: role,
+            title: title,
             content: '',
             tags: [],
           },
@@ -932,10 +932,10 @@ const Index = () => {
 
                   {/* Quick Actions Panel */}
                   <QuickActionsPanel
-                    onAddMeasurement={handleAddLog}
-                    onAddObservation={handleAddLog}
-                    onScheduleTask={handleAddLog}
-                    onAddGeneral={handleAddLog}
+                    onAddMeasurement={() => handleAddLog('Measurement', 'Lab')}
+                    onAddObservation={() => handleAddLog('Observation', 'Observation')}
+                    onScheduleTask={() => handleAddLog('Note', 'General')}
+                    onAddGeneral={() => handleAddLog('Note', 'General')}
                   />
 
                   {/* Stage Progression */}
@@ -971,7 +971,7 @@ const Index = () => {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button onClick={handleAddLog} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
+                      <Button onClick={() => handleAddLog('Note', 'General')} disabled={!selectedBatch} size="sm" className="whitespace-nowrap">
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         <span className="hidden sm:inline">Add Note</span>
                         <span className="sm:hidden">Add</span>
