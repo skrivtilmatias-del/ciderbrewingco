@@ -37,10 +37,10 @@ export const BatchTimeline = ({ currentStage, stageHistory, startDate }: BatchTi
   });
 
   const getStageGroupName = (stage: string) => {
-    const pressingStages = ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'];
-    const fermentationStages = ['Pitching & Fermentation', 'Cold Crash'];
-    const ageingStages = ['Malolactic', 'Stabilisation/Finings', 'Racking'];
-    const bottlingStages = ['Blending', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'];
+    const pressingStages = ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'];
+    const fermentationStages = ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'];
+    const ageingStages = ['Racking', 'Malolactic', 'Stabilisation'];
+    const bottlingStages = ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'];
     
     if (pressingStages.includes(stage)) return 'Pressing';
     if (fermentationStages.includes(stage)) return 'Fermentation';

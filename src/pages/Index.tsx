@@ -63,21 +63,25 @@ const Index = () => {
   // Get allowed stages based on current batch stage
   const getAllowedStages = (currentStage: string): string[] => {
     const stageMapping: Record<string, string[]> = {
-      'Harvest': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Sorting & Washing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Milling': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Pressing': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Settling/Enzymes': ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'],
-      'Pitching & Fermentation': ['Pitching & Fermentation', 'Cold Crash'],
-      'Cold Crash': ['Pitching & Fermentation', 'Cold Crash'],
-      'Malolactic': ['Malolactic', 'Stabilisation/Finings'],
-      'Stabilisation/Finings': ['Malolactic', 'Stabilisation/Finings'],
-      'Blending': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Racking': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Backsweetening': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Bottling': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Conditioning/Lees Aging': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
-      'Tasting/QA': ['Blending', 'Racking', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'],
+      'Harvest': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Sorting': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Washing': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Milling': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Pressing': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Settling': ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'],
+      'Enzymes': ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'],
+      'Pitching': ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'],
+      'Fermentation': ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'],
+      'Cold Crash': ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'],
+      'Racking': ['Racking', 'Malolactic', 'Stabilisation'],
+      'Malolactic': ['Racking', 'Malolactic', 'Stabilisation'],
+      'Stabilisation': ['Racking', 'Malolactic', 'Stabilisation'],
+      'Blending': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
+      'Backsweetening': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
+      'Bottling': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
+      'Conditioning': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
+      'Lees Aging': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
+      'Tasting': ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'],
     };
     return stageMapping[currentStage] || [...STAGES];
   };
@@ -495,10 +499,10 @@ const Index = () => {
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
     // Calculate progress based on stage
     const allStages = [
-      'Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes',
-      'Pitching & Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
-      'Stabilisation/Finings', 'Blending', 'Backsweetening', 'Bottling',
-      'Conditioning/Lees Aging', 'Tasting/QA', 'Complete'
+      'Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling',
+      'Enzymes', 'Pitching', 'Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
+      'Stabilisation', 'Blending', 'Backsweetening', 'Bottling',
+      'Conditioning', 'Lees Aging', 'Tasting', 'Complete'
     ];
     
     const stageIndex = allStages.indexOf(newStage);

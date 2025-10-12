@@ -36,10 +36,10 @@ const getStageColor = (stage: string) => {
 
 const getDisplayStageName = (stage: string) => {
   // Map technical stage names to display names matching the production stage buttons
-  const pressingStages = ['Harvest', 'Sorting & Washing', 'Milling', 'Pressing', 'Settling/Enzymes'];
-  const fermentationStages = ['Pitching & Fermentation', 'Cold Crash'];
-  const ageingStages = ['Malolactic', 'Stabilisation/Finings', 'Racking'];
-  const bottlingStages = ['Blending', 'Backsweetening', 'Bottling', 'Conditioning/Lees Aging', 'Tasting/QA'];
+  const pressingStages = ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'];
+  const fermentationStages = ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'];
+  const ageingStages = ['Racking', 'Malolactic', 'Stabilisation'];
+  const bottlingStages = ['Blending', 'Backsweetening', 'Bottling', 'Conditioning', 'Lees Aging', 'Tasting'];
   
   if (pressingStages.includes(stage)) return 'Pressing';
   if (fermentationStages.includes(stage)) return 'Fermentation';
