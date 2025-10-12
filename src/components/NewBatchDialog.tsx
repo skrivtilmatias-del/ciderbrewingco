@@ -18,6 +18,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     name: "",
     variety: "",
     volume: "",
+    yeastType: "",
     startOG: "",
     endOG: "",
     startPH: "",
@@ -32,6 +33,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       name: formData.name.trim(),
       variety: formData.variety.trim(),
       volume: parseFloat(formData.volume),
+      yeast_type: formData.yeastType.trim() || undefined,
       target_og: formData.startOG ? parseFloat(formData.startOG) : undefined,
       target_fg: formData.endOG ? parseFloat(formData.endOG) : undefined,
       target_ph: formData.startPH ? parseFloat(formData.startPH) : undefined,
@@ -49,6 +51,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       name: validation.data.name,
       variety: validation.data.variety,
       volume: validation.data.volume,
+      yeast_type: validation.data.yeast_type,
       target_og: validation.data.target_og,
       target_fg: validation.data.target_fg,
       target_ph: validation.data.target_ph,
@@ -62,7 +65,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     onBatchCreated(newBatch as any);
     toast.success("Batch created successfully!");
     setOpen(false);
-    setFormData({ name: "", variety: "", volume: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
+    setFormData({ name: "", variety: "", volume: "", yeastType: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
   };
 
   return (
@@ -110,6 +113,16 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
               value={formData.volume}
               onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="yeastType">Yeast Type (Optional)</Label>
+            <Input
+              id="yeastType"
+              placeholder="e.g., EC-1118, SafCider"
+              value={formData.yeastType}
+              onChange={(e) => setFormData({ ...formData, yeastType: e.target.value })}
             />
           </div>
 

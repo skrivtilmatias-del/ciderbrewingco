@@ -76,6 +76,11 @@ export const batchSchema = z.object({
     .min(0)
     .max(14)
     .optional(),
+  yeast_type: z
+    .string()
+    .trim()
+    .max(100, { message: 'Yeast type must be less than 100 characters' })
+    .optional(),
   notes: z
     .string()
     .trim()

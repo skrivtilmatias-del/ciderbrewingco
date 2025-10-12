@@ -18,6 +18,7 @@ export interface Batch {
   target_fg?: number;
   target_ph?: number;
   target_end_ph?: number;
+  yeast_type?: string;
 }
 
 const getStageIcon = (stage: string) => {

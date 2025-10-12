@@ -134,6 +134,7 @@ export type Database = {
           user_id: string
           variety: string
           volume: number
+          yeast_type: string | null
         }
         Insert: {
           apple_mix?: string | null
@@ -157,6 +158,7 @@ export type Database = {
           user_id: string
           variety: string
           volume: number
+          yeast_type?: string | null
         }
         Update: {
           apple_mix?: string | null
@@ -180,6 +182,7 @@ export type Database = {
           user_id?: string
           variety?: string
           volume?: number
+          yeast_type?: string | null
         }
         Relationships: [
           {

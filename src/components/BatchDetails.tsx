@@ -70,6 +70,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [variety, setVariety] = useState(batch?.variety || "");
   const [volume, setVolume] = useState(batch?.volume.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
+  const [yeastType, setYeastType] = useState(batch?.yeast_type || "");
   const [targetOG, setTargetOG] = useState(batch?.target_og?.toString() || "");
   const [targetFG, setTargetFG] = useState(batch?.target_fg?.toString() || "");
   const [targetPH, setTargetPH] = useState(batch?.target_ph?.toString() || "");
@@ -81,6 +82,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
       setVariety(batch.variety);
       setVolume(batch.volume.toString());
       setStartDate(batch.startDate);
+      setYeastType(batch.yeast_type || "");
       setTargetOG(batch.target_og?.toString() || "");
       setTargetFG(batch.target_fg?.toString() || "");
       setTargetPH(batch.target_ph?.toString() || "");
@@ -140,6 +142,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           variety: variety.trim(),
           volume: parseFloat(volume),
           started_at: startDate,
+          yeast_type: yeastType.trim() || null,
           target_og: targetOG ? parseFloat(targetOG) : null,
           target_fg: targetFG ? parseFloat(targetFG) : null,
           target_ph: targetPH ? parseFloat(targetPH) : null,
@@ -223,6 +226,17 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 </div>
               </div>
               
+              <div>
+                <Label htmlFor="yeastType" className="text-sm font-medium">Yeast Type</Label>
+                <Input
+                  id="yeastType"
+                  placeholder="e.g., EC-1118, SafCider"
+                  value={yeastType}
+                  onChange={(e) => setYeastType(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="targetOG" className="text-sm font-medium">Start OG</Label>
@@ -285,6 +299,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     setVariety(batch.variety);
                     setVolume(batch.volume.toString());
                     setStartDate(batch.startDate);
+                    setYeastType(batch.yeast_type || "");
                     setTargetOG(batch.target_og?.toString() || "");
                     setTargetFG(batch.target_fg?.toString() || "");
                     setTargetPH(batch.target_ph?.toString() || "");
