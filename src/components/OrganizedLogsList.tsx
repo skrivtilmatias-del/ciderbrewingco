@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BatchLogCard, type BatchLog } from "./BatchLogCard";
 import { isToday, isYesterday, isThisWeek, format } from "date-fns";
-import { Pin, FlaskConical, Eye, FileText } from "lucide-react";
+import { Pin, FlaskConical, Eye, FileText, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 interface OrganizedLogsListProps {
   logs: BatchLog[];
@@ -59,6 +60,80 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
 
   const groupedLogs = groupLogsByDate(logs);
 
+  const LogEntryCompact = ({ log }: { log: BatchLog }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    if (isExpanded) {
+      return (
+        <BatchLogCard
+          log={log}
+          onDelete={() => onDeleteLog(log.id)}
+          onUpdate={onUpdateLog ? () => onUpdateLog(log) : () => {}}
+        />
+      );
+    }
+
+    return (
+      <Card 
+        className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
+        onClick={() => setIsExpanded(true)}
+      >
+        <div className="flex items-start gap-3">
+          <ChevronRight className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Date and Stage Row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium">
+                {format(new Date(log.created_at), "MM/dd/yyyy, h:mm:ss a")}
+              </span>
+              <Badge variant="outline" className="text-xs">
+                {log.stage}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {log.role}
+              </Badge>
+            </div>
+            
+            {/* Title */}
+            {log.title && (
+              <div className="text-sm font-medium text-foreground">
+                {log.title}
+              </div>
+            )}
+            
+            {/* Content Preview */}
+            {log.content && (
+              <div className="text-sm text-muted-foreground line-clamp-2">
+                {log.content}
+              </div>
+            )}
+            
+            {/* Tags */}
+            {log.tags && log.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {log.tags.map((tag, i) => (
+                  <Badge key={i} variant="outline" className="text-xs bg-primary/5">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {/* Measurements */}
+            {(log.og || log.fg || log.ph || log.temp_c) && (
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                {log.og && <span>OG: {log.og}</span>}
+                {log.fg && <span>FG: {log.fg}</span>}
+                {log.ph && <span>pH: {log.ph}</span>}
+                {log.temp_c && <span>Temp: {log.temp_c}°C</span>}
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   const renderGroup = (title: string, logs: BatchLog[]) => {
     if (logs.length === 0) return null;
 
@@ -69,12 +144,7 @@ export const OrganizedLogsList = ({ logs, onDeleteLog, onUpdateLog }: OrganizedL
         </h4>
         <div className="space-y-2">
           {logs.map((log) => (
-            <BatchLogCard
-              key={log.id}
-              log={log}
-              onDelete={() => onDeleteLog(log.id)}
-              onUpdate={onUpdateLog ? () => onUpdateLog(log) : () => {}}
-            />
+            <LogEntryCompact key={log.id} log={log} />
           ))}
         </div>
       </div>
