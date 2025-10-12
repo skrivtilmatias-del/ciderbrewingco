@@ -239,7 +239,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="targetOG" className="text-sm font-medium">Start OG</Label>
+                  <Label htmlFor="targetOG" className="text-sm font-medium">OG</Label>
                   <Input
                     id="targetOG"
                     type="number"
@@ -251,7 +251,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                   />
                 </div>
                 <div>
-                  <Label htmlFor="targetFG" className="text-sm font-medium">End OG</Label>
+                  <Label htmlFor="targetFG" className="text-sm font-medium">FG</Label>
                   <Input
                     id="targetFG"
                     type="number"
@@ -360,13 +360,13 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2 border-t">
                   {batch.target_og && (
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Start OG</p>
+                      <p className="text-xs text-muted-foreground">OG</p>
                       <p className="text-sm font-semibold">{batch.target_og}</p>
                     </div>
                   )}
                   {batch.target_fg && (
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">End OG</p>
+                      <p className="text-xs text-muted-foreground">FG</p>
                       <p className="text-sm font-semibold">{batch.target_fg}</p>
                     </div>
                   )}

@@ -98,7 +98,7 @@ export const BatchOverviewHeader = ({
             {batch.target_og && (
               <div className="bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-muted-foreground">Original Gravity</span>
+                  <span className="text-xs font-medium text-muted-foreground">OG</span>
                   {ogStatus && <ogStatus.icon className={`h-4 w-4 ${ogStatus.color}`} />}
                 </div>
                 <div className="flex items-baseline gap-2">

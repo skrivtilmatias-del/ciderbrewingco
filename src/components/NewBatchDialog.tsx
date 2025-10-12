@@ -128,7 +128,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startOG">Start OG (Optional)</Label>
+              <Label htmlFor="startOG">OG (Optional)</Label>
               <Input
                 id="startOG"
                 type="number"
@@ -140,7 +140,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endOG">End OG (Optional)</Label>
+              <Label htmlFor="endOG">FG (Optional)</Label>
               <Input
                 id="endOG"
                 type="number"

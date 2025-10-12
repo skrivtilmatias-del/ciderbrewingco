@@ -29,7 +29,7 @@ export function ABVCalculator() {
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="og">Original Gravity (OG)</Label>
+          <Label htmlFor="og">OG</Label>
           <Input
             id="og"
             type="number"
@@ -40,7 +40,7 @@ export function ABVCalculator() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="fg">Final Gravity (FG)</Label>
+          <Label htmlFor="fg">FG</Label>
           <Input
             id="fg"
             type="number"

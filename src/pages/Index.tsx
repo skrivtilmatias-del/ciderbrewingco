@@ -949,7 +949,7 @@ const Index = () => {
                   {/* Parameter Trend Charts */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ParameterTrendChart
-                      title="Original Gravity"
+                      title="OG"
                       data={logs.map(l => ({
                         date: l.created_at,
                         value: l.og || null
