@@ -13,6 +13,7 @@ import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { BatchOverviewHeader } from "@/components/BatchOverviewHeader";
+import { BatchProductionHeader } from "@/components/BatchProductionHeader";
 import { ParameterTrendChart } from "@/components/ParameterTrendChart";
 import { QuickActionsPanel } from "@/components/QuickActionsPanel";
 import { SmartInsights } from "@/components/SmartInsights";
@@ -973,25 +974,15 @@ const Index = () => {
                     </Card>
                   )}
 
+                  {/* Batch Production Header */}
+                  <BatchProductionHeader batch={selectedBatch} />
+
                   {/* Stage Progression */}
                   <StageProgressionUI
                     currentStage={selectedBatch.currentStage}
                     batchId={selectedBatch.id}
                     batchName={selectedBatch.name}
                     onAdvanceStage={handleUpdateStage}
-                  />
-
-                  {/* Batch Overview Header */}
-                  <BatchOverviewHeader
-                    batch={selectedBatch}
-                    latestMeasurements={logs.length > 0 ? {
-                      og: logs[0].og || undefined,
-                      fg: logs[0].fg || undefined,
-                      ph: logs[0].ph || undefined,
-                      temp_c: logs[0].temp_c || undefined,
-                    } : undefined}
-                    onEditClick={() => setDetailsOpen(true)}
-                    onViewDetails={() => setDetailsOpen(true)}
                   />
 
 
