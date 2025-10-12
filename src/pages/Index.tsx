@@ -49,6 +49,7 @@ const Index = () => {
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [batchSearchQuery, setBatchSearchQuery] = useState("");
+  const [blendSearchQuery, setBlendSearchQuery] = useState("");
   const [tastingSearchQuery, setTastingSearchQuery] = useState("");
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
@@ -89,6 +90,7 @@ const Index = () => {
   
   // Debounce search query to prevent excessive filtering
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedBlendSearchQuery = useDebounce(blendSearchQuery, 300);
   
   // Monitor session timeout
   useSessionTimeout(5);
@@ -1074,12 +1076,23 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="blending" className="mt-4 sm:mt-6">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <h2 className="text-lg font-semibold">Blend Batches</h2>
-                  <NewBlendDialog 
-                    availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
-                    onBlendCreated={handleBlendCreated}
-                  />
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-initial">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        placeholder="Search blends..."
+                        value={blendSearchQuery}
+                        onChange={(e) => setBlendSearchQuery(e.target.value)}
+                        className="pl-9 w-full sm:w-[250px]"
+                      />
+                    </div>
+                    <NewBlendDialog 
+                      availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
+                      onBlendCreated={handleBlendCreated}
+                    />
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
@@ -1090,18 +1103,31 @@ const Index = () => {
                       </p>
                     </Card>
                   ) : (
-                    blendBatches.map((blend) => (
-                      <BlendBatchCard
-                        key={blend.id}
-                        blend={blend}
-                        onDelete={handleDeleteBlend}
-                        onClick={handleBlendClick}
-                        onAddTastingNote={(blendId) => {
-                          setSelectedBlendIdForTasting(blendId);
-                          setTastingDialogOpen(true);
-                        }}
-                      />
-                    ))
+                    blendBatches
+                      .filter(blend => {
+                        if (debouncedBlendSearchQuery === "") return true;
+                        const searchLower = debouncedBlendSearchQuery.toLowerCase();
+                        return (
+                          blend.name.toLowerCase().includes(searchLower) ||
+                          blend.notes?.toLowerCase().includes(searchLower) ||
+                          blend.components.some((c: any) => 
+                            c.batch_name.toLowerCase().includes(searchLower) ||
+                            c.batch_variety.toLowerCase().includes(searchLower)
+                          )
+                        );
+                      })
+                      .map((blend) => (
+                        <BlendBatchCard
+                          key={blend.id}
+                          blend={blend}
+                          onDelete={handleDeleteBlend}
+                          onClick={handleBlendClick}
+                          onAddTastingNote={(blendId) => {
+                            setSelectedBlendIdForTasting(blendId);
+                            setTastingDialogOpen(true);
+                          }}
+                        />
+                      ))
                   )}
                 </div>
               </TabsContent>
