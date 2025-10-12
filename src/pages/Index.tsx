@@ -836,32 +836,34 @@ const Index = () => {
               </TabsList>
             </div>
             
-            {activeTab === "batches" && userRole === "production" && (
+            {(activeTab === "batches" || activeTab === "production") && userRole === "production" && (
               <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
                 <div className="relative w-full sm:w-[300px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search batches..."
+                    placeholder={activeTab === "batches" ? "Search batches..." : "Search batches by name, variety, or stage..."}
                     value={batchSearchQuery}
                     onChange={(e) => setBatchSearchQuery(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Sort by..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                    <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
-                    <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
-                    <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
-                    <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
-                  </SelectContent>
-                </Select>
+                {activeTab === "batches" && (
+                  <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                      <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
+                      <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
+                      <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
+                      <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
           </div>
@@ -933,17 +935,6 @@ const Index = () => {
             <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
               {selectedBatch ? (
                 <>
-                  {/* Batch Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search batches by name, variety, or stage..."
-                      value={batchSearchQuery}
-                      onChange={(e) => setBatchSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
                   {/* Show filtered results if searching */}
                   {batchSearchQuery && (
                     <Card className="p-2 max-h-[200px] overflow-y-auto">
