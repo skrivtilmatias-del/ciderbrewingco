@@ -87,11 +87,29 @@ export const BatchCard = ({ batch, onClick }: BatchCardProps) => {
         </div>
 
         {(batch.target_og || batch.target_ph || batch.yeast_type) && (
-          <p className="text-sm text-muted-foreground pt-2 border-t border-border">
-            {batch.target_og && <>OG: {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</>}
-            {batch.target_ph && <>{batch.target_og && ' '}PH: {batch.target_ph}</>}
-            {batch.yeast_type && <>{(batch.target_og || batch.target_ph) && ' '}YH: {batch.yeast_type}</>}
-          </p>
+          <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
+            {batch.target_og && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <Droplets className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">OG:</span>
+                <span className="text-foreground">{batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</span>
+              </div>
+            )}
+            {batch.target_ph && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <FlaskConical className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">PH:</span>
+                <span className="text-foreground">{batch.target_ph}</span>
+              </div>
+            )}
+            {batch.yeast_type && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <Beaker className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">Yeast:</span>
+                <span className="text-foreground">{batch.yeast_type}</span>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </Card>
