@@ -72,6 +72,7 @@ interface TastingAnalysisDialogProps {
   blendBatches: BlendBatch[];
   existingAnalysis?: TastingAnalysis | null;
   onSave: (data: z.infer<typeof tastingSchema>, analysisId?: string) => void;
+  preSelectedBlendId?: string | null;
 }
 
 export function TastingAnalysisDialog({ 
@@ -79,7 +80,8 @@ export function TastingAnalysisDialog({
   onOpenChange, 
   blendBatches,
   existingAnalysis,
-  onSave 
+  onSave,
+  preSelectedBlendId
 }: TastingAnalysisDialogProps) {
   const [sourceType, setSourceType] = useState<"blend" | "competitor">("blend");
   const [blendBatchId, setBlendBatchId] = useState("");
@@ -109,10 +111,21 @@ export function TastingAnalysisDialog({
       setOverallScore(existingAnalysis.overall_score?.toString() || "");
       setNotes(existingAnalysis.notes || "");
       setAttachments(existingAnalysis.attachments || []);
+    } else if (preSelectedBlendId) {
+      // Pre-select blend when opening from blend card
+      setSourceType("blend");
+      setBlendBatchId(preSelectedBlendId);
+      setCompetitorBrand("");
+      setTaste("");
+      setColour("");
+      setPalate("");
+      setOverallScore("");
+      setNotes("");
+      setAttachments([]);
     } else {
       resetForm();
     }
-  }, [existingAnalysis, open]);
+  }, [existingAnalysis, preSelectedBlendId, open]);
 
   const resetForm = () => {
     setSourceType("blend");

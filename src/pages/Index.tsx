@@ -8,7 +8,7 @@ import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { NewBlendDialog } from "@/components/NewBlendDialog";
 import { BlendBatchCard } from "@/components/BlendBatchCard";
-import { BlendBatchDetails } from "@/components/BlendBatchDetails";
+import { BlendBatchDetailsTabbed } from "@/components/BlendBatchDetailsTabbed";
 import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
@@ -59,6 +59,7 @@ const Index = () => {
   const [tastingAnalyses, setTastingAnalyses] = useState<any[]>([]);
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const [editingTasting, setEditingTasting] = useState<any>(null);
+  const [selectedBlendIdForTasting, setSelectedBlendIdForTasting] = useState<string | null>(null);
   
   // Get allowed stages based on current batch stage
   const getAllowedStages = (currentStage: string): string[] => {
@@ -222,9 +223,10 @@ const Index = () => {
 
       if (blendsError) throw blendsError;
 
-      // Fetch components for each blend
-      const blendsWithComponents = await Promise.all(
+      // Fetch components and tasting data for each blend
+      const blendsWithData = await Promise.all(
         blendsData.map(async (blend) => {
+          // Fetch components
           const { data: componentsData, error: componentsError } = await supabase
             .from("blend_components")
             .select(`
@@ -241,6 +243,25 @@ const Index = () => {
 
           if (componentsError) throw componentsError;
 
+          // Fetch tasting analyses
+          const { data: tastingData, error: tastingError } = await supabase
+            .from("tasting_analysis")
+            .select("overall_score, notes, created_at")
+            .eq("blend_batch_id", blend.id)
+            .order("created_at", { ascending: false });
+
+          if (tastingError) throw tastingError;
+
+          // Calculate average score
+          const average_score = tastingData.length > 0
+            ? tastingData.reduce((sum, t) => sum + (t.overall_score || 0), 0) / tastingData.length
+            : null;
+
+          // Get latest tasting note
+          const latest_tasting = tastingData.length > 0 && tastingData[0].notes
+            ? tastingData[0].notes
+            : null;
+
           return {
             ...blend,
             components: componentsData.map((comp: any) => ({
@@ -251,11 +272,14 @@ const Index = () => {
               percentage: comp.percentage,
               volume_liters: comp.volume_liters,
             })),
+            average_score,
+            tasting_count: tastingData.length,
+            latest_tasting,
           };
         })
       );
 
-      setBlendBatches(blendsWithComponents);
+      setBlendBatches(blendsWithData);
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     }
@@ -1072,6 +1096,10 @@ const Index = () => {
                         blend={blend}
                         onDelete={handleDeleteBlend}
                         onClick={handleBlendClick}
+                        onAddTastingNote={(blendId) => {
+                          setSelectedBlendIdForTasting(blendId);
+                          setTastingDialogOpen(true);
+                        }}
                       />
                     ))
                   )}
@@ -1268,20 +1296,31 @@ const Index = () => {
         onGoToProduction={handleGoToProduction}
       />
       
-      <BlendBatchDetails
+      <BlendBatchDetailsTabbed
         blend={selectedBlend}
         open={blendDetailsOpen}
         onOpenChange={setBlendDetailsOpen}
         onBlendUpdated={fetchBlendBatches}
-        showInventoryControls={selectedBlend?.showInventoryControls || false}
+        onAddTastingNote={(blendId) => {
+          setBlendDetailsOpen(false);
+          setSelectedBlendIdForTasting(blendId);
+          setTastingDialogOpen(true);
+        }}
       />
 
       <TastingAnalysisDialog
         open={tastingDialogOpen}
-        onOpenChange={setTastingDialogOpen}
+        onOpenChange={(open) => {
+          setTastingDialogOpen(open);
+          if (!open) {
+            setSelectedBlendIdForTasting(null);
+            setEditingTasting(null);
+          }
+        }}
         blendBatches={blendBatches.map(b => ({ id: b.id, name: b.name }))}
         existingAnalysis={editingTasting}
         onSave={handleSaveTasting}
+        preSelectedBlendId={selectedBlendIdForTasting}
       />
     </div>
   );
