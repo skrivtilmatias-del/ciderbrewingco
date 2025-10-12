@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package, Timer, Droplets, Zap, Target } from "lucide-react";
+import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package, Timer, Activity, Zap, Target } from "lucide-react";
 import type { Batch } from "@/components/BatchCard";
 import { AIInsights } from "./AIInsights";
 
@@ -62,16 +62,8 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
   // Calculate total production volume
   const totalProductionVolume = batches.reduce((sum, b) => sum + b.volume, 0);
 
-  // Calculate average OG and FG for quality tracking
-  const batchesWithOG = batches.filter(b => b.target_og);
-  const avgOG = batchesWithOG.length > 0
-    ? (batchesWithOG.reduce((sum, b) => sum + (b.target_og || 0), 0) / batchesWithOG.length).toFixed(3)
-    : "N/A";
-
-  const batchesWithFG = batches.filter(b => b.target_fg);
-  const avgFG = batchesWithFG.length > 0
-    ? (batchesWithFG.reduce((sum, b) => sum + (b.target_fg || 0), 0) / batchesWithFG.length).toFixed(3)
-    : "N/A";
+  // Calculate batches in progress
+  const batchesInProgress = batches.filter(b => b.currentStage !== "Complete").length;
 
   // Get top tasting scores
   const topTastingScores = tastingAnalyses
@@ -185,15 +177,15 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
         <Card className="p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-primary/10 rounded-lg">
-              <Droplets className="w-6 h-6 text-primary" />
+              <Activity className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg OG / FG</p>
-              <p className="text-2xl font-bold text-foreground">{avgOG} / {avgFG}</p>
+              <p className="text-sm text-muted-foreground">Batches in Progress</p>
+              <p className="text-3xl font-bold text-foreground">{batchesInProgress}</p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Original & Final Gravity
+            Currently active batches
           </p>
         </Card>
 
