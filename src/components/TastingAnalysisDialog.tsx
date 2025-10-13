@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,9 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Save } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Save, CalendarIcon, Camera, Check, Upload, X, Eye } from "lucide-react";
 import { ImageUpload } from "./ImageUpload";
 import { z } from "zod";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const APPEARANCE_DESCRIPTORS = [
   "brilliant", "clear", "slightly hazy", "cloudy", "sedimented", "pale straw", 
@@ -33,6 +40,15 @@ const PALATE_DESCRIPTORS = [
   "oxidized apple", "pear", "citrus", "stone fruit", "tropical fruit", "honey", "caramel", 
   "toffee", "nuts", "buttery", "spicy", "earthy", "funky", "mineral", "clean", 
   "lingering", "bitter-sweet", "drying", "refreshing", "warm"
+];
+
+const GLASS_TYPES = [
+  "Standard Wine Glass",
+  "Champagne Flute", 
+  "Tulip Glass",
+  "Brandy Snifter",
+  "ISO Tasting Glass",
+  "Tumbler"
 ];
 
 const tastingSchema = z.object({
@@ -89,10 +105,22 @@ export function TastingAnalysisDialog({
   const [taste, setTaste] = useState("");
   const [colour, setColour] = useState("");
   const [palate, setPalate] = useState("");
-  const [overallScore, setOverallScore] = useState("");
+  const [overallScore, setOverallScore] = useState(50);
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  
+  // New fields
+  const [tasterName, setTasterName] = useState("");
+  const [tastingDate, setTastingDate] = useState<Date>(new Date());
+  const [servingTemp, setServingTemp] = useState("");
+  const [glassType, setGlassType] = useState("");
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [showRadarChart, setShowRadarChart] = useState(false);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoSaveTimer = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (existingAnalysis) {
@@ -108,35 +136,65 @@ export function TastingAnalysisDialog({
       setTaste(existingAnalysis.taste || "");
       setColour(existingAnalysis.colour || "");
       setPalate(existingAnalysis.palate || "");
-      setOverallScore(existingAnalysis.overall_score?.toString() || "");
+      setOverallScore(existingAnalysis.overall_score || 50);
       setNotes(existingAnalysis.notes || "");
       setAttachments(existingAnalysis.attachments || []);
+      setPreviewImages(existingAnalysis.attachments || []);
     } else if (preSelectedBlendId) {
-      // Pre-select blend when opening from blend card
       setSourceType("blend");
       setBlendBatchId(preSelectedBlendId);
-      setCompetitorBrand("");
-      setTaste("");
-      setColour("");
-      setPalate("");
-      setOverallScore("");
-      setNotes("");
-      setAttachments([]);
+      resetFormFields();
     } else {
       resetForm();
     }
   }, [existingAnalysis, preSelectedBlendId, open]);
 
-  const resetForm = () => {
-    setSourceType("blend");
-    setBlendBatchId("");
+  // Auto-save effect
+  useEffect(() => {
+    if (!open) return;
+    
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+
+    setAutoSaveStatus("idle");
+    
+    autoSaveTimer.current = setTimeout(() => {
+      if (blendBatchId || competitorBrand.trim()) {
+        setAutoSaveStatus("saving");
+        setTimeout(() => {
+          setAutoSaveStatus("saved");
+          setTimeout(() => setAutoSaveStatus("idle"), 2000);
+        }, 500);
+      }
+    }, 2000);
+
+    return () => {
+      if (autoSaveTimer.current) {
+        clearTimeout(autoSaveTimer.current);
+      }
+    };
+  }, [blendBatchId, competitorBrand, taste, colour, palate, overallScore, notes, tasterName, servingTemp, glassType, open]);
+
+  const resetFormFields = () => {
     setCompetitorBrand("");
     setTaste("");
     setColour("");
     setPalate("");
-    setOverallScore("");
+    setOverallScore(50);
     setNotes("");
     setAttachments([]);
+    setPreviewImages([]);
+    setTasterName("");
+    setTastingDate(new Date());
+    setServingTemp("");
+    setGlassType("");
+  };
+
+  const resetForm = () => {
+    setSourceType("blend");
+    setBlendBatchId("");
+    resetFormFields();
     setErrors([]);
   };
 
@@ -151,6 +209,30 @@ export function TastingAnalysisDialog({
     }
   };
 
+  const handleCameraCapture = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setAttachments(prev => [...prev, base64]);
+        setPreviewImages(prev => [...prev, base64]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setPreviewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = () => {
     setErrors([]);
 
@@ -160,7 +242,7 @@ export function TastingAnalysisDialog({
       taste: taste.trim() || undefined,
       colour: colour.trim() || undefined,
       palate: palate.trim() || undefined,
-      overall_score: overallScore ? parseFloat(overallScore) : undefined,
+      overall_score: overallScore,
       notes: notes.trim() || undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
     });
@@ -171,20 +253,91 @@ export function TastingAnalysisDialog({
     }
 
     onSave(validation.data, existingAnalysis?.id);
-    resetForm();
-    onOpenChange(false);
+    setShowRadarChart(true);
+    setTimeout(() => {
+      setShowRadarChart(false);
+      resetForm();
+      onOpenChange(false);
+    }, 3000);
+  };
+
+  // Calculate individual scores for radar chart (simple estimation)
+  const getRadarScores = () => {
+    const appearance = colour.length > 0 ? Math.min(100, (colour.length / 50) * 100) : 0;
+    const aroma = taste.length > 0 ? Math.min(100, (taste.length / 50) * 100) : 0;
+    const flavor = palate.length > 0 ? Math.min(100, (palate.length / 50) * 100) : 0;
+    const overall = overallScore;
+    const balance = (appearance + aroma + flavor) / 3;
+    
+    return { appearance, aroma, flavor, overall, balance };
+  };
+
+  const RadarChart = () => {
+    const scores = getRadarScores();
+    const categories = [
+      { label: "Appearance", score: scores.appearance },
+      { label: "Aroma", score: scores.aroma },
+      { label: "Flavor", score: scores.flavor },
+      { label: "Balance", score: scores.balance },
+      { label: "Overall", score: scores.overall }
+    ];
+
+    return (
+      <Card className="mb-4 bg-success/5 border-success/20">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Check className="h-5 w-5 text-success" />
+            Tasting Analysis Saved
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-5 gap-2 text-center">
+            {categories.map((cat) => (
+              <div key={cat.label} className="space-y-2">
+                <div className="text-2xl font-bold text-primary">
+                  {Math.round(cat.score)}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {cat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <DialogHeader>
-          <DialogTitle>
-            {existingAnalysis ? "Edit Tasting Analysis" : "New Tasting Analysis"}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>
+              {existingAnalysis ? "Edit Tasting Analysis" : "New Tasting Analysis"}
+            </DialogTitle>
+            {autoSaveStatus !== "idle" && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {autoSaveStatus === "saving" && (
+                  <>
+                    <div className="h-2 w-2 bg-warning rounded-full animate-pulse" />
+                    Saving...
+                  </>
+                )}
+                {autoSaveStatus === "saved" && (
+                  <>
+                    <Check className="h-3 w-3 text-success" />
+                    Saved
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-6">
+          {showRadarChart && <RadarChart />}
+          
           {errors.length > 0 && (
             <div className="bg-destructive/10 border border-destructive rounded p-3">
               {errors.map((error, i) => (
@@ -193,190 +346,322 @@ export function TastingAnalysisDialog({
             </div>
           )}
 
-          <div>
-            <Label>Tasting Source</Label>
-            <div className="flex gap-2 mb-2">
-              <Button
-                type="button"
-                variant={sourceType === "blend" ? "default" : "outline"}
-                onClick={() => setSourceType("blend")}
-                disabled={!!existingAnalysis}
-                className="flex-1"
-              >
-                Blend Batch
-              </Button>
-              <Button
-                type="button"
-                variant={sourceType === "competitor" ? "default" : "outline"}
-                onClick={() => setSourceType("competitor")}
-                disabled={!!existingAnalysis}
-                className="flex-1"
-              >
-                Competitor Brand
-              </Button>
+          {/* Basic Info Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Tasting Source</Label>
+              <div className="flex gap-2 mb-2">
+                <Button
+                  type="button"
+                  variant={sourceType === "blend" ? "default" : "outline"}
+                  onClick={() => setSourceType("blend")}
+                  disabled={!!existingAnalysis}
+                  className="flex-1 h-9 text-xs sm:text-sm"
+                >
+                  Blend
+                </Button>
+                <Button
+                  type="button"
+                  variant={sourceType === "competitor" ? "default" : "outline"}
+                  onClick={() => setSourceType("competitor")}
+                  disabled={!!existingAnalysis}
+                  className="flex-1 h-9 text-xs sm:text-sm"
+                >
+                  Competitor
+                </Button>
+              </div>
+
+              {sourceType === "blend" ? (
+                <Select 
+                  value={blendBatchId} 
+                  onValueChange={setBlendBatchId}
+                  disabled={!!existingAnalysis}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select blend" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100] bg-card border-border max-h-[300px]">
+                    {blendBatches.map((blend) => (
+                      <SelectItem key={blend.id} value={blend.id}>
+                        {blend.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  placeholder="Competitor brand"
+                  value={competitorBrand}
+                  onChange={(e) => setCompetitorBrand(e.target.value)}
+                  disabled={!!existingAnalysis}
+                  className="h-10"
+                />
+              )}
             </div>
 
-            {sourceType === "blend" ? (
-              (() => {
-                const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                if (isIOS) {
-                  return (
-                    <div className="relative">
-                      <Label className="sr-only">Blend Batch</Label>
-                      <select
-                        value={blendBatchId}
-                        onChange={(e) => setBlendBatchId(e.target.value)}
-                        disabled={!!existingAnalysis}
-                        className="h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value="" disabled>Select blend batch</option>
-                        {blendBatches.map((blend) => (
-                          <option key={blend.id} value={blend.id}>{blend.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  );
-                }
-                return (
-                  <Select 
-                    value={blendBatchId} 
-                    onValueChange={setBlendBatchId}
-                    disabled={!!existingAnalysis}
-                  >
-                    <SelectTrigger className="h-12 touch-manipulation">
-                      <SelectValue placeholder="Select blend batch" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[100] bg-card border-border pointer-events-auto max-h-[300px]">
-                      {blendBatches.map((blend) => (
-                        <SelectItem key={blend.id} value={blend.id} className="touch-manipulation min-h-[44px]">
-                          {blend.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                );
-              })()
-            ) : (
+            <div>
+              <Label htmlFor="taster">Taster Name</Label>
               <Input
-                placeholder="Enter competitor brand name"
-                value={competitorBrand}
-                onChange={(e) => setCompetitorBrand(e.target.value)}
-                disabled={!!existingAnalysis}
+                id="taster"
+                value={tasterName}
+                onChange={(e) => setTasterName(e.target.value)}
+                placeholder="Your name"
+                className="h-10"
               />
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="colour">Appearance</Label>
-            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
-              {APPEARANCE_DESCRIPTORS.map((descriptor) => (
-                <Badge
-                  key={descriptor}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
-                  onClick={() => addDescriptor('colour', descriptor)}
-                >
-                  {descriptor}
-                </Badge>
-              ))}
             </div>
-            <Textarea
-              id="colour"
-              value={colour}
-              onChange={(e) => setColour(e.target.value)}
-              placeholder="Describe the appearance, clarity, and colour..."
-              rows={2}
-              maxLength={500}
-            />
-          </div>
 
-          <div>
-            <Label htmlFor="taste">Aroma / Bouquet</Label>
-            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
-              {AROMA_DESCRIPTORS.map((descriptor) => (
-                <Badge
-                  key={descriptor}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
-                  onClick={() => addDescriptor('taste', descriptor)}
-                >
-                  {descriptor}
-                </Badge>
-              ))}
+            <div>
+              <Label>Tasting Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal h-10",
+                      !tastingDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {tastingDate ? format(tastingDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={tastingDate}
+                    onSelect={(date) => date && setTastingDate(date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-            <Textarea
-              id="taste"
-              value={taste}
-              onChange={(e) => setTaste(e.target.value)}
-              placeholder="Describe the aroma and bouquet..."
-              rows={2}
-              maxLength={500}
-            />
-          </div>
 
-          <div>
-            <Label htmlFor="palate">Palate / Flavour</Label>
-            <div className="flex flex-wrap gap-1 mb-2 max-h-32 overflow-y-auto p-2 border border-border rounded-md bg-muted/30">
-              {PALATE_DESCRIPTORS.map((descriptor) => (
-                <Badge
-                  key={descriptor}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
-                  onClick={() => addDescriptor('palate', descriptor)}
-                >
-                  {descriptor}
-                </Badge>
-              ))}
+            <div>
+              <Label htmlFor="temp">Serving Temp (°C)</Label>
+              <Input
+                id="temp"
+                type="number"
+                value={servingTemp}
+                onChange={(e) => setServingTemp(e.target.value)}
+                placeholder="e.g., 12"
+                className="h-10"
+              />
             </div>
-            <Textarea
-              id="palate"
-              value={palate}
-              onChange={(e) => setPalate(e.target.value)}
-              placeholder="Describe the palate, flavour, and finish..."
-              rows={2}
-              maxLength={500}
-            />
+
+            <div className="sm:col-span-2">
+              <Label htmlFor="glass">Glass Type</Label>
+              <Select value={glassType} onValueChange={setGlassType}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="Select glass type" />
+                </SelectTrigger>
+                <SelectContent className="z-[100] bg-card">
+                  {GLASS_TYPES.map((glass) => (
+                    <SelectItem key={glass} value={glass}>
+                      {glass}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="score">Overall Score (0-100)</Label>
-            <Input
-              id="score"
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              value={overallScore}
-              onChange={(e) => setOverallScore(e.target.value)}
-              placeholder="e.g., 85"
-            />
-          </div>
+          {/* Collapsible Tasting Sections */}
+          <Accordion type="multiple" defaultValue={["appearance", "aroma", "palate", "score"]} className="space-y-2">
+            <AccordionItem value="appearance" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base">Appearance</span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pb-4">
+                <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-md bg-muted/30 max-h-40 overflow-y-auto">
+                  {APPEARANCE_DESCRIPTORS.map((descriptor) => (
+                    <Badge
+                      key={descriptor}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs px-2 py-1"
+                      onClick={() => addDescriptor('colour', descriptor)}
+                    >
+                      {descriptor}
+                    </Badge>
+                  ))}
+                </div>
+                <Textarea
+                  value={colour}
+                  onChange={(e) => setColour(e.target.value)}
+                  placeholder="Tap descriptors above or type your notes..."
+                  rows={2}
+                  maxLength={500}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground text-right">{colour.length}/500</p>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div>
-            <Label htmlFor="notes">Additional Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any other observations or comments..."
-              rows={3}
-              maxLength={1000}
-            />
-          </div>
+            <AccordionItem value="aroma" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base">Aroma / Bouquet</span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pb-4">
+                <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-md bg-muted/30 max-h-40 overflow-y-auto">
+                  {AROMA_DESCRIPTORS.map((descriptor) => (
+                    <Badge
+                      key={descriptor}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs px-2 py-1"
+                      onClick={() => addDescriptor('taste', descriptor)}
+                    >
+                      {descriptor}
+                    </Badge>
+                  ))}
+                </div>
+                <Textarea
+                  value={taste}
+                  onChange={(e) => setTaste(e.target.value)}
+                  placeholder="Tap descriptors above or type your notes..."
+                  rows={2}
+                  maxLength={500}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground text-right">{taste.length}/500</p>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div>
-            <Label>Images</Label>
-            <ImageUpload
-              images={attachments}
-              onImagesChange={setAttachments}
-            />
-          </div>
+            <AccordionItem value="palate" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base">Palate / Flavour</span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pb-4">
+                <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-md bg-muted/30 max-h-40 overflow-y-auto">
+                  {PALATE_DESCRIPTORS.map((descriptor) => (
+                    <Badge
+                      key={descriptor}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs px-2 py-1"
+                      onClick={() => addDescriptor('palate', descriptor)}
+                    >
+                      {descriptor}
+                    </Badge>
+                  ))}
+                </div>
+                <Textarea
+                  value={palate}
+                  onChange={(e) => setPalate(e.target.value)}
+                  placeholder="Tap descriptors above or type your notes..."
+                  rows={2}
+                  maxLength={500}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground text-right">{palate.length}/500</p>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div className="flex gap-2 justify-end pt-4">
+            <AccordionItem value="score" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base flex items-center gap-2">
+                  Overall Score
+                  <Badge variant="outline">{overallScore}/100</Badge>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pb-4">
+                <div className="px-2">
+                  <Slider
+                    value={[overallScore]}
+                    onValueChange={(val) => setOverallScore(val[0])}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                    <span>0</span>
+                    <span>50</span>
+                    <span>100</span>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="notes" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base">Additional Notes</span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pb-4">
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any other observations or comments..."
+                  rows={3}
+                  maxLength={1000}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="images" className="border rounded-lg px-4">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <span className="font-semibold text-sm sm:text-base flex items-center gap-2">
+                  Images
+                  {previewImages.length > 0 && (
+                    <Badge variant="secondary">{previewImages.length}</Badge>
+                  )}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pb-4">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCameraCapture}
+                    className="flex-1"
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Camera
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                {previewImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {previewImages.map((img, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
+                        <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <div className="flex gap-2 justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} className="min-w-[100px]">
               <Save className="h-4 w-4 mr-2" />
               {existingAnalysis ? "Update" : "Save"}
             </Button>
