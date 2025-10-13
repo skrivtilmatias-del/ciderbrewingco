@@ -281,6 +281,39 @@ export type Database = {
           },
         ]
       }
+      floor_plan_layouts: {
+        Row: {
+          created_at: string
+          equipment_data: Json
+          id: string
+          name: string
+          notes: string | null
+          scenario_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          equipment_data?: Json
+          id?: string
+          name: string
+          notes?: string | null
+          scenario_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          equipment_data?: Json
+          id?: string
+          name?: string
+          notes?: string | null
+          scenario_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

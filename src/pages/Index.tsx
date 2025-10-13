@@ -21,7 +21,8 @@ import { OrganizedLogsList } from "@/components/OrganizedLogsList";
 import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode } from "lucide-react";
+import { FloorPlan } from "@/pages/FloorPlan";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +55,7 @@ const Index = () => {
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   const [activeTab, setActiveTab] = useState("batches");
-  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels">("analytics");
+  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan">("analytics");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
@@ -852,6 +853,10 @@ const Index = () => {
                         <QrCode className="h-4 w-4 mr-2" />
                         Print Labels
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("floor-plan"); }}>
+                        <Layout className="h-4 w-4 mr-2" />
+                        Floor Plan
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -1118,6 +1123,12 @@ const Index = () => {
 
               {toolsView === "print-labels" && (
                 <PrintQRCodes blendBatches={blendBatches} />
+              )}
+
+              {toolsView === "floor-plan" && (
+                <div className="h-[calc(100vh-250px)]">
+                  <FloorPlan />
+                </div>
               )}
             </TabsContent>
           )}
