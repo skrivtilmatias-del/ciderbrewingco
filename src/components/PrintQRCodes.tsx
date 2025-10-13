@@ -9,6 +9,7 @@ import { Printer, Plus, Trash2, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { makeBatchQrUrl, makeBlendQrUrl } from "@/lib/urls";
 
 interface Batch {
   id: string;
@@ -86,15 +87,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     }
   };
   
-  const getBatchUrl = (batchId: string) => {
-    const base = window.location.origin;
-    return `${base}/r/b/${batchId}`;
-  };
-  
-  const getBlendUrl = (blendId: string) => {
-    const base = window.location.origin;
-    return `${base}/r/l/${blendId}`;
-  };
 
   const handlePrint = () => {
     window.print();
@@ -316,7 +308,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               <div id={`qr-card-${selectedBatch.id}`} className="flex flex-col items-center space-y-4">
                 <div className="bg-white p-4 rounded-lg border">
                   <QRCodeSVG
-                    value={getBatchUrl(selectedBatch.id)}
+                    value={makeBatchQrUrl(selectedBatch.id)}
                     size={200}
                     level="H"
                   />
@@ -448,7 +440,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                     <div id={`qr-card-${blend.id}`} className="flex gap-4 items-center">
                       <div className="bg-white p-2 rounded border">
                         <QRCodeSVG
-                          value={getBlendUrl(blend.id)}
+                          value={makeBlendQrUrl(blend.id)}
                           size={80}
                           level="H"
                         />
