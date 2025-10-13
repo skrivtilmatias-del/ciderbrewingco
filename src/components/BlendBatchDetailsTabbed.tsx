@@ -22,6 +22,7 @@ interface BlendComponent {
   batch_variety: string;
   percentage: number | null;
   volume_liters: number | null;
+  spillage: number | null;
 }
 
 interface TastingAnalysis {
@@ -371,12 +372,15 @@ export function BlendBatchDetailsTabbed({
                           <p className="font-medium">{component.batch_name}</p>
                           <p className="text-sm text-muted-foreground">{component.batch_variety}</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap justify-end">
                           {component.percentage !== null && (
                             <Badge variant="secondary">{component.percentage}%</Badge>
                           )}
                           {component.volume_liters !== null && (
                             <Badge variant="outline">{component.volume_liters}L</Badge>
+                          )}
+                          {component.spillage !== null && component.spillage > 0 && (
+                            <Badge variant="destructive" className="text-xs">Spillage: {component.spillage}L</Badge>
                           )}
                         </div>
                       </div>
