@@ -11,11 +11,14 @@ export const EquipmentItem = ({ equipment, onDragStart }: EquipmentItemProps) =>
   const Icon = equipment.icon;
   
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('equipment', JSON.stringify(equipment));
+    // Set multiple data types to maximize browser compatibility
+    const payload = JSON.stringify(equipment);
+    e.dataTransfer.setData('equipment', payload);
+    e.dataTransfer.setData('application/json', payload);
+    e.dataTransfer.setData('text/plain', equipment.name);
     e.dataTransfer.effectAllowed = 'copy';
     onDragStart(equipment);
   };
-  
   return (
     <Card
       className="p-3 cursor-grab active:cursor-grabbing hover:shadow-lg transition-all"

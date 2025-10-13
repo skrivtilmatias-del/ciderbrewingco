@@ -53,47 +53,71 @@ export const FloorPlanCanvas = ({
     e.evt.preventDefault();
     e.evt.stopPropagation();
   };
+  // Fallback for drops on the container (DOM) instead of Konva Stage
+  const handleContainerDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const equipmentData = e.dataTransfer?.getData('equipment');
+    if (!equipmentData) return;
+    const equipment: EquipmentType = JSON.parse(equipmentData);
+
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+
+    const x = snapToGrid(pixelsToMeters(px, SCALE), GRID_SIZE);
+    const y = snapToGrid(pixelsToMeters(py, SCALE), GRID_SIZE);
+
+    const bounds = getEquipmentBounds(equipment, x, y, 0);
+    if (!isWithinFloor(bounds, floorWidth, floorHeight)) return;
+
+    const hasCollision = placedEquipment.some((placed) => {
+      const placedEquipmentData = EQUIPMENT_DATABASE.find((ee) => ee.id === placed.equipmentId);
+      if (!placedEquipmentData) return false;
+      const placedBounds = getEquipmentBounds(placedEquipmentData, placed.x, placed.y, placed.rotation);
+      return checkCollision(bounds, placedBounds, equipment.minClearance);
+    });
+    if (hasCollision) return;
+
+    onEquipmentPlace({
+      id: generateEquipmentId(),
+      equipmentId: equipment.id,
+      x,
+      y,
+      rotation: 0,
+    });
+  };
 
   const handleDrop = (e: Konva.KonvaEventObject<DragEvent>) => {
     e.evt.preventDefault();
     e.evt.stopPropagation();
     
-    console.log('Drop event triggered');
-    
     // Get equipment data from dataTransfer
     const equipmentData = e.evt.dataTransfer?.getData('equipment');
-    console.log('Equipment data:', equipmentData);
-    
-    if (!equipmentData) {
-      console.log('No equipment data found');
-      return;
-    }
+    if (!equipmentData) return;
     
     const equipment: EquipmentType = JSON.parse(equipmentData);
-    console.log('Parsed equipment:', equipment);
 
     const stage = e.target.getStage();
-    if (!stage) {
-      console.log('No stage found');
-      return;
-    }
+    if (!stage) return;
+
+    // Important: update Konva's internal pointer using native event for DnD
+    // Without this, getPointerPosition() may return null during HTML5 drops
+    stage.setPointersPositions(e.evt as any);
 
     const pointerPosition = stage.getPointerPosition();
-    if (!pointerPosition) {
-      console.log('No pointer position');
-      return;
-    }
+    if (!pointerPosition) return;
 
     const x = snapToGrid(pixelsToMeters(pointerPosition.x, SCALE), GRID_SIZE);
     const y = snapToGrid(pixelsToMeters(pointerPosition.y, SCALE), GRID_SIZE);
-
-    console.log('Drop position:', { x, y });
 
     const bounds = getEquipmentBounds(equipment, x, y, 0);
     
     // Check if within floor
     if (!isWithinFloor(bounds, floorWidth, floorHeight)) {
-      console.log('Equipment out of bounds', bounds, { floorWidth, floorHeight });
+      console.log('Equipment out of bounds');
       return;
     }
 
@@ -111,7 +135,6 @@ export const FloorPlanCanvas = ({
       return;
     }
 
-    console.log('Placing equipment');
     onEquipmentPlace({
       id: generateEquipmentId(),
       equipmentId: equipment.id,
@@ -120,7 +143,6 @@ export const FloorPlanCanvas = ({
       rotation: 0
     });
   };
-
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!selectedEquipmentId) return;
     
@@ -163,7 +185,15 @@ export const FloorPlanCanvas = ({
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-white rounded-lg border">
+    <div
+      ref={containerRef}
+      className="w-full h-full bg-white rounded-lg border"
+      onDrop={handleContainerDrop}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <Stage
         width={stageSize.width}
         height={stageSize.height}
