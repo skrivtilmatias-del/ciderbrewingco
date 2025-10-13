@@ -19,6 +19,7 @@ const blendSchema = z.object({
     source_batch_id: z.string().min(1, "Batch is required"),
     percentage: z.number().min(0).max(100).nullable(),
     volume_liters: z.number().positive().nullable(),
+    spillage: z.number().min(0).optional(),
   })).min(1, "At least one component is required"),
 });
 
@@ -32,6 +33,7 @@ interface BlendComponent {
   source_batch_id: string;
   percentage: string;
   volume_liters: string;
+  spillage: string;
 }
 
 interface NewBlendDialogProps {
@@ -48,12 +50,12 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
   const [storageLocation, setStorageLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [components, setComponents] = useState<BlendComponent[]>([
-    { source_batch_id: "", percentage: "", volume_liters: "" }
+    { source_batch_id: "", percentage: "", volume_liters: "", spillage: "" }
   ]);
   const [errors, setErrors] = useState<string[]>([]);
 
   const addComponent = () => {
-    setComponents([...components, { source_batch_id: "", percentage: "", volume_liters: "" }]);
+    setComponents([...components, { source_batch_id: "", percentage: "", volume_liters: "", spillage: "" }]);
   };
 
   const removeComponent = (index: number) => {
@@ -73,6 +75,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
       source_batch_id: comp.source_batch_id,
       percentage: comp.percentage ? parseFloat(comp.percentage) : null,
       volume_liters: comp.volume_liters ? parseFloat(comp.volume_liters) : null,
+      spillage: comp.spillage ? parseFloat(comp.spillage) : 0,
     }));
 
     const validation = blendSchema.safeParse({
@@ -107,7 +110,7 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
     setBottles150cl("");
     setStorageLocation("");
     setNotes("");
-    setComponents([{ source_batch_id: "", percentage: "", volume_liters: "" }]);
+    setComponents([{ source_batch_id: "", percentage: "", volume_liters: "", spillage: "" }]);
     setOpen(false);
   };
 
@@ -229,9 +232,9 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
                     </Select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor={`percentage-${index}`}>Percentage (%)</Label>
+                      <Label htmlFor={`percentage-${index}`} className="text-xs">Percentage (%)</Label>
                       <Input
                         id={`percentage-${index}`}
                         type="number"
@@ -241,10 +244,11 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
                         value={component.percentage}
                         onChange={(e) => updateComponent(index, 'percentage', e.target.value)}
                         placeholder="e.g., 40"
+                        className="h-9"
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`volume-${index}`}>Volume (L)</Label>
+                      <Label htmlFor={`volume-${index}`} className="text-xs">Volume (L)</Label>
                       <Input
                         id={`volume-${index}`}
                         type="number"
@@ -253,6 +257,20 @@ export function NewBlendDialog({ availableBatches, onBlendCreated }: NewBlendDia
                         value={component.volume_liters}
                         onChange={(e) => updateComponent(index, 'volume_liters', e.target.value)}
                         placeholder="e.g., 40"
+                        className="h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`spillage-${index}`} className="text-xs">Spillage (L)</Label>
+                      <Input
+                        id={`spillage-${index}`}
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={component.spillage}
+                        onChange={(e) => updateComponent(index, 'spillage', e.target.value)}
+                        placeholder="0"
+                        className="h-9"
                       />
                     </div>
                   </div>

@@ -259,6 +259,7 @@ const Index = () => {
               source_batch_id,
               percentage,
               volume_liters,
+              spillage,
               batches:source_batch_id (
                 name,
                 variety
@@ -296,6 +297,7 @@ const Index = () => {
               batch_variety: comp.batches?.variety || "",
               percentage: comp.percentage,
               volume_liters: comp.volume_liters,
+              spillage: comp.spillage || 0,
             })),
             average_score,
             tasting_count: tastingData.length,
@@ -628,6 +630,7 @@ const Index = () => {
         source_batch_id: comp.source_batch_id,
         percentage: comp.percentage,
         volume_liters: comp.volume_liters,
+        spillage: comp.spillage || 0,
       }));
 
       const { error: componentsError } = await supabase
@@ -782,7 +785,11 @@ const Index = () => {
       const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
         const componentVolume = blend.components
           ?.filter((comp: any) => comp.source_batch_id === batch.id)
-          .reduce((sum: number, comp: any) => sum + (parseFloat(comp.volume_liters) || 0), 0) || 0;
+          .reduce((sum: number, comp: any) => {
+            const volume = parseFloat(comp.volume_liters) || 0;
+            const spillage = parseFloat(comp.spillage) || 0;
+            return sum + volume + spillage; // Include spillage in total usage
+          }, 0) || 0;
         return total + componentVolume;
       }, 0);
       

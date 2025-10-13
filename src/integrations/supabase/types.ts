@@ -246,6 +246,7 @@ export type Database = {
           id: string
           percentage: number | null
           source_batch_id: string
+          spillage: number | null
           volume_liters: number | null
         }
         Insert: {
@@ -254,6 +255,7 @@ export type Database = {
           id?: string
           percentage?: number | null
           source_batch_id: string
+          spillage?: number | null
           volume_liters?: number | null
         }
         Update: {
@@ -262,6 +264,7 @@ export type Database = {
           id?: string
           percentage?: number | null
           source_batch_id?: string
+          spillage?: number | null
           volume_liters?: number | null
         }
         Relationships: [
