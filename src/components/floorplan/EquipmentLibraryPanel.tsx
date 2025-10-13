@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Box, Factory, Warehouse, Wine, Wrench } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { useFloorPlanStore } from "@/stores/floorplanStore";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentCategory, EquipmentCatalogItem } from "@/types/floorplan";
+
+const categoryIcons = {
+  tank: Box,
+  press: Factory,
+  storage: Warehouse,
+  bottling: Wine,
+  workstation: Wrench,
+};
 
 export const EquipmentLibraryPanel = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,35 +77,39 @@ export const EquipmentLibraryPanel = () => {
           {Object.entries(categoryLabels).map(([category, label]) => (
             <TabsContent key={category} value={category} className="mt-4 space-y-2">
               {groupedEquipment[category as EquipmentCategory]?.length > 0 ? (
-                groupedEquipment[category as EquipmentCategory].map((equipment) => (
-                  <Card
-                    key={equipment.id}
-                    className="p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, equipment)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0 text-white font-bold"
-                        style={{ backgroundColor: equipment.color }}
-                      >
-                        {equipment.name.charAt(0)}
-                      </div>
+                groupedEquipment[category as EquipmentCategory].map((equipment) => {
+                  const Icon = categoryIcons[equipment.category];
+                  
+                  return (
+                    <Card
+                      key={equipment.id}
+                      className="p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, equipment)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: equipment.color }}
+                        >
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{equipment.name}</h4>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {equipment.widthM}m × {equipment.heightM}m
-                        </p>
-                        {equipment.capacityL && (
-                          <Badge variant="secondary" className="mt-1 text-xs">
-                            {equipment.capacityL}L
-                          </Badge>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{equipment.name}</h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {equipment.widthM}m × {equipment.heightM}m
+                          </p>
+                          {equipment.capacityL && (
+                            <Badge variant="secondary" className="mt-1 text-xs">
+                              {equipment.capacityL}L
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))
+                    </Card>
+                  );
+                })
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No {label.toLowerCase()} found
