@@ -52,7 +52,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     const { data, error } = await supabase
       .from("batches")
       .select("id, name, variety, volume, started_at, current_stage")
-      .order("created_at", { ascending: false });
+      .order("started_at", { ascending: false });
     
     if (error) {
       toast.error("Failed to load batches");
