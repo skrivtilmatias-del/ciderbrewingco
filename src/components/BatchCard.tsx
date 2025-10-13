@@ -96,7 +96,7 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
       <div className="flex items-start justify-between mb-4 pr-8">
         <div className="min-w-0 flex-1">
           <h3 className="text-xl font-semibold text-foreground mb-1">{batch.name}</h3>
-          <p className="text-sm text-muted-foreground truncate">
+          <p className="text-sm text-muted-foreground">
             {batch.variety}
             {batch.apple_origin && <> from {batch.apple_origin}</>}
           </p>
