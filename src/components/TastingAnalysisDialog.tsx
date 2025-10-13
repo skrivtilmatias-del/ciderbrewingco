@@ -111,7 +111,6 @@ export function TastingAnalysisDialog({
   const [errors, setErrors] = useState<string[]>([]);
   
   // New fields
-  const [tasterName, setTasterName] = useState("");
   const [tastingDate, setTastingDate] = useState<Date>(new Date());
   const [servingTemp, setServingTemp] = useState("");
   const [glassType, setGlassType] = useState("");
@@ -174,7 +173,7 @@ export function TastingAnalysisDialog({
         clearTimeout(autoSaveTimer.current);
       }
     };
-  }, [blendBatchId, competitorBrand, taste, colour, palate, overallScore, notes, tasterName, servingTemp, glassType, open]);
+  }, [blendBatchId, competitorBrand, taste, colour, palate, overallScore, notes, servingTemp, glassType, open]);
 
   const resetFormFields = () => {
     setCompetitorBrand("");
@@ -185,7 +184,6 @@ export function TastingAnalysisDialog({
     setNotes("");
     setAttachments([]);
     setPreviewImages([]);
-    setTasterName("");
     setTastingDate(new Date());
     setServingTemp("");
     setGlassType("");
@@ -348,7 +346,7 @@ export function TastingAnalysisDialog({
 
           {/* Basic Info Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+            <div className="sm:col-span-2">
               <Label>Tasting Source</Label>
               <div className="flex gap-2 mb-2">
                 <Button
@@ -397,17 +395,6 @@ export function TastingAnalysisDialog({
                   className="h-10"
                 />
               )}
-            </div>
-
-            <div>
-              <Label htmlFor="taster">Taster Name</Label>
-              <Input
-                id="taster"
-                value={tasterName}
-                onChange={(e) => setTasterName(e.target.value)}
-                placeholder="Your name"
-                className="h-10"
-              />
             </div>
 
             <div>
