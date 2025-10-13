@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
@@ -776,6 +776,22 @@ const Index = () => {
     setActiveTab("production");
   };
 
+  // Calculate available batches (exclude those fully used in blends)
+  const availableBatchesForBlending = useMemo(() => {
+    return batches.filter(batch => {
+      // Calculate total volume used in all blends for this batch
+      const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+        const componentVolume = blend.components
+          ?.filter((comp: any) => comp.source_batch_id === batch.id)
+          .reduce((sum: number, comp: any) => sum + (parseFloat(comp.volume_liters) || 0), 0) || 0;
+        return total + componentVolume;
+      }, 0);
+      
+      // Only show batches that still have available volume (with 0.1L tolerance)
+      return volumeUsedInBlends < (batch.volume - 0.1);
+    }).map(b => ({ id: b.id, name: b.name, variety: b.variety }));
+  }, [batches, blendBatches]);
+
   if (loading || !user) {
     return (
       <div className="min-h-dvh bg-background flex items-center justify-center p-4">
@@ -941,21 +957,7 @@ const Index = () => {
                 )}
                 {activeTab === "blending" && (
                   <NewBlendDialog 
-                    availableBatches={batches
-                      .filter(batch => {
-                        // Calculate total volume used in all blends for this batch
-                        const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
-                          const componentVolume = blend.components
-                            .filter((comp: any) => comp.source_batch_id === batch.id)
-                            .reduce((sum: number, comp: any) => sum + (comp.volume_liters || 0), 0);
-                          return total + componentVolume;
-                        }, 0);
-                        
-                        // Only show batches that still have available volume
-                        return volumeUsedInBlends < batch.volume;
-                      })
-                      .map(b => ({ id: b.id, name: b.name, variety: b.variety }))
-                    }
+                    availableBatches={availableBatchesForBlending}
                     onBlendCreated={handleBlendCreated}
                   />
                 )}
