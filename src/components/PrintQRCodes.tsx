@@ -83,20 +83,45 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               margin: 0; 
             }
             .qr-card { 
-              padding: 24px; 
-              border: 1px solid #e5e7eb; 
-              border-radius: 8px; 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              max-width: 400px; 
               background: white;
             }
-            .qr-code { background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
-            .qr-info { text-align: center; }
-            h3 { font-size: 18px; font-weight: 600; margin: 0 0 8px 0; }
-            p { margin: 4px 0; font-size: 14px; color: #6b7280; }
-            .date { font-size: 12px; padding-top: 8px; }
+            .qr-code { 
+              background: white; 
+              padding: 16px; 
+              border-radius: 8px; 
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: center;
+            }
+            .qr-info { 
+              text-align: center; 
+              width: 100%;
+            }
+            h3, h4 { 
+              font-size: 18px; 
+              font-weight: 600; 
+              margin: 0 0 8px 0;
+              text-align: center;
+            }
+            p { 
+              margin: 4px 0; 
+              font-size: 14px; 
+              color: #6b7280;
+              text-align: center;
+            }
+            .date { 
+              font-size: 12px; 
+              padding-top: 8px;
+              text-align: center;
+            }
+            @media print {
+              body { margin: 0; padding: 0; }
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
           </style>
         </head>
         <body>
@@ -142,21 +167,46 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               background: white;
             }
             .qr-card { 
-              padding: 24px; 
-              border: 1px solid #e5e7eb; 
-              border-radius: 8px; 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              max-width: 400px; 
               margin: 20px auto;
               background: white;
             }
-            .qr-code { background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
-            .qr-info { text-align: center; }
-            h3, h4 { font-size: 18px; font-weight: 600; margin: 0 0 8px 0; }
-            p { margin: 4px 0; font-size: 14px; color: #6b7280; }
-            .date { font-size: 12px; padding-top: 8px; }
+            .qr-code { 
+              background: white; 
+              padding: 16px; 
+              border-radius: 8px; 
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: center;
+            }
+            .qr-info { 
+              text-align: center; 
+              width: 100%;
+            }
+            h3, h4 { 
+              font-size: 18px; 
+              font-weight: 600; 
+              margin: 0 0 8px 0;
+              text-align: center;
+            }
+            p { 
+              margin: 4px 0; 
+              font-size: 14px; 
+              color: #6b7280;
+              text-align: center;
+            }
+            .date { 
+              font-size: 12px; 
+              padding-top: 8px;
+              text-align: center;
+            }
+            @media print {
+              body { margin: 0; padding: 0; }
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
           </style>
         </head>
         <body>
