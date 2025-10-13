@@ -172,8 +172,8 @@ const Index = () => {
       if (batchToSelect) {
         setSelectedBatch(batchToSelect);
         fetchLogs(batchToSelect.id);
-        setDetailsOpen(true);
-        setActiveTab("batches");
+        setDetailsOpen(false);
+        setActiveTab("production");
         // Clear the state to prevent re-selection on refresh
         navigate(location.pathname, { replace: true, state: {} });
       }
