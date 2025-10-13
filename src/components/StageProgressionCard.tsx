@@ -78,7 +78,7 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
         <h3 className="text-base font-medium">Production Stages</h3>
         
         {/* Stage Chips - Wrap and Center */}
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap justify-center gap-2">
           {KEY_STAGES.map((stage, index) => {
             const isCompleted = index < currentKeyStageIndex;
             const isCurrent = index === currentKeyStageIndex;
@@ -108,7 +108,7 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
 
         {/* Navigation Buttons - Stack on Mobile */}
         {!isComplete && (
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-center">
             <Button
               onClick={handlePreviousStage}
               disabled={!canGoPrevious}
