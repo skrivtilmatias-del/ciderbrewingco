@@ -49,29 +49,51 @@ export const FloorPlanCanvas = ({
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  const handleDragOver = (e: Konva.KonvaEventObject<DragEvent>) => {
+    e.evt.preventDefault();
+    e.evt.stopPropagation();
+  };
+
   const handleDrop = (e: Konva.KonvaEventObject<DragEvent>) => {
     e.evt.preventDefault();
+    e.evt.stopPropagation();
+    
+    console.log('Drop event triggered');
     
     // Get equipment data from dataTransfer
     const equipmentData = e.evt.dataTransfer?.getData('equipment');
-    if (!equipmentData) return;
+    console.log('Equipment data:', equipmentData);
+    
+    if (!equipmentData) {
+      console.log('No equipment data found');
+      return;
+    }
     
     const equipment: EquipmentType = JSON.parse(equipmentData);
+    console.log('Parsed equipment:', equipment);
 
     const stage = e.target.getStage();
-    if (!stage) return;
+    if (!stage) {
+      console.log('No stage found');
+      return;
+    }
 
     const pointerPosition = stage.getPointerPosition();
-    if (!pointerPosition) return;
+    if (!pointerPosition) {
+      console.log('No pointer position');
+      return;
+    }
 
     const x = snapToGrid(pixelsToMeters(pointerPosition.x, SCALE), GRID_SIZE);
     const y = snapToGrid(pixelsToMeters(pointerPosition.y, SCALE), GRID_SIZE);
+
+    console.log('Drop position:', { x, y });
 
     const bounds = getEquipmentBounds(equipment, x, y, 0);
     
     // Check if within floor
     if (!isWithinFloor(bounds, floorWidth, floorHeight)) {
-      console.log('Equipment out of bounds');
+      console.log('Equipment out of bounds', bounds, { floorWidth, floorHeight });
       return;
     }
 
@@ -89,6 +111,7 @@ export const FloorPlanCanvas = ({
       return;
     }
 
+    console.log('Placing equipment');
     onEquipmentPlace({
       id: generateEquipmentId(),
       equipmentId: equipment.id,
@@ -145,7 +168,7 @@ export const FloorPlanCanvas = ({
         width={stageSize.width}
         height={stageSize.height}
         onDrop={handleDrop}
-        onDragOver={(e) => e.evt.preventDefault()}
+        onDragOver={handleDragOver}
         onClick={(e) => {
           if (e.target === e.target.getStage()) {
             onSelectEquipment(null);
