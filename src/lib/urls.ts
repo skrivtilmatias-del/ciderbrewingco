@@ -18,17 +18,27 @@ export const getBaseUrl = (): string => {
 };
 
 /**
+ * Get the Supabase Functions URL
+ */
+export const getSupabaseFunctionsUrl = (): string => {
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  return `https://${projectId}.supabase.co/functions/v1`;
+};
+
+/**
  * Generate QR code URL for a batch
+ * Points to server-side redirect endpoint that enforces auth
  * @param batchId - The UUID of the batch
  */
 export const makeBatchQrUrl = (batchId: string): string => {
-  return `${getBaseUrl()}/r/b/${encodeURIComponent(batchId)}`;
+  return `${getSupabaseFunctionsUrl()}/r/batch/${encodeURIComponent(batchId)}`;
 };
 
 /**
  * Generate QR code URL for a blend batch
+ * Points to server-side redirect endpoint that enforces auth
  * @param blendId - The UUID of the blend batch
  */
 export const makeBlendQrUrl = (blendId: string): string => {
-  return `${getBaseUrl()}/r/l/${encodeURIComponent(blendId)}`;
+  return `${getSupabaseFunctionsUrl()}/r/blend/${encodeURIComponent(blendId)}`;
 };
