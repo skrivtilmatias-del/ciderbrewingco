@@ -51,7 +51,12 @@ export const FloorPlanCanvas = ({
 
   const handleDrop = (e: Konva.KonvaEventObject<DragEvent>) => {
     e.evt.preventDefault();
-    if (!draggedEquipment) return;
+    
+    // Get equipment data from dataTransfer
+    const equipmentData = e.evt.dataTransfer?.getData('equipment');
+    if (!equipmentData) return;
+    
+    const equipment: EquipmentType = JSON.parse(equipmentData);
 
     const stage = e.target.getStage();
     if (!stage) return;
@@ -62,10 +67,11 @@ export const FloorPlanCanvas = ({
     const x = snapToGrid(pixelsToMeters(pointerPosition.x, SCALE), GRID_SIZE);
     const y = snapToGrid(pixelsToMeters(pointerPosition.y, SCALE), GRID_SIZE);
 
-    const bounds = getEquipmentBounds(draggedEquipment, x, y, 0);
+    const bounds = getEquipmentBounds(equipment, x, y, 0);
     
     // Check if within floor
     if (!isWithinFloor(bounds, floorWidth, floorHeight)) {
+      console.log('Equipment out of bounds');
       return;
     }
 
@@ -75,14 +81,17 @@ export const FloorPlanCanvas = ({
       if (!placedEquipmentData) return false;
       
       const placedBounds = getEquipmentBounds(placedEquipmentData, placed.x, placed.y, placed.rotation);
-      return checkCollision(bounds, placedBounds, draggedEquipment.minClearance);
+      return checkCollision(bounds, placedBounds, equipment.minClearance);
     });
 
-    if (hasCollision) return;
+    if (hasCollision) {
+      console.log('Collision detected');
+      return;
+    }
 
     onEquipmentPlace({
       id: generateEquipmentId(),
-      equipmentId: draggedEquipment.id,
+      equipmentId: equipment.id,
       x,
       y,
       rotation: 0

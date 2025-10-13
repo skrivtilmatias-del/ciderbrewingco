@@ -10,11 +10,17 @@ interface EquipmentItemProps {
 export const EquipmentItem = ({ equipment, onDragStart }: EquipmentItemProps) => {
   const Icon = equipment.icon;
   
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('equipment', JSON.stringify(equipment));
+    e.dataTransfer.effectAllowed = 'copy';
+    onDragStart(equipment);
+  };
+  
   return (
     <Card
       className="p-3 cursor-grab active:cursor-grabbing hover:shadow-lg transition-all"
       draggable
-      onDragStart={() => onDragStart(equipment)}
+      onDragStart={handleDragStart}
     >
       <div className="flex items-start gap-3">
         <div

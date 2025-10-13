@@ -114,19 +114,26 @@ export const FloorPlan = () => {
       return;
     }
 
+    if (placedEquipment.length === 0) {
+      toast.error("Please add some equipment to the floor plan first");
+      return;
+    }
+
+    console.log('Saving layout:', { userId, layoutName, equipmentCount: placedEquipment.length });
+
     const { error } = await supabase
       .from('floor_plan_layouts')
-      .insert([{
+      .insert({
         user_id: userId,
         name: layoutName,
         scenario_type: 'custom',
         equipment_data: placedEquipment as any,
         notes: layoutNotes
-      }]);
+      });
 
     if (error) {
       toast.error("Failed to save layout");
-      console.error(error);
+      console.error('Save error:', error);
       return;
     }
 
