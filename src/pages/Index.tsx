@@ -164,27 +164,24 @@ const Index = () => {
     }
   }, [user]);
 
-  // Handle batch selection from QR redirect (state or URL params)
+  // Handle batch selection from QR redirect via URL params
   useEffect(() => {
-    const state = location.state as { selectedBatchId?: string } | null;
     const params = new URLSearchParams(location.search);
-    const paramBatchId = params.get("batch");
-    const paramTab = params.get("tab");
+    const batchId = params.get("batch");
 
-    const targetBatchId = state?.selectedBatchId || paramBatchId || null;
-
-    if (targetBatchId && batches.length > 0) {
-      const batchToSelect = batches.find((b) => b.id === targetBatchId);
-      if (batchToSelect) {
-        setSelectedBatch(batchToSelect);
-        fetchLogs(batchToSelect.id);
-        if (paramTab === "production") setActiveTab("production");
-        else setActiveTab("production");
-        // Clear state and query params to prevent re-selection on refresh
-        navigate(location.pathname, { replace: true });
+    if (batchId && batches.length > 0) {
+      const batch = batches.find((b) => b.id === batchId);
+      if (batch) {
+        // Select the batch
+        setSelectedBatch(batch);
+        fetchLogs(batch.id);
+        // Switch to production tab
+        setActiveTab("production");
+        // Clean up URL
+        window.history.replaceState({}, '', '/');
       }
     }
-  }, [location.state, location.search, batches]);
+  }, [location.search, batches]);
 
   const fetchBatches = async () => {
     try {
