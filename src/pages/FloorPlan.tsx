@@ -46,7 +46,7 @@ export const FloorPlan = () => {
       .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading layouts:', error);
+      // Error loading layouts - handled by error boundary
       return;
     }
 
@@ -119,7 +119,7 @@ export const FloorPlan = () => {
       return;
     }
 
-    console.log('Saving layout:', { userId, layoutName, equipmentCount: placedEquipment.length });
+    // Saving layout with equipment count: placedEquipment.length
 
     const { error } = await supabase
       .from('floor_plan_layouts')
@@ -133,7 +133,6 @@ export const FloorPlan = () => {
 
     if (error) {
       toast.error("Failed to save layout");
-      console.error('Save error:', error);
       return;
     }
 

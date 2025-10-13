@@ -112,7 +112,7 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Handle token refresh
       if (event === 'TOKEN_REFRESHED') {
-        console.log('Session token refreshed successfully');
+        // Session token refreshed successfully
       }
       
       // Handle sign out or expired sessions
@@ -149,7 +149,7 @@ const Index = () => {
         setActiveTab("batches");
       }
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      // Error fetching user profile - handled by error boundary
       setUserRole(null);
       setUserProfile(null);
     }

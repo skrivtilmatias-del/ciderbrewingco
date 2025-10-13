@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, Calendar, Lightbulb } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, Calendar, Lightbulb, LucideIcon } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { differenceInDays, addDays, format } from "date-fns";
 
@@ -17,7 +17,7 @@ interface SmartInsightsProps {
 export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
   const insights: Array<{
     type: 'success' | 'warning' | 'info' | 'alert';
-    icon: any;
+    icon: LucideIcon;
     title: string;
     description: string;
   }> = [];

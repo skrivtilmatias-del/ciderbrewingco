@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, ChevronLeft, ChevronRight } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -59,7 +59,6 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
   const isComplete = batch.currentStage === 'Complete';
   const currentIndex = STAGES.indexOf(batch.currentStage as CiderStage);
   const canGoPrevious = !isComplete && currentIndex > 0;
-  const canAdvance = !isComplete;
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,21 +71,6 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
     }
   };
 
-  const handleAdvance = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onAdvanceStage && !isComplete) {
-      const nextStage: CiderStage | 'Complete' = currentIndex >= STAGES.length - 1 ? 'Complete' : STAGES[currentIndex + 1];
-      onAdvanceStage(nextStage);
-    }
-  };
-
-  const handlePrevious = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onPreviousStage && canGoPrevious) {
-      const previousStage = STAGES[currentIndex - 1];
-      onPreviousStage(previousStage);
-    }
-  };
 
   return (
     <Card 
