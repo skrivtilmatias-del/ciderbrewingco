@@ -202,10 +202,10 @@ export default function PublicBlend() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="text-center space-y-4">
-          <Wine className="w-16 h-16 text-primary mx-auto animate-pulse" />
-          <p className="text-muted-foreground">Loading blend details...</p>
+          <Wine className="w-12 h-12 sm:w-16 sm:h-16 text-primary mx-auto animate-pulse" />
+          <p className="text-sm sm:text-base text-muted-foreground">Loading blend details...</p>
         </div>
       </div>
     );
@@ -213,22 +213,22 @@ export default function PublicBlend() {
 
   if (!blend) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="text-center space-y-4">
-          <Wine className="w-16 h-16 text-muted-foreground mx-auto" />
-          <h1 className="text-2xl font-bold">Blend Not Found</h1>
-          <p className="text-muted-foreground">The blend you're looking for doesn't exist.</p>
+          <Wine className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-xl sm:text-2xl font-bold">Blend Not Found</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">The blend you're looking for doesn't exist.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-dvh bg-background overflow-x-hidden">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Wine className="w-8 h-8 text-primary" />
             <h1 className="text-4xl font-bold">{blend.name}</h1>
           </div>

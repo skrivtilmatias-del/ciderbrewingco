@@ -48,11 +48,11 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          <Card className="max-w-md w-full p-6 text-center">
+        <div className="min-h-dvh flex items-center justify-center bg-background p-4">
+          <Card className="max-w-md w-full p-4 sm:p-6 text-center">
             <div className="flex flex-col items-center space-y-4">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
-              <h2 className="text-xl font-semibold text-foreground">
+              <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-destructive" />
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
                 Something went wrong
               </h2>
               <p className="text-sm text-muted-foreground">

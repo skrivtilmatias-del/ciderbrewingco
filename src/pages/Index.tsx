@@ -777,7 +777,7 @@ const Index = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -791,10 +791,10 @@ const Index = () => {
       : 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background overflow-x-hidden">
       {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
+      <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3">
               <Apple className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary flex-shrink-0" />

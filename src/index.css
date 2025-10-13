@@ -100,8 +100,40 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    /* iOS safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* Prevent text zoom on iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Better touch scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile-friendly input sizing */
+  input, select, textarea, button {
+    font-size: 16px; /* Prevent iOS zoom on focus */
+    min-height: 44px; /* iOS touch target minimum */
+  }
+
+  /* Fix for iOS safari bottom bar */
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
+  /* Improve touch targets */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 

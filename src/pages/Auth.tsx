@@ -114,11 +114,11 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <Apple className="w-10 h-10 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Cider Brewing Co</h1>
+    <div className="min-h-dvh bg-background flex items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md p-6 sm:p-8">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+          <Apple className="w-8 h-8 sm:w-10 sm:h-10 text-primary flex-shrink-0" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">

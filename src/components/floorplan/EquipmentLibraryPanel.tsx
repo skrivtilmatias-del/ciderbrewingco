@@ -49,9 +49,9 @@ export const EquipmentLibraryPanel = () => {
   };
   
   return (
-    <div className="w-80 border-l bg-card flex flex-col">
-      <div className="p-4 border-b space-y-3">
-        <h3 className="font-semibold text-lg">Equipment Library</h3>
+    <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-card flex flex-col max-h-96 lg:max-h-none">
+      <div className="p-3 sm:p-4 border-b space-y-3 flex-shrink-0">
+        <h3 className="font-semibold text-base sm:text-lg">Equipment Library</h3>
         
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />

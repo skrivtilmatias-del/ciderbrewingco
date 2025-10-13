@@ -29,10 +29,10 @@ export const FloorPlan = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-dvh bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="px-6 py-4 flex items-center justify-between">
+      <div className="border-b bg-card flex-shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h1 className="text-2xl font-bold">Production Floor Plan</h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -45,40 +45,40 @@ export const FloorPlan = () => {
       </div>
       
       {/* Metrics */}
-      <div className="px-6 py-4 bg-muted/30 border-b">
-        <div className="grid grid-cols-4 gap-4">
-          <Card className="p-4">
+      <div className="px-3 sm:px-6 py-3 sm:py-4 bg-muted/30 border-b flex-shrink-0 overflow-x-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 min-w-max lg:min-w-0">
+          <Card className="p-3 sm:p-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Total Capacity</p>
-              <p className="text-3xl font-bold">{totalCapacity.toLocaleString()} L</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Capacity</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">{totalCapacity.toLocaleString()} L</p>
             </div>
           </Card>
           
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Space Utilization</p>
-              <p className="text-3xl font-bold">{utilization} %</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Utilization</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{utilization} %</p>
             </div>
           </Card>
           
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Equipment Count</p>
-              <p className="text-3xl font-bold">{plan.items.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Equipment</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">{plan.items.length}</p>
             </div>
           </Card>
           
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Free Floor Area</p>
-              <p className="text-3xl font-bold">{freeArea.toFixed(1)} m²</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Free Area</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">{freeArea.toFixed(1)} m²</p>
             </div>
           </Card>
         </div>
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 flex relative overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
         <InteractiveCanvas />
         <EquipmentLibraryPanel />
         <ItemInspector />

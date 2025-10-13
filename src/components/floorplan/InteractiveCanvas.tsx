@@ -238,9 +238,10 @@ export const InteractiveCanvas = () => {
   return (
     <div
       id="canvas-container"
-      className="flex-1 bg-muted/30 relative overflow-hidden"
+      className="flex-1 bg-muted/30 relative overflow-hidden touch-none"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      style={{ touchAction: 'none' }}
     >
       <Stage
         ref={stageRef}

@@ -46,14 +46,14 @@ export const ItemInspector = () => {
   };
   
   return (
-    <Card className="absolute right-4 top-20 w-80 p-4 space-y-4 shadow-lg z-50 bg-card">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Item Properties</h3>
+    <Card className="absolute right-2 sm:right-4 top-2 sm:top-20 w-72 sm:w-80 p-3 sm:p-4 space-y-3 sm:space-y-4 shadow-lg z-50 bg-card max-h-[80vh] overflow-y-auto">
+      <div className="flex items-center justify-between sticky top-0 bg-card pb-2 border-b">
+        <h3 className="font-semibold text-sm sm:text-base">Item Properties</h3>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setSelectedItemId(null)}
-          className="h-6 w-6"
+          className="h-6 w-6 sm:h-8 sm:w-8"
         >
           ×
         </Button>
