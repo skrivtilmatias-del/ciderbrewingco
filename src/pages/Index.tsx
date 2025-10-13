@@ -776,10 +776,9 @@ const Index = () => {
     setActiveTab("production");
   };
 
-  // Calculate available batches (exclude those fully used in blends)
-  const availableBatchesForBlending = useMemo(() => {
-    return batches.filter(batch => {
-      // Calculate total volume used in all blends for this batch
+  // Calculate batch usage and remaining volumes
+  const batchUsageInfo = useMemo(() => {
+    return batches.map(batch => {
       const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
         const componentVolume = blend.components
           ?.filter((comp: any) => comp.source_batch_id === batch.id)
@@ -787,10 +786,25 @@ const Index = () => {
         return total + componentVolume;
       }, 0);
       
-      // Only show batches that still have available volume (with 0.1L tolerance)
-      return volumeUsedInBlends < (batch.volume - 0.1);
-    }).map(b => ({ id: b.id, name: b.name, variety: b.variety }));
+      const remainingVolume = batch.volume - volumeUsedInBlends;
+      const usagePercentage = (volumeUsedInBlends / batch.volume) * 100;
+      
+      return {
+        ...batch,
+        volumeUsed: volumeUsedInBlends,
+        volumeRemaining: remainingVolume,
+        usagePercentage,
+        isAvailable: remainingVolume > 0.1
+      };
+    }).sort((a, b) => b.volumeRemaining - a.volumeRemaining);
   }, [batches, blendBatches]);
+
+  // Calculate available batches (exclude those fully used in blends)
+  const availableBatchesForBlending = useMemo(() => {
+    return batchUsageInfo
+      .filter(b => b.isAvailable)
+      .map(b => ({ id: b.id, name: b.name, variety: b.variety }));
+  }, [batchUsageInfo]);
 
   if (loading || !user) {
     return (
@@ -1194,6 +1208,50 @@ const Index = () => {
           {userRole === "production" && (
             <>
               <TabsContent value="blending" className="mt-4 sm:mt-6">
+                {/* Available Batches Overview */}
+                <Card className="mb-4 sm:mb-6">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg font-semibold mb-4">Available Batches for Blending</h3>
+                    {batchUsageInfo.filter(b => b.isAvailable).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No batches available. All batches are fully allocated.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {batchUsageInfo.filter(b => b.isAvailable).map((batch) => (
+                          <div key={batch.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Apple className="h-4 w-4 text-primary flex-shrink-0" />
+                                <span className="font-medium text-sm sm:text-base truncate">{batch.name}</span>
+                                <Badge variant="secondary" className="text-xs">{batch.variety}</Badge>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                                <span>Total: {batch.volume.toFixed(1)}L</span>
+                                <span>•</span>
+                                <span>Used: {batch.volumeUsed.toFixed(1)}L</span>
+                                <span>•</span>
+                                <span className="font-semibold text-foreground">Available: {batch.volumeRemaining.toFixed(1)}L</span>
+                              </div>
+                            </div>
+                            <div className="w-full sm:w-32">
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-muted-foreground">Usage</span>
+                                <span className="font-medium">{batch.usagePercentage.toFixed(0)}%</span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-primary transition-all"
+                                  style={{ width: `${Math.min(batch.usagePercentage, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Blend Batches */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {blendBatches.length === 0 ? (
                     <Card className="col-span-full p-12 text-center border-dashed">
