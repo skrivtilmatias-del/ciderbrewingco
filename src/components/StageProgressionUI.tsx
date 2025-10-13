@@ -118,7 +118,7 @@ export const StageProgressionUI = ({
 
         {/* Navigation Buttons - Stack on Mobile */}
         {!isComplete && (
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-center">
             <Button
               onClick={handlePreviousStage}
               disabled={!canGoPrevious}
