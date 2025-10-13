@@ -55,6 +55,13 @@ export const InteractiveCanvas = () => {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isTyping =
+        (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') ||
+        (target as any)?.isContentEditable;
+      if (isTyping) return; // do not intercept when user types in inspector inputs
+
       if (!selectedItemId) return;
       
       if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -62,7 +69,7 @@ export const InteractiveCanvas = () => {
         useFloorPlanStore.getState().removeItem(selectedItemId);
       }
       
-      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         useFloorPlanStore.getState().duplicateItem(selectedItemId);
       }
@@ -263,6 +270,12 @@ export const InteractiveCanvas = () => {
           {/* Items */}
           {plan.items.map((item) => {
             const isSelected = item.id === selectedItemId;
+            const rectW = m2px(item.widthM) * zoomLevel;
+            const rectH = m2px(item.heightM) * zoomLevel;
+            const base = Math.min(rectW, rectH);
+            const nameFont = Math.max(10, base * 0.28);
+            const capFont = Math.max(9, base * 0.18);
+            const nameHeight = item.capacityL ? rectH - (capFont + 8) : rectH;
             
             return (
               <Group
@@ -278,8 +291,8 @@ export const InteractiveCanvas = () => {
                 onTransformEnd={(e) => handleTransformEnd(item.id, e)}
               >
                 <Rect
-                  width={m2px(item.widthM) * zoomLevel}
-                  height={m2px(item.heightM) * zoomLevel}
+                  width={rectW}
+                  height={rectH}
                   fill={item.color}
                   stroke={isSelected ? "#2563eb" : "#000"}
                   strokeWidth={isSelected ? 3 : 1}
@@ -288,23 +301,28 @@ export const InteractiveCanvas = () => {
                 />
                 <Text
                   text={item.name}
-                  width={m2px(item.widthM) * zoomLevel}
-                  height={m2px(item.heightM) * zoomLevel}
+                  width={rectW}
+                  height={nameHeight}
                   align="center"
                   verticalAlign="middle"
-                  fontSize={14 * zoomLevel}
+                  wrap="word"
+                  ellipsis
+                  lineHeight={1.1}
+                  listening={false}
+                  fontSize={nameFont}
                   fill="white"
                   fontStyle="bold"
                 />
                 {item.capacityL && (
                   <Text
-                    text={`${item.capacityL}L`}
-                    width={m2px(item.widthM) * zoomLevel}
-                    height={m2px(item.heightM) * zoomLevel}
+                    text={`${item.capacityL} L`}
+                    width={rectW}
+                    height={rectH}
                     align="center"
                     verticalAlign="bottom"
-                    fontSize={11 * zoomLevel}
+                    fontSize={capFont}
                     fill="white"
+                    listening={false}
                     padding={5}
                   />
                 )}
