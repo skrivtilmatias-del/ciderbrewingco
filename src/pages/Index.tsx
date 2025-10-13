@@ -1208,48 +1208,30 @@ const Index = () => {
           {userRole === "production" && (
             <>
               <TabsContent value="blending" className="mt-4 sm:mt-6">
-                {/* Available Batches Overview */}
-                <Card className="mb-4 sm:mb-6">
-                  <div className="p-4 sm:p-6">
-                    <h3 className="text-base sm:text-lg font-semibold mb-4">Available Batches for Blending</h3>
-                    {batchUsageInfo.filter(b => b.isAvailable).length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No batches available. All batches are fully allocated.</p>
-                    ) : (
-                      <div className="space-y-3">
+                {/* Available Batches Overview - Compact */}
+                {batchUsageInfo.filter(b => b.isAvailable).length > 0 && (
+                  <Card className="mb-4">
+                    <div className="p-3 sm:p-4">
+                      <h3 className="text-sm sm:text-base font-semibold mb-3">Available for Blending</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                         {batchUsageInfo.filter(b => b.isAvailable).map((batch) => (
-                          <div key={batch.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 bg-muted/30 rounded-lg border border-border">
+                          <div key={batch.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded border border-border">
+                            <Apple className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Apple className="h-4 w-4 text-primary flex-shrink-0" />
-                                <span className="font-medium text-sm sm:text-base truncate">{batch.name}</span>
-                                <Badge variant="secondary" className="text-xs">{batch.variety}</Badge>
-                              </div>
-                              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-                                <span>Total: {batch.volume.toFixed(1)}L</span>
-                                <span>•</span>
-                                <span>Used: {batch.volumeUsed.toFixed(1)}L</span>
-                                <span>•</span>
-                                <span className="font-semibold text-foreground">Available: {batch.volumeRemaining.toFixed(1)}L</span>
+                              <div className="text-xs font-medium truncate">{batch.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {batch.volumeRemaining.toFixed(1)}L / {batch.volume.toFixed(1)}L
                               </div>
                             </div>
-                            <div className="w-full sm:w-32">
-                              <div className="flex items-center justify-between text-xs mb-1">
-                                <span className="text-muted-foreground">Usage</span>
-                                <span className="font-medium">{batch.usagePercentage.toFixed(0)}%</span>
-                              </div>
-                              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-primary transition-all"
-                                  style={{ width: `${Math.min(batch.usagePercentage, 100)}%` }}
-                                />
-                              </div>
+                            <div className="text-xs font-semibold text-primary">
+                              {(100 - batch.usagePercentage).toFixed(0)}%
                             </div>
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                </Card>
+                    </div>
+                  </Card>
+                )}
 
                 {/* Blend Batches */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
