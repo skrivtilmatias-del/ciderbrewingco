@@ -54,10 +54,10 @@ export const BatchProductionHeader = ({ batch }: BatchProductionHeaderProps) => 
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div>
-        <h2 className="text-2xl font-bold">{batch.name}</h2>
-        <p className="text-muted-foreground">Production Overview</p>
+        <h2 className="text-xl sm:text-2xl font-bold">{batch.name}</h2>
+        <p className="text-sm text-muted-foreground">Production Overview</p>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">

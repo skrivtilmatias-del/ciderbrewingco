@@ -41,45 +41,45 @@ export const BatchOverviewHeader = ({
 
   return (
     <Card className="p-4 sm:p-6 border-2">
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Header Row */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">{batch.name}</h2>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">{batch.name}</h2>
             <p className="text-sm text-muted-foreground">{batch.variety}</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onEditClick}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={onEditClick} className="flex-1 sm:flex-none">
+              <Edit className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Edit</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={onViewDetails}>
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Details
+            <Button variant="outline" size="sm" onClick={onViewDetails} className="flex-1 sm:flex-none">
+              <ExternalLink className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Details</span>
             </Button>
           </div>
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Droplets className="h-3 w-3" />
               Volume
             </p>
-            <p className="text-lg font-semibold">{batch.volume}L</p>
+            <p className="text-base sm:text-lg font-semibold">{batch.volume}L</p>
           </div>
 
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              Days in Production
+              Days
             </p>
-            <p className="text-lg font-semibold">{daysInProduction} days</p>
+            <p className="text-base sm:text-lg font-semibold">{daysInProduction} days</p>
           </div>
 
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Current Stage</p>
+            <p className="text-xs text-muted-foreground">Stage</p>
             <Badge className="text-xs">{batch.currentStage}</Badge>
           </div>
 
@@ -87,7 +87,7 @@ export const BatchOverviewHeader = ({
             <p className="text-xs text-muted-foreground">Progress</p>
             <div className="flex items-center gap-2">
               <Progress value={batch.progress} className="h-2 flex-1" />
-              <span className="text-sm font-semibold">{batch.progress}%</span>
+              <span className="text-xs sm:text-sm font-semibold whitespace-nowrap">{batch.progress}%</span>
             </div>
           </div>
         </div>

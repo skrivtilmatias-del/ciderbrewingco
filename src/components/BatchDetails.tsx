@@ -331,20 +331,20 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
                     <p className="text-sm text-muted-foreground">Apple Variety</p>
-                    <p className="text-lg font-medium">{batch.variety}</p>
+                    <p className="text-base sm:text-lg font-medium">{batch.variety}</p>
                   </div>
                   {batch.apple_origin && (
-                    <div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
                       <p className="text-sm text-muted-foreground">Apple Origin</p>
-                      <p className="text-lg font-medium">{batch.apple_origin}</p>
+                      <p className="text-base sm:text-lg font-medium">{batch.apple_origin}</p>
                     </div>
                   )}
                 </div>
-                <Badge className={`${stageColor} text-white`}>
+                <Badge className={`${stageColor} text-white self-start sm:self-auto`}>
                   <StageIcon className="w-4 h-4 mr-1" />
                   {getDisplayStageName(batch.currentStage)}
                 </Badge>
@@ -498,7 +498,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           {onGoToProduction && (
             <Button 
               onClick={() => onGoToProduction(batch)}
-              className="w-full"
+              className="w-full text-center"
               size="lg"
             >
               <Activity className="h-4 w-4 mr-2" />

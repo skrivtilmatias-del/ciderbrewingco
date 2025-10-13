@@ -74,11 +74,11 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
 
   return (
     <Card>
-      <CardContent className="p-4 sm:p-6 space-y-4">
-        <p className="text-sm font-medium text-muted-foreground">Production Stages</p>
+      <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <p className="text-sm font-medium text-muted-foreground text-center sm:text-left">Production Stages</p>
         
         {/* Horizontal Key Stages - Responsive Grid */}
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
           {KEY_STAGES.map((stage, index) => {
             const isCompleted = index < currentKeyStageIndex;
             const isCurrent = index === currentKeyStageIndex;
@@ -89,7 +89,7 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
                 key={stage.name}
                 variant="outline"
                 onClick={() => handleKeyStageClick(stage.name, index)}
-                className={`h-auto py-2 sm:py-3 px-2 sm:px-3 flex flex-col items-center gap-1 sm:gap-2 transition-all ${
+                className={`h-auto py-2 sm:py-3 px-1 sm:px-2 flex flex-col items-center justify-center gap-1 sm:gap-2 transition-all ${
                   isCompleted
                     ? 'bg-success/10 border-success text-success hover:bg-success/20 cursor-pointer'
                     : isCurrent
@@ -97,8 +97,8 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
                     : 'hover:bg-muted cursor-pointer'
                 }`}
               >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-[9px] sm:text-xs font-medium text-center leading-tight break-words w-full">
                   {stage.name}
                 </span>
               </Button>
@@ -108,22 +108,24 @@ export function StageProgressionCard({ batch, onAdvanceStage, onSkipToStage }: S
 
         {/* Navigation Buttons */}
         {!isComplete && (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
             <Button
               onClick={handlePreviousStage}
               disabled={!canGoPrevious}
-              className="flex-1 bg-primary hover:bg-primary/90"
+              className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-center justify-center"
               size="lg"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
-              Previous Stage
+              <span className="hidden sm:inline">Previous Stage</span>
+              <span className="sm:hidden">Previous</span>
             </Button>
             <Button
               onClick={onAdvanceStage}
-              className="flex-1 bg-primary hover:bg-primary/90"
+              className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-center justify-center"
               size="lg"
             >
-              Advance to Next Stage
+              <span className="hidden sm:inline">Advance to Next Stage</span>
+              <span className="sm:hidden">Next Stage</span>
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
