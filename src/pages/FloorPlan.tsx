@@ -235,7 +235,7 @@ export const FloorPlan = () => {
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-80 border-l flex flex-col">
+        <div className="w-80 border-l flex flex-col overflow-y-auto min-h-0">
           <EquipmentPalette onEquipmentSelect={handleEquipmentSelect} />
           
           <div className="border-t p-4 space-y-4">
