@@ -76,15 +76,12 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
       .slice(0, 3);
   }, [blends]);
 
-  // Bottling goal progress (percentage of volume that's bottled)
+  // Bottling goal progress (toward 1000 bottles)
   const bottlingProgress = useMemo(() => {
-    const totalBottledVolume = blends.reduce((sum, b) => {
-      const vol75cl = (b.bottles_75cl || 0) * 0.75;
-      const vol150cl = (b.bottles_150cl || 0) * 1.5;
-      return sum + vol75cl + vol150cl;
-    }, 0);
-    return totalLiters > 0 ? (totalBottledVolume / totalLiters) * 100 : 0;
-  }, [blends, totalLiters]);
+    const totalBottles = total75cl + total150cl;
+    const goalBottles = 1000;
+    return (totalBottles / goalBottles) * 100;
+  }, [total75cl, total150cl]);
 
   // Filtered and sorted blends
   const filteredBlends = useMemo(() => {
@@ -311,9 +308,9 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
             <CardTitle className="text-sm sm:text-base">Bottling Goal Progress</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Progress value={bottlingProgress} className="h-3" />
+            <Progress value={Math.min(bottlingProgress, 100)} className="h-3" />
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {bottlingProgress.toFixed(1)}% of total volume bottled
+              {total75cl + total150cl} / 1000 bottles ({bottlingProgress.toFixed(1)}%)
             </p>
           </CardContent>
         </Card>
