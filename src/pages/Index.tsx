@@ -941,7 +941,21 @@ const Index = () => {
                 )}
                 {activeTab === "blending" && (
                   <NewBlendDialog 
-                    availableBatches={batches.map(b => ({ id: b.id, name: b.name, variety: b.variety }))}
+                    availableBatches={batches
+                      .filter(batch => {
+                        // Calculate total volume used in all blends for this batch
+                        const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+                          const componentVolume = blend.components
+                            .filter((comp: any) => comp.source_batch_id === batch.id)
+                            .reduce((sum: number, comp: any) => sum + (comp.volume_liters || 0), 0);
+                          return total + componentVolume;
+                        }, 0);
+                        
+                        // Only show batches that still have available volume
+                        return volumeUsedInBlends < batch.volume;
+                      })
+                      .map(b => ({ id: b.id, name: b.name, variety: b.variety }))
+                    }
                     onBlendCreated={handleBlendCreated}
                   />
                 )}
