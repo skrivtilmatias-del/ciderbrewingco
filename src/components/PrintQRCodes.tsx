@@ -74,10 +74,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
           <title>Print QR Code - ${name}</title>
           <style>
             @page { size: A4; margin: 1cm; }
-            @media print {
-              body { margin: 0; padding: 0; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
-            }
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
               display: flex; 
@@ -98,7 +94,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             }
             .qr-code { background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
             .qr-info { text-align: center; }
-            h3, h4 { font-size: 18px; font-weight: 600; margin: 0 0 8px 0; }
+            h3 { font-size: 18px; font-weight: 600; margin: 0 0 8px 0; }
             p { margin: 4px 0; font-size: 14px; color: #6b7280; }
             .date { font-size: 12px; padding-top: 8px; }
           </style>
@@ -140,10 +136,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
           <title>Print Multiple QR Codes</title>
           <style>
             @page { size: A4; margin: 1cm; }
-            @media print {
-              body { margin: 0; padding: 0; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
-            }
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
               margin: 0; 
