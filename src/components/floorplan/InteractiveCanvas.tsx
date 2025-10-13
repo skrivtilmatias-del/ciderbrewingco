@@ -74,33 +74,59 @@ export const InteractiveCanvas = () => {
   
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    console.log('Drop event triggered');
     
     const stage = stageRef.current;
-    if (!stage) return;
+    if (!stage) {
+      console.log('No stage ref');
+      return;
+    }
     
     try {
       const equipmentData = e.dataTransfer.getData('equipment');
-      if (!equipmentData) return;
+      console.log('Equipment data:', equipmentData);
+      
+      if (!equipmentData) {
+        console.log('No equipment data found');
+        return;
+      }
       
       const equipment: EquipmentCatalogItem = JSON.parse(equipmentData);
+      console.log('Parsed equipment:', equipment);
       
-      const pos = stage.getPointerPosition();
-      if (!pos) return;
+      // Get drop position from the mouse event directly
+      const container = document.getElementById('canvas-container');
+      if (!container) {
+        console.log('No container found');
+        return;
+      }
+      
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      console.log('Drop position (px):', x, y);
       
       // Convert to meters and snap if enabled
-      let xM = px2m(pos.x / zoomLevel);
-      let yM = px2m(pos.y / zoomLevel);
+      let xM = px2m(x / zoomLevel);
+      let yM = px2m(y / zoomLevel);
+      
+      console.log('Position in meters (before snap):', xM, yM);
       
       if (snapToGrid) {
         xM = snapM(xM, GRID_SIZE);
         yM = snapM(yM, GRID_SIZE);
       }
       
+      console.log('Position in meters (after snap):', xM, yM);
+      
       // Check bounds
       if (xM + equipment.widthM > plan.roomWidthM || yM + equipment.heightM > plan.roomHeightM) {
+        console.log('Item would be out of bounds');
         return;
       }
       
+      console.log('Adding item to floor plan');
       addItem({
         catalogId: equipment.id,
         name: equipment.name,
