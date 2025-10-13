@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -40,6 +40,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -162,6 +163,22 @@ const Index = () => {
       fetchTastingAnalyses();
     }
   }, [user]);
+
+  // Handle batch selection from QR redirect
+  useEffect(() => {
+    const state = location.state as { selectedBatchId?: string } | null;
+    if (state?.selectedBatchId && batches.length > 0) {
+      const batchToSelect = batches.find(b => b.id === state.selectedBatchId);
+      if (batchToSelect) {
+        setSelectedBatch(batchToSelect);
+        fetchLogs(batchToSelect.id);
+        setDetailsOpen(true);
+        setActiveTab("batches");
+        // Clear the state to prevent re-selection on refresh
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, batches]);
 
   const fetchBatches = async () => {
     try {

@@ -26,8 +26,8 @@ const BatchRedirect = () => {
         return;
       }
 
-      // Redirect to main page - in a real app, you might want to open a specific batch view
-      navigate(`/?batch=${id}`);
+      // Redirect to main page with batch selected
+      navigate("/", { state: { selectedBatchId: id } });
     };
 
     redirect();

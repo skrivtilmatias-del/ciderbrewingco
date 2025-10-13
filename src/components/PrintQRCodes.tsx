@@ -433,8 +433,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 </p>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {blendBatches.slice(0, 3).map((blend) => (
+              <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+                {blendBatches.map((blend) => (
                   <Card key={blend.id} className="p-4 relative">
                     <Button
                       onClick={() => handlePrintSingle(blend.id, "blend")}
