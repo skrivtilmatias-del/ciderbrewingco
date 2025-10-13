@@ -1,63 +1,58 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 const BatchRedirect = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [error, setError] = useState(false);
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
+    let fallbackTimer: number | undefined;
+
+    const go = (targetId: string) => {
+      if (redirectedRef.current) return;
+      redirectedRef.current = true;
+      navigate(`/?batch=${encodeURIComponent(targetId)}&tab=production`, { replace: true });
+    };
+
     const redirect = async () => {
       if (!id) {
-        toast.error("Invalid batch ID");
-        navigate("/");
+        go("");
         return;
       }
 
+      // Hard fallback in case network is slow/unavailable
+      fallbackTimer = window.setTimeout(() => go(id), 1500);
+
+      // Best-effort existence check (non-blocking)
       try {
-        // Verify batch exists
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("batches")
           .select("id")
           .eq("id", id)
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
-          toast.error("Batch not found");
-          navigate("/");
-          return;
-        }
-
-        // Redirect to main page with batch selected and production tab
-        navigate(`/?batch=${encodeURIComponent(id)}&tab=production`, { replace: true });
-      } catch (err) {
-        console.error("Redirect error:", err);
-        setError(true);
-        setTimeout(() => navigate("/"), 2000);
+        // Navigate regardless – if not found, main page will handle it
+        go(id);
+      } catch {
+        go(id);
       }
     };
 
     redirect();
-  }, [id, navigate]);
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+    };
+  }, [id, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading batch...</p>
+        <p className="text-sm text-muted-foreground">Opening batch…</p>
       </div>
     </div>
   );
