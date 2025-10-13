@@ -117,7 +117,6 @@ export const FloorPlanCanvas = ({
     
     // Check if within floor
     if (!isWithinFloor(bounds, floorWidth, floorHeight)) {
-      console.log('Equipment out of bounds');
       return;
     }
 
@@ -131,7 +130,6 @@ export const FloorPlanCanvas = ({
     });
 
     if (hasCollision) {
-      console.log('Collision detected');
       return;
     }
 
