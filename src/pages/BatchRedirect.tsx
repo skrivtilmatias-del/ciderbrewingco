@@ -31,8 +31,8 @@ const BatchRedirect = () => {
           return;
         }
 
-        // Redirect to main page with batch selected
-        navigate("/", { state: { selectedBatchId: id }, replace: true });
+        // Redirect to main page with batch selected and production tab
+        navigate(`/?batch=${encodeURIComponent(id)}&tab=production`, { replace: true });
       } catch (err) {
         console.error("Redirect error:", err);
         setError(true);
