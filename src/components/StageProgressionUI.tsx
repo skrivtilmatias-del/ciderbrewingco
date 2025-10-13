@@ -83,12 +83,12 @@ export const StageProgressionUI = ({
   const canGoPrevious = currentStage !== 'Complete' && STAGES.indexOf(currentStage as CiderStage) > 0;
 
   return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <p className="text-sm font-medium text-muted-foreground">Production Stages</p>
+    <Card className="overflow-hidden">
+      <CardContent className="p-4 sm:p-6 space-y-4 overflow-x-hidden">
+        <h3 className="text-base font-medium">Production Stages</h3>
         
-        {/* Horizontal Key Stages - Responsive Grid */}
-        <div className="grid grid-cols-5 gap-2">
+        {/* Stage Chips - Wrap and Center */}
+        <div className="flex flex-wrap justify-center gap-2">
           {KEY_STAGES.map((stage, index) => {
             const isCompleted = index < currentKeyStageIndex;
             const isCurrent = index === currentKeyStageIndex;
@@ -99,7 +99,7 @@ export const StageProgressionUI = ({
                 key={stage.name}
                 variant="outline"
                 onClick={() => handleKeyStageClick(stage.name, index)}
-                className={`h-auto py-2 sm:py-3 px-2 sm:px-3 flex flex-col items-center gap-1 sm:gap-2 transition-all ${
+                className={`min-h-[44px] py-2 px-3 flex items-center justify-center gap-2 transition-all ${
                   isCompleted
                     ? 'bg-success/10 border-success text-success hover:bg-success/20 cursor-pointer'
                     : isCurrent
@@ -107,8 +107,8 @@ export const StageProgressionUI = ({
                     : 'hover:bg-muted cursor-pointer'
                 }`}
               >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-base sm:text-sm font-medium break-words">
                   {stage.name}
                 </span>
               </Button>
@@ -116,22 +116,20 @@ export const StageProgressionUI = ({
           })}
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Navigation Buttons - Stack on Mobile */}
         {!isComplete && (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handlePreviousStage}
               disabled={!canGoPrevious}
-              className="flex-1 bg-primary hover:bg-primary/90"
-              size="lg"
+              className="w-full sm:w-auto min-h-[44px] text-base bg-primary hover:bg-primary/90"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
               Previous Stage
             </Button>
             <Button
               onClick={handleAdvanceStage}
-              className="flex-1 bg-primary hover:bg-primary/90"
-              size="lg"
+              className="w-full sm:w-auto min-h-[44px] text-base bg-primary hover:bg-primary/90"
             >
               Advance to Next Stage
               <ChevronRight className="w-4 h-4 ml-2" />
