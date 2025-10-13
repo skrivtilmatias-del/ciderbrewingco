@@ -65,13 +65,40 @@ export const EquipmentLibraryPanel = () => {
       </div>
       
       <Tabs defaultValue="tank" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-3">
-          <TabsTrigger value="tank">Tanks</TabsTrigger>
-          <TabsTrigger value="press">Press</TabsTrigger>
-          <TabsTrigger value="storage">Storage</TabsTrigger>
-          <TabsTrigger value="bottling">Bottling</TabsTrigger>
-          <TabsTrigger value="workstation">Tools</TabsTrigger>
-        </TabsList>
+        <div className="mx-4 mt-3 bg-muted/50 p-1 rounded-lg">
+          <TabsList className="w-full h-auto grid grid-cols-5 gap-1 bg-transparent p-0">
+            <TabsTrigger 
+              value="tank" 
+              className="px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Tanks
+            </TabsTrigger>
+            <TabsTrigger 
+              value="press" 
+              className="px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Press
+            </TabsTrigger>
+            <TabsTrigger 
+              value="storage" 
+              className="px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Storage
+            </TabsTrigger>
+            <TabsTrigger 
+              value="bottling" 
+              className="px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Bottling
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workstation" 
+              className="px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Tools
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
         <ScrollArea className="flex-1 px-4 pb-4">
           {Object.entries(categoryLabels).map(([category, label]) => (
