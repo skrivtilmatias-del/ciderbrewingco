@@ -22,6 +22,7 @@ import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
 import { FloorPlan } from "@/pages/FloorPlan";
+import { CellarOverview } from "@/components/CellarOverview";
 import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1223,120 +1224,11 @@ const Index = () => {
                     </p>
                   </Card>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <Wine className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Total Blends</p>
-                            <p className="text-3xl font-bold text-foreground">{blendBatches.length}</p>
-                          </div>
-                        </div>
-                      </Card>
-
-                      <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-accent/10 rounded-lg">
-                            <FlaskConical className="w-6 h-6 text-accent" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Total Liters</p>
-                            <p className="text-3xl font-bold text-foreground">
-                              {blendBatches.reduce((sum, b) => sum + (b.total_volume || 0), 0).toFixed(1)}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-
-                      <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-success/10 rounded-lg">
-                            <Package className="w-6 h-6 text-success" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">75cl Bottles</p>
-                            <p className="text-3xl font-bold text-foreground">
-                              {blendBatches.reduce((sum, b) => sum + (b.bottles_75cl || 0), 0)}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-
-                      <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-chart-2/10 rounded-lg">
-                            <Package className="w-6 h-6 text-chart-2" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">150cl Bottles</p>
-                            <p className="text-3xl font-bold text-foreground">
-                              {blendBatches.reduce((sum, b) => sum + (b.bottles_150cl || 0), 0)}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    </div>
-
-                    {/* Blend Inventory Table */}
-                    <Card className="p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg font-semibold mb-4">Inventory Details</h3>
-                      <div className="overflow-x-auto -mx-4 sm:mx-0">
-                        <div className="inline-block min-w-full align-middle">
-                          <table className="min-w-full">
-                            <thead>
-                              <tr className="border-b border-border">
-                                <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Blend</th>
-                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">Volume</th>
-                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">75cl</th>
-                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">150cl</th>
-                                <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden md:table-cell">Location</th>
-                                <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden sm:table-cell">Created</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {blendBatches.map((blend) => (
-                                <tr 
-                                  key={blend.id} 
-                                  className="border-b border-border hover:bg-muted/50 cursor-pointer transition-colors"
-                                  onClick={() => handleBlendClick(blend, true)}
-                                >
-                                  <td className="py-3 sm:py-4 px-2 sm:px-4">
-                                    <div className="flex items-center gap-2">
-                                      <Wine className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                                      <span className="font-medium text-xs sm:text-sm truncate">{blend.name}</span>
-                                    </div>
-                                  </td>
-                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground">
-                                    {blend.total_volume}L
-                                  </td>
-                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
-                                    <span className="font-semibold text-xs sm:text-sm text-foreground">
-                                      {blend.bottles_75cl || 0}
-                                    </span>
-                                  </td>
-                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
-                                    <span className="font-semibold text-xs sm:text-sm text-foreground">
-                                      {blend.bottles_150cl || 0}
-                                    </span>
-                                  </td>
-                                  <td className="text-left py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden md:table-cell">
-                                    {blend.storage_location || <span className="italic text-muted-foreground/50">Not set</span>}
-                                  </td>
-                                  <td className="text-right py-3 sm:py-4 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">
-                                    {new Date(blend.created_at).toLocaleDateString()}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
+                  <CellarOverview 
+                    blends={blendBatches}
+                    onBlendClick={(blend) => handleBlendClick(blend, true)}
+                    onRefresh={fetchBlendBatches}
+                  />
                 )}
               </TabsContent>
             </>
