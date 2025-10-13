@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import PublicBlend from "./pages/PublicBlend";
+import BatchRedirect from "./pages/BatchRedirect";
+import BlendRedirect from "./pages/BlendRedirect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +31,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/blend/:id" element={<PublicBlend />} />
+            <Route path="/r/b/:id" element={<BatchRedirect />} />
+            <Route path="/r/l/:id" element={<BlendRedirect />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
