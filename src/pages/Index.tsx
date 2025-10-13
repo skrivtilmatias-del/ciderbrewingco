@@ -1322,7 +1322,10 @@ const Index = () => {
             setEditingTasting(null);
           }
         }}
-        blendBatches={blendBatches.map(b => ({ id: b.id, name: b.name }))}
+        blendBatches={blendBatches
+          .filter(b => (b.bottles_75cl || 0) > 0 || (b.bottles_150cl || 0) > 0)
+          .map(b => ({ id: b.id, name: b.name }))
+        }
         existingAnalysis={editingTasting}
         onSave={handleSaveTasting}
         preSelectedBlendId={selectedBlendIdForTasting}

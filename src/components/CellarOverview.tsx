@@ -88,7 +88,9 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
 
   // Filtered and sorted blends
   const filteredBlends = useMemo(() => {
-    let filtered = blends;
+    let filtered = blends.filter(b => 
+      (b.bottles_75cl || 0) > 0 || (b.bottles_150cl || 0) > 0
+    );
 
     // Search filter
     if (searchQuery) {
@@ -390,6 +392,7 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
                     <Checkbox
                       checked={selectedBlends.size === filteredBlends.length && filteredBlends.length > 0}
                       onCheckedChange={toggleSelectAll}
+                      className="h-3.5 w-3.5"
                     />
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
@@ -432,6 +435,7 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
                       <Checkbox
                         checked={selectedBlends.has(blend.id)}
                         onCheckedChange={() => toggleSelectBlend(blend.id)}
+                        className="h-3.5 w-3.5"
                       />
                     </TableCell>
                     <TableCell>
@@ -515,7 +519,7 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
                 <Checkbox
                   checked={selectedBlends.has(blend.id)}
                   onCheckedChange={() => toggleSelectBlend(blend.id)}
-                  className="mt-1"
+                  className="mt-1 h-3.5 w-3.5"
                 />
                 <div className="flex-1 min-w-0 space-y-2">
                   <div 
