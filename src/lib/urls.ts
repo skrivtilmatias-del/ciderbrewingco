@@ -31,7 +31,8 @@ export const getSupabaseFunctionsUrl = (): string => {
  * @param batchId - The UUID of the batch
  */
 export const makeBatchQrUrl = (batchId: string): string => {
-  return `${getSupabaseFunctionsUrl()}/r/batch/${encodeURIComponent(batchId)}`;
+  const origin = getBaseUrl();
+  return `${getSupabaseFunctionsUrl()}/r/batch/${encodeURIComponent(batchId)}?o=${encodeURIComponent(origin)}`;
 };
 
 /**
@@ -40,5 +41,6 @@ export const makeBatchQrUrl = (batchId: string): string => {
  * @param blendId - The UUID of the blend batch
  */
 export const makeBlendQrUrl = (blendId: string): string => {
-  return `${getSupabaseFunctionsUrl()}/r/blend/${encodeURIComponent(blendId)}`;
+  const origin = getBaseUrl();
+  return `${getSupabaseFunctionsUrl()}/r/blend/${encodeURIComponent(blendId)}?o=${encodeURIComponent(origin)}`;
 };

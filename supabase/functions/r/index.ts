@@ -53,11 +53,26 @@ Deno.serve(async (req) => {
       ? `/?batch=${id}&tab=production`
       : `/blend/${id}`;
 
-    // Get the app URL from environment or referer header
-    const appUrl = Deno.env.get('APP_URL') || req.headers.get('referer')?.split('/').slice(0, 3).join('/');
-    
-    // Fallback to constructing from current host (removing the supabase.co domain)
-    const baseUrl = appUrl || url.origin.replace('.supabase.co', '.lovableproject.com');
+    // Prefer explicit origin from query string, then APP_URL secret, then Referer
+    const queryOrigin = url.searchParams.get('o') || url.searchParams.get('origin');
+    const refererOrigin = req.headers.get('referer')?.split('/').slice(0, 3).join('/');
+    const forwardedHost = req.headers.get('x-forwarded-host');
+    const forwardedOrigin = forwardedHost ? `${url.protocol}//${forwardedHost}` : undefined;
+
+    const baseUrl =
+      (queryOrigin && queryOrigin.replace(/\/$/, '')) ||
+      (Deno.env.get('APP_URL')?.replace(/\/$/, '')) ||
+      (refererOrigin && refererOrigin.replace(/\/$/, '')) ||
+      (forwardedOrigin && forwardedOrigin.replace(/\/$/, '')) ||
+      undefined;
+
+    if (!baseUrl) {
+      console.warn('[QR Redirect] No baseUrl could be determined (no o/origin param, no APP_URL secret, no referer).');
+      return new Response(JSON.stringify({ error: 'Base URL not configured for redirects.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
     
     if (user) {
       // User is authenticated - redirect to target
