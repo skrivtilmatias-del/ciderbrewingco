@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ABVCalculator } from "@/components/calculators/ABVCalculator";
 import { PrimingCalculator } from "@/components/calculators/PrimingCalculator";
 import { SO2Calculator } from "@/components/calculators/SO2Calculator";
+import { CostCalculation } from "@/components/CostCalculation";
 import { STAGES } from "@/constants/ciderStages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -57,7 +58,7 @@ const Index = () => {
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   const [activeTab, setActiveTab] = useState("batches");
-  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan">("analytics");
+  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation">("analytics");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
