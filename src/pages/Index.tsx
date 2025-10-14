@@ -23,7 +23,8 @@ import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
 import { FloorPlan } from "@/pages/FloorPlan";
 import { CellarOverview } from "@/components/CellarOverview";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2 } from "lucide-react";
+import { SupplierOverview } from "@/components/SupplierOverview";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +60,7 @@ const Index = () => {
   const [tastingSearchQuery, setTastingSearchQuery] = useState("");
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
-  const [activeTab, setActiveTab] = useState("batches");
+  const [activeTab, setActiveTab] = useState<"batches" | "production" | "blending" | "cellar" | "tasting" | "inventory" | "tools" | "suppliers">("batches");
   const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation" | "planning-tool">("analytics");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
@@ -893,7 +894,7 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 sm:mb-8">
+        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
               <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
@@ -914,6 +915,10 @@ const Index = () => {
                     <TabsTrigger value="cellar" className="py-1.5 px-3">
                       <Warehouse className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Cellar</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="suppliers" className="py-1.5 px-3">
+                      <TrendingUp className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Suppliers</span>
                     </TabsTrigger>
                   </>
                 )}
@@ -963,6 +968,10 @@ const Index = () => {
                       <DropdownMenuItem onClick={() => navigate("/suppliers")}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Supplier Ledger
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/webhooks")}>
+                        <Webhook className="h-4 w-4 mr-2" />
+                        Webhooks & API
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -1336,11 +1345,17 @@ const Index = () => {
                     onRefresh={fetchBlendBatches}
                   />
                 )}
-              </TabsContent>
-            </>
-          )}
+            </TabsContent>
+          </>
+        )}
 
-          <TabsContent value="tasting" className="mt-4 sm:mt-6">
+        {userRole === "production" && (
+          <TabsContent value="suppliers" className="mt-4 sm:mt-6">
+            <SupplierOverview />
+          </TabsContent>
+        )}
+
+        <TabsContent value="tasting" className="mt-4 sm:mt-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-4">Tasting Analysis</h2>
               <div className="relative">
