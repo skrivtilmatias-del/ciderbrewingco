@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -894,47 +894,35 @@ const Index = () => {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="inline-flex min-w-full sm:min-w-0 h-auto p-1 bg-muted rounded-lg gap-1">
+              <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
                 {userRole === "production" && (
                   <>
-                    <Link to="/">
-                      <Button variant={activeTab === 'batches' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                        <Package className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">All Batches</span>
-                      </Button>
-                    </Link>
-                    <Link to="/production">
-                      <Button variant={activeTab === 'production' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                        <Activity className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Production</span>
-                      </Button>
-                    </Link>
-                    <Link to="/blending">
-                      <Button variant={activeTab === 'blending' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                        <Wine className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Blending</span>
-                      </Button>
-                    </Link>
-                    <Link to="/cellar">
-                      <Button variant={activeTab === 'cellar' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                        <Warehouse className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Cellar</span>
-                      </Button>
-                    </Link>
-                    <Link to="/suppliers">
-                      <Button variant={location.pathname.includes('/suppliers') ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                        <TrendingUp className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Suppliers</span>
-                      </Button>
-                    </Link>
+                    <TabsTrigger value="batches" className="py-1.5 px-3">
+                      <Package className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">All Batches</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="production" className="py-1.5 px-3">
+                      <Activity className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Production</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="blending" className="py-1.5 px-3">
+                      <Wine className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Blending</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="cellar" className="py-1.5 px-3">
+                      <Warehouse className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Cellar</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="suppliers" className="py-1.5 px-3">
+                      <TrendingUp className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Suppliers</span>
+                    </TabsTrigger>
                   </>
                 )}
-                <Link to="/tasting">
-                  <Button variant={activeTab === 'tasting' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
-                    <Award className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Tasting</span>
-                  </Button>
-                </Link>
+                <TabsTrigger value="tasting" className="py-1.5 px-3">
+                  <Award className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Tasting</span>
+                </TabsTrigger>
                 {userRole === "production" && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -950,29 +938,33 @@ const Index = () => {
                     <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
                       <DropdownMenuLabel>Tools</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("analytics"); }}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Analytics
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("calculators"); }}>
                         <FlaskConical className="h-4 w-4 mr-2" />
                         Calculators
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("print-labels"); }}>
                         <QrCode className="h-4 w-4 mr-2" />
                         Print Labels
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("floor-plan"); }}>
                         <Layout className="h-4 w-4 mr-2" />
                         Floor Plan
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("cost-calculation"); }}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Cost Calculation
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/planning")}>
                         <Settings2 className="h-4 w-4 mr-2" />
                         Economic Planning Tool
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/suppliers")}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Supplier Ledger
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/webhooks")}>
                         <Webhook className="h-4 w-4 mr-2" />
@@ -985,7 +977,7 @@ const Index = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-              </div>
+              </TabsList>
             </div>
             
             {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
