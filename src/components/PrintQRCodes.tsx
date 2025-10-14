@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Printer } from "lucide-react";
+import { Printer, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { makeBatchQrUrl, makeBlendQrUrl } from "@/lib/urls";
 import { Checkbox } from "@/components/ui/checkbox";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface Batch {
   id: string;
@@ -71,15 +73,20 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print QR Code - ${name}</title>
+          <title>Print QR Label - ${name}</title>
           <style>
             @page { 
               size: 38mm 90mm portrait; 
               margin: 0; 
             }
             @media print {
-              body { margin: 0; padding: 0; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+              body { 
+                margin: 0; 
+                padding: 0;
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+              }
             }
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
@@ -90,51 +97,53 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               display: flex;
               align-items: center;
               justify-content: center;
-            }
-            .qr-card { 
-              display: flex; 
-              flex-direction: column; 
-              align-items: center; 
-              justify-content: flex-start;
-              width: 100%;
-              height: 100%;
               background: white;
-              padding: 4mm 2mm;
             }
-            .qr-code { 
-              background: white; 
-              padding: 0; 
-              margin: 0 0 4mm 0;
+            .label-container {
+              width: 38mm;
+              height: 90mm;
+              background: white;
+              border: 1px solid #d1d5db;
+              border-radius: 6mm;
+              padding: 8mm;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+            }
+            .qr-wrapper {
+              width: 30mm;
+              height: 30mm;
+              border-radius: 4mm;
+              overflow: hidden;
               display: flex;
               align-items: center;
               justify-content: center;
+              background: white;
             }
-            .qr-code svg {
-              width: 28mm !important;
-              height: 28mm !important;
+            .qr-wrapper svg {
+              width: 30mm !important;
+              height: 30mm !important;
               display: block;
             }
-            .qr-info { 
-              text-align: center; 
-              width: 100%;
-            }
-            h3, h4 { 
-              font-size: 11pt; 
-              font-weight: 700; 
-              margin: 0 0 1.5mm 0; 
-              line-height: 1.1;
+            .code {
+              margin-top: 4mm;
+              font-size: 14pt;
+              font-weight: 600;
               color: #000;
-            }
-            p { 
-              margin: 0.8mm 0; 
-              font-size: 8pt; 
-              color: #666; 
               line-height: 1.2;
             }
-            .date { 
-              font-size: 7pt; 
+            .variety {
+              font-size: 12pt;
+              color: #000;
+              line-height: 1.2;
               margin-top: 1mm;
-              color: #666;
+            }
+            .meta {
+              font-size: 10pt;
+              color: #6B7280;
+              line-height: 1.2;
+              margin-top: 1mm;
             }
           </style>
         </head>
@@ -149,6 +158,41 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       printWindow.print();
       printWindow.close();
     }, 250);
+  };
+
+  const handleDownloadPDF = async (id: string, name: string) => {
+    const element = document.getElementById(`qr-card-${id}`);
+    if (!element) return;
+
+    try {
+      toast.loading("Generating PDF...");
+      
+      const canvas = await html2canvas(element, {
+        scale: 3,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imgWidth = 38;
+      const imgHeight = 90;
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [imgWidth, imgHeight]
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${name}-label.pdf`);
+      
+      toast.dismiss();
+      toast.success("PDF downloaded successfully");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to generate PDF");
+      console.error(error);
+    }
   };
 
   const handlePrintMultiple = () => {
@@ -383,35 +427,45 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 />
               </div>
               
-              <Button
-                onClick={() => handlePrintSingle(batch.id, "batch", batch.name)}
-                size="sm"
-                variant="outline"
-                className="absolute top-2 right-2"
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Button
+                  onClick={() => handleDownloadPDF(batch.id, batch.name)}
+                  size="sm"
+                  variant="outline"
+                  title="Download PDF"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => handlePrintSingle(batch.id, "batch", batch.name)}
+                  size="sm"
+                  variant="outline"
+                  title="Print Label"
+                >
+                  <Printer className="h-4 w-4" />
+                </Button>
+              </div>
               
-              <div id={`qr-card-${batch.id}`} className="qr-card flex flex-col items-center space-y-4 pt-8">
-                <div className="qr-code bg-white p-3 rounded-lg border shadow-sm">
+              <div 
+                id={`qr-card-${batch.id}`} 
+                className="print:shadow-none shadow-sm print:border border-gray-300 mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[8mm] bg-white text-center flex flex-col items-center mt-12"
+              >
+                <div className="w-[30mm] h-[30mm] rounded-[4mm] overflow-hidden flex items-center justify-center bg-white">
                   <QRCodeSVG
                     value={makeBatchQrUrl(batch.id)}
-                    size={150}
+                    size={113}
                     level="H"
                   />
                 </div>
-                
-                <div className="qr-info text-center space-y-1">
-                  <h4 className="font-semibold text-base">{batch.name}</h4>
-                  <p className="text-sm text-muted-foreground">{batch.variety}</p>
-                  <p className="text-sm text-muted-foreground">Volume: {batch.volume}L</p>
-                  <p className="text-sm text-muted-foreground">Stage: {batch.current_stage}</p>
-                  {includeVintage && (
-                    <p className="date text-xs text-muted-foreground pt-1">
-                      Started: {new Date(batch.started_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
+                <div className="mt-4 text-[14pt] font-semibold text-black leading-tight">{batch.name}</div>
+                <div className="text-[12pt] text-black leading-tight mt-1">{batch.variety}</div>
+                <div className="mt-1 text-[10pt] text-[#6B7280] leading-tight">Volume: {batch.volume}L</div>
+                <div className="text-[10pt] text-[#6B7280] leading-tight">Stage: {batch.current_stage}</div>
+                {includeVintage && (
+                  <div className="text-[10pt] text-[#6B7280] leading-tight">
+                    Started: {new Date(batch.started_at).toLocaleDateString()}
+                  </div>
+                )}
               </div>
             </Card>
           ))}
@@ -429,36 +483,47 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 />
               </div>
               
-              <Button
-                onClick={() => handlePrintSingle(blend.id, "blend", blend.name)}
-                size="sm"
-                variant="outline"
-                className="absolute top-2 right-2"
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Button
+                  onClick={() => handleDownloadPDF(blend.id, blend.name)}
+                  size="sm"
+                  variant="outline"
+                  title="Download PDF"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => handlePrintSingle(blend.id, "blend", blend.name)}
+                  size="sm"
+                  variant="outline"
+                  title="Print Label"
+                >
+                  <Printer className="h-4 w-4" />
+                </Button>
+              </div>
               
-              <div id={`qr-card-${blend.id}`} className="qr-card flex flex-col items-center space-y-4 pt-8">
-                <div className="qr-code bg-white p-3 rounded-lg border shadow-sm">
+              <div 
+                id={`qr-card-${blend.id}`} 
+                className="print:shadow-none shadow-sm print:border border-gray-300 mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[8mm] bg-white text-center flex flex-col items-center mt-12"
+              >
+                <div className="w-[30mm] h-[30mm] rounded-[4mm] overflow-hidden flex items-center justify-center bg-white">
                   <QRCodeSVG
                     value={makeBlendQrUrl(blend.id)}
-                    size={150}
+                    size={113}
                     level="H"
                   />
                 </div>
-                
-                <div className="qr-info text-center space-y-1">
-                  <h4 className="font-semibold text-base">{blend.name}</h4>
-                  <p className="text-sm text-muted-foreground">Volume: {blend.total_volume}L</p>
-                  {blend.bottles_75cl && blend.bottles_75cl > 0 && (
-                    <p className="text-sm text-muted-foreground">75cl: {blend.bottles_75cl} bottles</p>
-                  )}
-                  {blend.storage_location && (
-                    <p className="text-sm text-muted-foreground">Location: {blend.storage_location}</p>
-                  )}
-                  <p className="date text-xs text-muted-foreground pt-1">
-                    Created: {new Date(blend.created_at).toLocaleDateString()}
-                  </p>
+                <div className="mt-4 text-[14pt] font-semibold text-black leading-tight">{blend.name}</div>
+                <div className="text-[12pt] text-black leading-tight mt-1">Blend</div>
+                <div className="mt-1 text-[10pt] text-[#6B7280] leading-tight">Volume: {blend.total_volume}L</div>
+                {blend.bottles_75cl && blend.bottles_75cl > 0 && (
+                  <div className="text-[10pt] text-[#6B7280] leading-tight">75cl: {blend.bottles_75cl} bottles</div>
+                )}
+                {blend.storage_location && (
+                  <div className="text-[10pt] text-[#6B7280] leading-tight">Location: {blend.storage_location}</div>
+                )}
+                <div className="text-[10pt] text-[#6B7280] leading-tight">
+                  Created: {new Date(blend.created_at).toLocaleDateString()}
                 </div>
               </div>
             </Card>
