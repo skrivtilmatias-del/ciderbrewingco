@@ -255,7 +255,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     }, 250);
   };
 
-  const handlePrintMultiple = () => {
+  const handlePrintMultiple = async () => {
     const selectedItems = mode === "batch" 
       ? Array.from(selectedBatches).map(id => batches.find(b => b.id === id)!).filter(Boolean)
       : Array.from(selectedBlends).map(id => blendBatches.find(b => b.id === id)!).filter(Boolean);
@@ -265,94 +265,172 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       return;
     }
 
-    const printWindow = window.open('', '', 'width=800,height=600');
-    if (!printWindow) return;
+    toast.loading("Preparing labels for print...");
 
-    const itemsHtml = selectedItems.map(item => {
-      const element = document.getElementById(`qr-card-${item.id}`);
-      return element ? element.innerHTML : '';
-    }).join('<div style="page-break-before: always;"></div>');
+    try {
+      // Pre-rasterize all QR codes to PNG data URLs
+      const labelDataPromises = selectedItems.map(async (item) => {
+        const qrElement = document.querySelector<SVGElement>(`#label-${item.id} svg`);
+        if (!qrElement) return null;
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Print Multiple QR Codes</title>
-          <style>
-            @page { 
-              size: 38mm 90mm portrait; 
-              margin: 0; 
-            }
-            @media print {
-              body { margin: 0; padding: 0; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
-              .qr-card { page-break-after: always; }
-              .qr-card:last-child { page-break-after: auto; }
-            }
-            body { 
-              font-family: system-ui, -apple-system, sans-serif; 
-              margin: 0; 
-              padding: 0;
-              background: white;
-            }
-            .qr-card { 
-              display: flex; 
-              flex-direction: column; 
-              align-items: center; 
-              justify-content: flex-start;
-              width: 38mm;
-              height: 90mm;
-              background: white;
-              padding: 4mm 2mm;
-              page-break-after: always;
-            }
-            .qr-code { 
-              background: white; 
-              padding: 0; 
-              margin: 0 0 4mm 0;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            .qr-code svg {
-              width: 28mm !important;
-              height: 28mm !important;
-              display: block;
-            }
-            .qr-info { 
-              text-align: center; 
-              width: 100%;
-            }
-            h3, h4 { 
-              font-size: 11pt; 
-              font-weight: 700; 
-              margin: 0 0 1.5mm 0; 
-              line-height: 1.1;
-              color: #000;
-            }
-            p { 
-              margin: 0.8mm 0; 
-              font-size: 8pt; 
-              color: #666; 
-              line-height: 1.2;
-            }
-            .date { 
-              font-size: 7pt; 
-              margin-top: 1mm;
-              color: #666;
-            }
-          </style>
-        </head>
-        <body>
-          ${itemsHtml}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
+        // Convert SVG to canvas to PNG
+        const svgData = new XMLSerializer().serializeToString(qrElement);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        const pngDataUrl = await new Promise<string>((resolve) => {
+          img.onload = () => {
+            canvas.width = 400;
+            canvas.height = 400;
+            ctx?.drawImage(img, 0, 0, 400, 400);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        });
+
+        return {
+          id: item.id,
+          qrDataUrl: pngDataUrl,
+          name: mode === "batch" ? (item as Batch).name : (item as BlendBatch).name,
+          line1: mode === "batch" ? (item as Batch).variety : "Blend",
+          line2: mode === "batch" 
+            ? `Volume: ${(item as Batch).volume}L`
+            : `Volume: ${(item as BlendBatch).total_volume}L`,
+          line3: mode === "batch"
+            ? `Stage: ${(item as Batch).current_stage}`
+            : (item as BlendBatch).bottles_75cl ? `75cl: ${(item as BlendBatch).bottles_75cl} bottles` : "",
+          date: mode === "batch" && includeVintage
+            ? `Started: ${new Date((item as Batch).started_at).toLocaleDateString()}`
+            : `Created: ${new Date((item as BlendBatch).created_at).toLocaleDateString()}`
+        };
+      });
+
+      const labelData = (await Promise.all(labelDataPromises)).filter(Boolean);
+
+      // Generate grid HTML
+      const labelsHtml = labelData.map(label => `
+        <div class="label-cell">
+          <img src="${label.qrDataUrl}" alt="QR Code" class="qr-image" />
+          <div class="label-name">${label.name}</div>
+          <div class="label-info">${label.line1}</div>
+          <div class="label-info">${label.line2}</div>
+          ${label.line3 ? `<div class="label-info">${label.line3}</div>` : ''}
+          ${label.date ? `<div class="label-date">${label.date}</div>` : ''}
+        </div>
+      `).join('');
+
+      const printWindow = window.open('', '', 'width=800,height=600');
+      if (!printWindow) {
+        toast.dismiss();
+        toast.error("Could not open print window");
+        return;
+      }
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print QR Labels</title>
+            <style>
+              @page { 
+                size: A4;
+                margin: 10mm;
+              }
+              @media print {
+                body { 
+                  margin: 0;
+                  padding: 0;
+                  -webkit-print-color-adjust: exact !important;
+                  color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                .label-grid {
+                  display: grid;
+                  grid-template-columns: repeat(3, 64mm);
+                  gap: 6mm;
+                  width: 100%;
+                }
+                .label-cell {
+                  width: 64mm;
+                  height: 64mm;
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  text-align: center;
+                  background: white;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 4mm;
+                  padding: 3mm;
+                  box-sizing: border-box;
+                }
+                .qr-image {
+                  width: 40mm;
+                  height: 40mm;
+                  margin-bottom: 2mm;
+                  image-rendering: pixelated;
+                  image-rendering: crisp-edges;
+                }
+                .label-name {
+                  font-size: 10pt;
+                  font-weight: 700;
+                  margin: 1mm 0;
+                  color: #111827;
+                  line-height: 1.2;
+                }
+                .label-info {
+                  font-size: 8pt;
+                  color: #374151;
+                  margin: 0.5mm 0;
+                  line-height: 1.2;
+                }
+                .label-date {
+                  font-size: 7pt;
+                  color: #6b7280;
+                  margin-top: 1mm;
+                }
+              }
+              body {
+                font-family: system-ui, -apple-system, sans-serif;
+                background: white;
+              }
+              .label-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 64mm);
+                gap: 6mm;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="label-grid">
+              ${labelsHtml}
+            </div>
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+
+      // Wait for all images to decode before printing
+      const images = printWindow.document.querySelectorAll<HTMLImageElement>('.qr-image');
+      await Promise.all(Array.from(images).map(img => 
+        img.decode().catch(() => {})
+      ));
+
+      toast.dismiss();
+      
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to prepare labels for printing");
+      console.error(error);
+    }
   };
 
   const toggleSelection = (id: string) => {
@@ -437,7 +515,11 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             <div className="flex items-center gap-4">
               <span className="font-medium text-orange-900">{selectedCount} selected</span>
               <div className="flex gap-2">
-                <Button onClick={() => downloadSelectedAsZip("pdf")} size="sm" variant="default">
+                <Button onClick={handlePrintMultiple} size="sm" variant="default">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Labels (A4)
+                </Button>
+                <Button onClick={() => downloadSelectedAsZip("pdf")} size="sm" variant="outline">
                   <FileArchive className="h-4 w-4 mr-2" />
                   Download PDF ZIP
                 </Button>
