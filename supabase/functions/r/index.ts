@@ -53,27 +53,30 @@ Deno.serve(async (req) => {
       ? `/?batch=${id}&tab=production`
       : `/blend/${id}`;
 
-    // Get the app origin
-    const origin = req.headers.get('origin') || url.origin;
+    // Get the app URL from environment or referer header
+    const appUrl = Deno.env.get('APP_URL') || req.headers.get('referer')?.split('/').slice(0, 3).join('/');
+    
+    // Fallback to constructing from current host (removing the supabase.co domain)
+    const baseUrl = appUrl || url.origin.replace('.supabase.co', '.lovableproject.com');
     
     if (user) {
       // User is authenticated - redirect to target
-      console.log(`[QR Redirect] Authenticated - redirecting to ${targetPath}`);
+      console.log(`[QR Redirect] Authenticated - redirecting to ${baseUrl}${targetPath}`);
       return new Response(null, {
         status: 302,
         headers: {
-          'Location': `${origin}${targetPath}`,
+          'Location': `${baseUrl}${targetPath}`,
           ...corsHeaders,
         },
       });
     } else {
       // User not authenticated - redirect to login with next parameter
       const loginPath = `/auth?next=${encodeURIComponent(targetPath)}`;
-      console.log(`[QR Redirect] Not authenticated - redirecting to ${loginPath}`);
+      console.log(`[QR Redirect] Not authenticated - redirecting to ${baseUrl}${loginPath}`);
       return new Response(null, {
         status: 302,
         headers: {
-          'Location': `${origin}${loginPath}`,
+          'Location': `${baseUrl}${loginPath}`,
           ...corsHeaders,
         },
       });
