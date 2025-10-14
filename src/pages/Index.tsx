@@ -946,10 +946,6 @@ const Index = () => {
                         <Settings2 className="h-4 w-4 mr-2" />
                         Economic Planning Tool
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/suppliers")}>
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Supplier Ledger
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/webhooks")}>
                         <Webhook className="h-4 w-4 mr-2" />
                         Webhooks & API
@@ -964,12 +960,12 @@ const Index = () => {
               </TabsList>
             </div>
             
-            {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
-              <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
-                <div className="relative w-full sm:w-[300px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={
+        {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
+          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
+            <div className="relative w-full sm:w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={
                       activeTab === "batches" 
                         ? "Search batches..." 
                         : activeTab === "production"

@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Apple, TrendingUp, Package, Activity, LogOut, Settings2, Wine, Award, Warehouse, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -37,69 +37,66 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
               <h1 className="text-lg sm:text-xl font-semibold">CiderTrack</h1>
             </div>
 
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
               {userRole === "production" && (
                 <>
                   <NavLink to="/batches">
                     {({ isActive }) => (
-                      <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                        <Package className="h-4 w-4 mr-2" />
+                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                        <Package className="h-4 w-4 inline-block mr-2" />
                         Batches
-                      </Button>
+                      </button>
                     )}
                   </NavLink>
                   <NavLink to="/production">
                     {({ isActive }) => (
-                      <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                        <Activity className="h-4 w-4 mr-2" />
+                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                        <Activity className="h-4 w-4 inline-block mr-2" />
                         Production
-                      </Button>
+                      </button>
                     )}
                   </NavLink>
                   <NavLink to="/blending">
                     {({ isActive }) => (
-                      <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                        <Wine className="h-4 w-4 mr-2" />
+                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                        <Wine className="h-4 w-4 inline-block mr-2" />
                         Blending
-                      </Button>
+                      </button>
                     )}
                   </NavLink>
                   <NavLink to="/cellar">
                     {({ isActive }) => (
-                      <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                        <Warehouse className="h-4 w-4 mr-2" />
+                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                        <Warehouse className="h-4 w-4 inline-block mr-2" />
                         Cellar
-                      </Button>
+                      </button>
                     )}
                   </NavLink>
                   <NavLink to="/suppliers">
                     {({ isActive }) => (
-                      <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                        <TrendingUp className="h-4 w-4 mr-2" />
+                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                        <TrendingUp className="h-4 w-4 inline-block mr-2" />
                         Suppliers
-                      </Button>
+                      </button>
                     )}
                   </NavLink>
                 </>
               )}
               <NavLink to="/tasting">
                 {({ isActive }) => (
-                  <Button variant={isActive ? 'default' : 'ghost'} size="sm">
-                    <Award className="h-4 w-4 mr-2" />
+                  <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                    <Award className="h-4 w-4 inline-block mr-2" />
                     Tasting
-                  </Button>
+                  </button>
                 )}
               </NavLink>
               {userRole === "production" && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant={location.pathname.startsWith('/tools') ? 'default' : 'ghost'} 
-                      size="sm"
-                    >
-                      <Settings2 className="h-4 w-4 mr-2" />
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${location.pathname.startsWith('/tools') || location.pathname.startsWith('/planning') || location.pathname.startsWith('/webhooks') || location.pathname.startsWith('/install') ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                      <Settings2 className="h-4 w-4 inline-block mr-2" />
                       Tools
-                    </Button>
+                    </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Tools</DropdownMenuLabel>
@@ -157,62 +154,59 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
           </div>
 
           {/* Mobile Navigation */}
-          <nav className="md:hidden flex items-center gap-1 overflow-x-auto pb-2">
+          <nav className="md:hidden flex items-center gap-1 overflow-x-auto pb-2 bg-muted/50 rounded-lg p-1">
             {userRole === "production" && (
               <>
                 <NavLink to="/batches">
                   {({ isActive }) => (
-                    <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                       <Package className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </NavLink>
                 <NavLink to="/production">
                   {({ isActive }) => (
-                    <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                       <Activity className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </NavLink>
                 <NavLink to="/blending">
                   {({ isActive }) => (
-                    <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                       <Wine className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </NavLink>
                 <NavLink to="/cellar">
                   {({ isActive }) => (
-                    <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                       <Warehouse className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </NavLink>
                 <NavLink to="/suppliers">
                   {({ isActive }) => (
-                    <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                       <TrendingUp className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </NavLink>
               </>
             )}
             <NavLink to="/tasting">
               {({ isActive }) => (
-                <Button variant={isActive ? 'default' : 'ghost'} size="sm">
+                <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                   <Award className="h-4 w-4" />
-                </Button>
+                </button>
               )}
             </NavLink>
             {userRole === "production" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant={location.pathname.startsWith('/tools') ? 'default' : 'ghost'} 
-                    size="sm"
-                  >
+                  <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${location.pathname.startsWith('/tools') || location.pathname.startsWith('/planning') || location.pathname.startsWith('/webhooks') || location.pathname.startsWith('/install') ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
                     <Settings2 className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Tools</DropdownMenuLabel>
