@@ -60,7 +60,7 @@ const Index = () => {
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   const [activeTab, setActiveTab] = useState("batches");
-  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation">("analytics");
+  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation" | "planning-tool">("analytics");
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
@@ -955,6 +955,10 @@ const Index = () => {
                       <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("cost-calculation"); }}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Cost Calculation
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/planning")}>
+                        <Settings2 className="h-4 w-4 mr-2" />
+                        Economic Planning Tool
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
