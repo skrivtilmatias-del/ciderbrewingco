@@ -318,7 +318,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Stage Distribution
             </h3>
-            <ResponsiveContainer width="100%" height={250}>
+            <ChartContainer config={{}} className="h-[250px]">
               <PieChart>
                 <Pie
                   data={stageChartData}
@@ -336,7 +336,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </Card>
         )}
 
@@ -381,7 +381,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Variety Trends Over Time
             </h3>
-            <ResponsiveContainer width="100%" height={250}>
+            <ChartContainer config={{}} className="h-[250px]">
               <BarChart data={varietyTrendsChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
@@ -392,7 +392,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                   <Bar key={variety} dataKey={variety} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
                 ))}
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </Card>
         )}
 
@@ -401,7 +401,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Quality Score Evolution
             </h3>
-            <ResponsiveContainer width="100%" height={250}>
+            <ChartContainer config={{}} className="h-[250px]">
               <LineChart data={qualityEvolutionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" stroke="hsl(var(--foreground))" fontSize={12} />
@@ -409,7 +409,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line type="monotone" dataKey="score" stroke="hsl(var(--success))" strokeWidth={2} dot={{ fill: "hsl(var(--success))" }} />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </Card>
         )}
 
