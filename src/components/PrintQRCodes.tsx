@@ -87,17 +87,16 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               padding: 0;
               width: 38mm;
               height: 90mm;
-              display: flex;
-              align-items: center;
-              justify-content: center;
             }
             .qr-card { 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: center;
-              width: 100%;
-              height: 100%;
+              justify-content: flex-start;
+              width: 38mm;
+              height: 90mm;
+              padding: 4mm 3mm;
+              box-sizing: border-box;
               background: white;
             }
             .qr-code { 
@@ -193,11 +192,12 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: center;
+              justify-content: flex-start;
               width: 38mm;
               height: 90mm;
+              padding: 4mm 3mm;
+              box-sizing: border-box;
               background: white;
-              page-break-after: always;
             }
             .qr-code { 
               background: white; 
