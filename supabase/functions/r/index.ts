@@ -15,13 +15,14 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(Boolean);
     
-    // Expected: /r/batch/{id} or /r/blend/{id}
-    if (pathParts.length < 2) {
+    // Expected path: /r/batch/{id} or /r/blend/{id}
+    // pathParts will be: ['r', 'batch', '{id}'] or ['r', 'blend', '{id}']
+    if (pathParts.length < 3) {
       return new Response('Invalid path', { status: 400 });
     }
 
-    const type = pathParts[0]; // 'batch' or 'blend'
-    const id = pathParts[1];
+    const type = pathParts[1]; // 'batch' or 'blend'
+    const id = pathParts[2];
 
     if (!['batch', 'blend'].includes(type)) {
       return new Response('Invalid resource type', { status: 400 });
