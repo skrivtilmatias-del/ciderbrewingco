@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import { useAuth } from "@/hooks/useAuth";
+import { AppLayout } from "@/components/AppLayout";
 import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { NewBlendDialog } from "@/components/NewBlendDialog";
@@ -46,6 +47,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toolView } = useParams();
+  
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -60,8 +63,29 @@ const Index = () => {
   const [tastingSearchQuery, setTastingSearchQuery] = useState("");
   const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
-  const [activeTab, setActiveTab] = useState<"batches" | "production" | "blending" | "cellar" | "tasting" | "inventory" | "tools" | "suppliers">("batches");
-  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation" | "planning-tool">("analytics");
+  
+  // Determine active tab from route
+  const getActiveTabFromPath = (): "batches" | "production" | "blending" | "cellar" | "tasting" | "tools" | "suppliers" => {
+    const path = location.pathname;
+    if (path === '/batches' || path === '/') return 'batches';
+    if (path === '/production') return 'production';
+    if (path === '/blending') return 'blending';
+    if (path === '/cellar') return 'cellar';
+    if (path === '/tasting') return 'tasting';
+    if (path.startsWith('/tools')) return 'tools';
+    return 'batches';
+  };
+  
+  const activeTab = getActiveTabFromPath();
+  const [toolsView, setToolsView] = useState<"analytics" | "calculators" | "print-labels" | "floor-plan" | "cost-calculation" | "planning-tool">(toolView as any || "analytics");
+  
+  // Sync toolsView with URL parameter
+  useEffect(() => {
+    if (toolView && ['analytics', 'calculators', 'print-labels', 'floor-plan', 'cost-calculation'].includes(toolView)) {
+      setToolsView(toolView as any);
+    }
+  }, [toolView]);
+  
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
   const [selectedBlend, setSelectedBlend] = useState<any>(null);
   const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
@@ -99,9 +123,6 @@ const Index = () => {
   // Debounce search query to prevent excessive filtering
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const debouncedBlendSearchQuery = useDebounce(blendSearchQuery, 300);
-  
-  // Monitor session timeout
-  useSessionTimeout(5);
 
   useEffect(() => {
     // Check authentication
@@ -147,13 +168,6 @@ const Index = () => {
       if (error) throw error;
       setUserRole(data?.role || null);
       setUserProfile(data);
-      
-      // Set initial active tab based on role
-      if (data?.role === "taster") {
-        setActiveTab("tasting");
-      } else {
-        setActiveTab("batches");
-      }
     } catch (error) {
       // Error fetching user profile - handled by error boundary
       setUserRole(null);
@@ -179,11 +193,10 @@ const Index = () => {
       if (batch) {
         setSelectedBatch(batch);
         fetchLogs(batch.id);
-        setActiveTab("production");
-        window.history.replaceState({}, '', '/');
+        navigate("/production");
       }
     }
-  }, [location.search, batches]);
+  }, [location.search, batches, navigate]);
 
   const fetchBatches = async () => {
     try {
@@ -777,7 +790,7 @@ const Index = () => {
     setSelectedBatch(batch);
     fetchLogs(batch.id);
     setDetailsOpen(false);
-    setActiveTab("production");
+    navigate("/production");
   };
 
   // Calculate batch usage and remaining volumes
@@ -891,37 +904,49 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
+        <Tabs value={activeTab} className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
               <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
                 {userRole === "production" && (
                   <>
-                    <TabsTrigger value="batches" className="py-1.5 px-3">
-                      <Package className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">All Batches</span>
+                    <TabsTrigger value="batches" asChild>
+                      <button onClick={() => navigate('/batches')} className="py-1.5 px-3">
+                        <Package className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">All Batches</span>
+                      </button>
                     </TabsTrigger>
-                    <TabsTrigger value="production" className="py-1.5 px-3">
-                      <Activity className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Production</span>
+                    <TabsTrigger value="production" asChild>
+                      <button onClick={() => navigate('/production')} className="py-1.5 px-3">
+                        <Activity className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Production</span>
+                      </button>
                     </TabsTrigger>
-                    <TabsTrigger value="blending" className="py-1.5 px-3">
-                      <Wine className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Blending</span>
+                    <TabsTrigger value="blending" asChild>
+                      <button onClick={() => navigate('/blending')} className="py-1.5 px-3">
+                        <Wine className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Blending</span>
+                      </button>
                     </TabsTrigger>
-                    <TabsTrigger value="cellar" className="py-1.5 px-3">
-                      <Warehouse className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Cellar</span>
+                    <TabsTrigger value="cellar" asChild>
+                      <button onClick={() => navigate('/cellar')} className="py-1.5 px-3">
+                        <Warehouse className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Cellar</span>
+                      </button>
                     </TabsTrigger>
-                    <TabsTrigger value="suppliers" className="py-1.5 px-3">
-                      <TrendingUp className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Suppliers</span>
+                    <TabsTrigger value="suppliers" asChild>
+                      <button onClick={() => navigate('/suppliers')} className="py-1.5 px-3">
+                        <TrendingUp className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Suppliers</span>
+                      </button>
                     </TabsTrigger>
                   </>
                 )}
-                <TabsTrigger value="tasting" className="py-1.5 px-3">
-                  <Award className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Tasting</span>
+                <TabsTrigger value="tasting" asChild>
+                  <button onClick={() => navigate('/tasting')} className="py-1.5 px-3">
+                    <Award className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Tasting</span>
+                  </button>
                 </TabsTrigger>
                 {userRole === "production" && (
                   <DropdownMenu>
@@ -938,23 +963,23 @@ const Index = () => {
                     <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
                       <DropdownMenuLabel>Tools</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("analytics"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Analytics
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("calculators"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
                         <FlaskConical className="h-4 w-4 mr-2" />
                         Calculators
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("print-labels"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
                         <QrCode className="h-4 w-4 mr-2" />
                         Print Labels
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("floor-plan"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
                         <Layout className="h-4 w-4 mr-2" />
                         Floor Plan
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("cost-calculation"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Cost Calculation
                       </DropdownMenuItem>

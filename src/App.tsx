@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -39,7 +39,13 @@ const App = () => (
         <InstallPrompt />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Navigate to="/batches" replace />} />
+            <Route path="/batches" element={<Index />} />
+            <Route path="/production" element={<Index />} />
+            <Route path="/blending" element={<Index />} />
+            <Route path="/cellar" element={<Index />} />
+            <Route path="/tasting" element={<Index />} />
+            <Route path="/tools/:toolView?" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/blend/:id" element={<PublicBlend />} />
             <Route path="/r/b/:id" element={<BatchRedirect />} />
