@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, Download, FileArchive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -473,12 +473,12 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             
             {mode === "batch" && (
               <div className="flex items-center gap-2">
-                <Switch
+                <Checkbox
                   id="vintage"
                   checked={includeVintage}
-                  onCheckedChange={setIncludeVintage}
+                  onCheckedChange={(checked) => setIncludeVintage(checked === true)}
                 />
-                <Label htmlFor="vintage" className="text-sm cursor-pointer">Include vintage date</Label>
+                <Label htmlFor="vintage" className="text-sm cursor-pointer select-none">Include vintage date</Label>
               </div>
             )}
           </div>
