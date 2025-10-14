@@ -98,8 +98,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               justify-content: center;
               width: 100%;
               height: 100%;
-              padding: 3mm;
-              box-sizing: border-box;
               background: white;
             }
             .qr-code { 
@@ -120,17 +118,17 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 11pt; 
+              font-size: 10pt; 
               font-weight: 700; 
               margin: 0 0 2mm 0; 
-              line-height: 1.2;
+              line-height: 1;
               color: #000;
             }
             p { 
               margin: 1mm 0; 
               font-size: 8pt; 
               color: #666; 
-              line-height: 1.3;
+              line-height: 1.2;
             }
             .date { 
               font-size: 7pt; 
@@ -198,9 +196,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               justify-content: center;
               width: 38mm;
               height: 90mm;
-              padding: 3mm;
-              box-sizing: border-box;
               background: white;
+              page-break-after: always;
             }
             .qr-code { 
               background: white; 
@@ -220,17 +217,17 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 11pt; 
+              font-size: 10pt; 
               font-weight: 700; 
               margin: 0 0 2mm 0; 
-              line-height: 1.2;
+              line-height: 1;
               color: #000;
             }
             p { 
               margin: 1mm 0; 
               font-size: 8pt; 
               color: #666; 
-              line-height: 1.3;
+              line-height: 1.2;
             }
             .date { 
               font-size: 7pt; 
