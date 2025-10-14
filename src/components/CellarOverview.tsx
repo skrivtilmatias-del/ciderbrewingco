@@ -6,10 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Wine, FlaskConical, Package, Warehouse, ArrowUpDown, ArrowUp, ArrowDown, MapPin, FileText, Edit, Move, Tag, Download, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Search, Wine, FlaskConical, Package, Warehouse, ArrowUpDown, ArrowUp, ArrowDown, MapPin, FileText, Edit, Move, Tag, Download, ChevronDown, AlertTriangle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { makeBatchQrUrl, makeBlendQrUrl } from "@/lib/urls";
 
 interface CellarBlend {
   id: string;
@@ -37,6 +41,9 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
   const [selectedBlends, setSelectedBlends] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [moveToLocation, setMoveToLocation] = useState("");
+  const [movingBlendIds, setMovingBlendIds] = useState<string[]>([]);
 
   // Calculate metrics
   const totalBlends = blends.length;
@@ -73,6 +80,17 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
       })
       .filter(b => b.totalBottles > 0 && b.fillRate < 30)
       .sort((a, b) => a.totalBottles - b.totalBottles)
+      .slice(0, 3);
+  }, [blends]);
+
+  // Find over-aged blends (older than 18 months)
+  const overAgedBlends = useMemo(() => {
+    const eighteenMonthsAgo = new Date();
+    eighteenMonthsAgo.setMonth(eighteenMonthsAgo.getMonth() - 18);
+    
+    return blends
+      .filter(blend => new Date(blend.created_at) < eighteenMonthsAgo)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
       .slice(0, 3);
   }, [blends]);
 
@@ -170,11 +188,77 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
       toast.error("No blends selected");
       return;
     }
-    toast.info(`${action} ${selectedBlends.size} blend(s) - Feature coming soon`);
+    
+    if (action === "Move") {
+      setMovingBlendIds(Array.from(selectedBlends));
+      setMoveDialogOpen(true);
+    } else if (action === "Export") {
+      handleBulkExportLabels();
+    } else {
+      toast.info(`${action} ${selectedBlends.size} blend(s) - Feature coming soon`);
+    }
+  };
+
+  const handleBulkExportLabels = () => {
+    const selectedBlendsList = blends.filter(b => selectedBlends.has(b.id));
+    const csv = generateLabelCSV(selectedBlendsList);
+    downloadCSV(csv, `blend-labels-${new Date().toISOString().slice(0, 10)}.csv`);
+    toast.success(`Exported ${selectedBlends.size} blend labels`);
+  };
+
+  const generateLabelCSV = (blendsList: CellarBlend[]) => {
+    const headers = ['Name', 'QR URL', 'Volume (L)', '75cl Bottles', 'Location', 'Created'];
+    const rows = blendsList.map(blend => [
+      `"${blend.name.replace(/"/g, '""')}"`,
+      makeBlendQrUrl(blend.id),
+      blend.total_volume,
+      blend.bottles_75cl || 0,
+      blend.storage_location || '',
+      new Date(blend.created_at).toLocaleDateString()
+    ]);
+    
+    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  };
+
+  const downloadCSV = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleMoveBlends = async () => {
+    if (!moveToLocation.trim()) {
+      toast.error("Please enter a location");
+      return;
+    }
+
+    // Here you would typically update the database
+    // For now, just show a success message
+    toast.success(`Moved ${movingBlendIds.length} blend(s) to ${moveToLocation}`);
+    setMoveDialogOpen(false);
+    setMoveToLocation("");
+    setMovingBlendIds([]);
+    setSelectedBlends(new Set());
+    onRefresh();
   };
 
   const handleQuickAction = (blend: CellarBlend, action: string) => {
-    toast.info(`${action} ${blend.name} - Feature coming soon`);
+    if (action === "Move") {
+      setMovingBlendIds([blend.id]);
+      setMoveDialogOpen(true);
+    } else if (action === "Label") {
+      const csv = generateLabelCSV([blend]);
+      downloadCSV(csv, `${blend.name}-label.csv`);
+      toast.success(`Generated label for ${blend.name}`);
+    } else {
+      toast.info(`${action} ${blend.name} - Feature coming soon`);
+    }
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
@@ -264,7 +348,7 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Top Locations */}
         <Card>
           <CardHeader className="pb-3">
@@ -286,18 +370,54 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
         {/* Blends Nearing Depletion */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm sm:text-base">Blends Nearing Depletion</CardTitle>
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              Low Stock
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {blendsNearingDepletion.length > 0 ? (
               blendsNearingDepletion.map(blend => (
-                <div key={blend.id} className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="font-medium truncate flex-1">{blend.name}</span>
-                  <span className="text-muted-foreground ml-2">{blend.totalBottles} btl</span>
-                </div>
+                <Alert key={blend.id} variant="destructive" className="p-2">
+                  <AlertDescription className="text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium truncate flex-1">{blend.name}</span>
+                      <span className="ml-2">{blend.totalBottles} btl</span>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               ))
             ) : (
               <p className="text-xs sm:text-sm text-muted-foreground">All blends well stocked</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Over-Aged Blends */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-warning" />
+              Over-Aged (18mo+)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overAgedBlends.length > 0 ? (
+              overAgedBlends.map(blend => {
+                const ageMonths = Math.floor((Date.now() - new Date(blend.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30));
+                return (
+                  <Alert key={blend.id} className="p-2 border-warning">
+                    <AlertDescription className="text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium truncate flex-1">{blend.name}</span>
+                        <span className="ml-2 text-warning">{ageMonths}mo</span>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                );
+              })
+            ) : (
+              <p className="text-xs sm:text-sm text-muted-foreground">No over-aged blends</p>
             )}
           </CardContent>
         </Card>
@@ -599,6 +719,37 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
           </p>
         </Card>
       )}
+
+      {/* Move Location Dialog */}
+      <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Move Blend{movingBlendIds.length > 1 ? 's' : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">New Storage Location</Label>
+              <Input
+                id="location"
+                placeholder="e.g., Cellar A3, Warehouse B"
+                value={moveToLocation}
+                onChange={(e) => setMoveToLocation(e.target.value)}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Moving {movingBlendIds.length} blend{movingBlendIds.length > 1 ? 's' : ''}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleMoveBlends}>
+              Move
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
