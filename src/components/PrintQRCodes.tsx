@@ -87,15 +87,18 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               padding: 0;
               width: 38mm;
               height: 90mm;
+              display: flex;
+              align-items: center;
+              justify-content: center;
             }
             .qr-card { 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: flex-start;
-              width: 38mm;
-              height: 90mm;
-              padding: 4mm 3mm;
+              justify-content: center;
+              width: 100%;
+              height: 100%;
+              padding: 3mm;
               box-sizing: border-box;
               background: white;
             }
@@ -117,17 +120,17 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 10pt; 
+              font-size: 11pt; 
               font-weight: 700; 
               margin: 0 0 2mm 0; 
-              line-height: 1;
+              line-height: 1.2;
               color: #000;
             }
             p { 
               margin: 1mm 0; 
               font-size: 8pt; 
               color: #666; 
-              line-height: 1.2;
+              line-height: 1.3;
             }
             .date { 
               font-size: 7pt; 
@@ -192,10 +195,10 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: flex-start;
+              justify-content: center;
               width: 38mm;
               height: 90mm;
-              padding: 4mm 3mm;
+              padding: 3mm;
               box-sizing: border-box;
               background: white;
             }
@@ -217,17 +220,17 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 10pt; 
+              font-size: 11pt; 
               font-weight: 700; 
               margin: 0 0 2mm 0; 
-              line-height: 1;
+              line-height: 1.2;
               color: #000;
             }
             p { 
               margin: 1mm 0; 
               font-size: 8pt; 
               color: #666; 
-              line-height: 1.2;
+              line-height: 1.3;
             }
             .date { 
               font-size: 7pt; 
