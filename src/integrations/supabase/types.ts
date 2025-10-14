@@ -380,6 +380,156 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_lots: {
+        Row: {
+          blend_batch_id: string
+          bottling_date: string
+          created_at: string
+          current_quantity_150cl: number
+          current_quantity_75cl: number
+          id: string
+          initial_quantity_150cl: number
+          initial_quantity_75cl: number
+          location: string
+          lot_number: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blend_batch_id: string
+          bottling_date?: string
+          created_at?: string
+          current_quantity_150cl?: number
+          current_quantity_75cl?: number
+          id?: string
+          initial_quantity_150cl?: number
+          initial_quantity_75cl?: number
+          location: string
+          lot_number: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blend_batch_id?: string
+          bottling_date?: string
+          created_at?: string
+          current_quantity_150cl?: number
+          current_quantity_75cl?: number
+          id?: string
+          initial_quantity_150cl?: number
+          initial_quantity_75cl?: number
+          location?: string
+          lot_number?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_lots_blend_batch_id_fkey"
+            columns: ["blend_batch_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          from_location: string | null
+          id: string
+          lot_id: string
+          movement_type: string
+          notes: string | null
+          quantity_150cl: number
+          quantity_75cl: number
+          reason: string | null
+          to_location: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_location?: string | null
+          id?: string
+          lot_id: string
+          movement_type: string
+          notes?: string | null
+          quantity_150cl?: number
+          quantity_75cl?: number
+          reason?: string | null
+          to_location?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_location?: string | null
+          id?: string
+          lot_id?: string
+          movement_type?: string
+          notes?: string | null
+          quantity_150cl?: number
+          quantity_75cl?: number
+          reason?: string | null
+          to_location?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_lots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_thresholds: {
+        Row: {
+          alert_enabled: boolean
+          blend_batch_id: string | null
+          created_at: string
+          id: string
+          location: string | null
+          min_quantity_150cl: number
+          min_quantity_75cl: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_enabled?: boolean
+          blend_batch_id?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          min_quantity_150cl?: number
+          min_quantity_75cl?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_enabled?: boolean
+          blend_batch_id?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          min_quantity_150cl?: number
+          min_quantity_75cl?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_thresholds_blend_batch_id_fkey"
+            columns: ["blend_batch_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
