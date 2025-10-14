@@ -115,19 +115,19 @@ const Auth = () => {
 
   return (
     <div className="min-h-dvh bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
-        <div className="flex items-center justify-center gap-3">
+      <Card className="w-full max-w-md p-8">
+        <div className="flex items-center justify-center gap-3 mb-6">
           <Apple className="w-10 h-10 text-primary flex-shrink-0" />
           <h1 className="text-3xl font-bold text-foreground">Cider Brewing Co</h1>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="signin" className="mt-0">
+          <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
@@ -163,7 +163,7 @@ const Auth = () => {
             </form>
           </TabsContent>
 
-          <TabsContent value="signup" className="mt-0">
+          <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="signup-name">Full Name</Label>
