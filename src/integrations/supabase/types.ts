@@ -347,6 +347,100 @@ export type Database = {
           },
         ]
       }
+      contracts: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          min_qty: number
+          notes: string | null
+          price_per_unit: number
+          product: string
+          start_date: string
+          supplier_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          min_qty: number
+          notes?: string | null
+          price_per_unit: number
+          product: string
+          start_date: string
+          supplier_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          min_qty?: number
+          notes?: string | null
+          price_per_unit?: number
+          product?: string
+          start_date?: string
+          supplier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deliveries: {
+        Row: {
+          created_at: string
+          delivery_date: string
+          id: string
+          lot_code: string
+          notes: string | null
+          price_per_kg: number
+          product: string
+          qty_kg: number
+          supplier_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_date?: string
+          id?: string
+          lot_code: string
+          notes?: string | null
+          price_per_kg: number
+          product: string
+          qty_kg: number
+          supplier_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivery_date?: string
+          id?: string
+          lot_code?: string
+          notes?: string | null
+          price_per_kg?: number
+          product?: string
+          qty_kg?: number
+          supplier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       floor_plan_layouts: {
         Row: {
           created_at: string
@@ -530,6 +624,50 @@ export type Database = {
           },
         ]
       }
+      press_results: {
+        Row: {
+          brix: number | null
+          created_at: string
+          delivery_id: string
+          id: string
+          juice_l: number
+          notes: string | null
+          ph: number | null
+          pomace_kg: number
+          updated_at: string
+        }
+        Insert: {
+          brix?: number | null
+          created_at?: string
+          delivery_id: string
+          id?: string
+          juice_l: number
+          notes?: string | null
+          ph?: number | null
+          pomace_kg: number
+          updated_at?: string
+        }
+        Update: {
+          brix?: number | null
+          created_at?: string
+          delivery_id?: string
+          id?: string
+          juice_l?: number
+          notes?: string | null
+          ph?: number | null
+          pomace_kg?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "press_results_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -554,6 +692,80 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      qc_incidents: {
+        Row: {
+          created_at: string
+          delivery_id: string
+          id: string
+          incident_type: string
+          notes: string | null
+          qty_kg: number
+          severity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_id: string
+          id?: string
+          incident_type: string
+          notes?: string | null
+          qty_kg?: number
+          severity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivery_id?: string
+          id?: string
+          incident_type?: string
+          notes?: string | null
+          qty_kg?: number
+          severity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_incidents_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          contact: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          terms: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          terms?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          terms?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -12,6 +12,8 @@ import BatchRedirect from "./pages/BatchRedirect";
 import BlendRedirect from "./pages/BlendRedirect";
 import PrintLabels from "./pages/PrintLabels";
 import PlanningTool from "./pages/PlanningTool";
+import Suppliers from "./pages/Suppliers";
+import SupplierDetail from "./pages/SupplierDetail";
 import "@/styles/print.css";
 
 const queryClient = new QueryClient({
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/r/l/:id" element={<BlendRedirect />} />
             <Route path="/print/labels" element={<PrintLabels />} />
             <Route path="/planning" element={<PlanningTool />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/suppliers/:id" element={<SupplierDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

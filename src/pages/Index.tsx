@@ -960,6 +960,10 @@ const Index = () => {
                         <Settings2 className="h-4 w-4 mr-2" />
                         Economic Planning Tool
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/suppliers")}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Supplier Ledger
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
