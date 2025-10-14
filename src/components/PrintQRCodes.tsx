@@ -73,61 +73,66 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
         <head>
           <title>Print QR Code - ${name}</title>
           <style>
-            @page { size: 38mm 90mm portrait; margin: 0; }
+            @page { 
+              size: 38mm 90mm portrait; 
+              margin: 0; 
+            }
             @media print {
               body { margin: 0; padding: 0; }
               * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
             }
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
-              display: flex; 
-              justify-content: center; 
-              align-items: center; 
+              margin: 0; 
+              padding: 0;
               width: 38mm;
               height: 90mm;
-              margin: 0; 
-              padding: 2mm;
-              box-sizing: border-box;
             }
             .qr-card { 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: center;
-              width: 100%;
-              height: 100%;
+              justify-content: flex-start;
+              width: 38mm;
+              height: 90mm;
+              padding: 3mm 2mm;
+              box-sizing: border-box;
               background: white;
             }
             .qr-code { 
               background: white; 
-              padding: 2mm; 
+              padding: 0; 
+              margin: 0 0 2mm 0;
               display: flex;
               align-items: center;
               justify-content: center;
             }
             .qr-code svg {
-              width: 30.8mm !important;
-              height: 30.8mm !important;
+              width: 32mm !important;
+              height: 32mm !important;
+              display: block;
             }
             .qr-info { 
               text-align: center; 
-              padding-top: 1.5mm;
+              width: 100%;
             }
             h3, h4 { 
-              font-size: 8pt; 
-              font-weight: 600; 
-              margin: 0 0 1mm 0; 
+              font-size: 9pt; 
+              font-weight: 700; 
+              margin: 0 0 1.5mm 0; 
               line-height: 1.1;
+              color: #000;
             }
             p { 
-              margin: 0.3mm 0; 
-              font-size: 6pt; 
+              margin: 0.5mm 0; 
+              font-size: 7pt; 
               color: #333; 
-              line-height: 1;
+              line-height: 1.2;
             }
             .date { 
-              font-size: 5pt; 
-              padding-top: 0.5mm; 
+              font-size: 6pt; 
+              margin-top: 1mm;
+              color: #666;
             }
           </style>
         </head>
@@ -167,7 +172,10 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
         <head>
           <title>Print Multiple QR Codes</title>
           <style>
-            @page { size: 38mm 90mm portrait; margin: 0; }
+            @page { 
+              size: 38mm 90mm portrait; 
+              margin: 0; 
+            }
             @media print {
               body { margin: 0; padding: 0; }
               * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -177,49 +185,54 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
               margin: 0; 
+              padding: 0;
               background: white;
             }
             .qr-card { 
               display: flex; 
               flex-direction: column; 
               align-items: center; 
-              justify-content: center;
+              justify-content: flex-start;
               width: 38mm;
               height: 90mm;
-              padding: 2mm;
+              padding: 3mm 2mm;
               box-sizing: border-box;
               background: white;
             }
             .qr-code { 
               background: white; 
-              padding: 2mm; 
+              padding: 0; 
+              margin: 0 0 2mm 0;
               display: flex;
               align-items: center;
               justify-content: center;
             }
             .qr-code svg {
-              width: 30.8mm !important;
-              height: 30.8mm !important;
+              width: 32mm !important;
+              height: 32mm !important;
+              display: block;
             }
             .qr-info { 
               text-align: center; 
-              padding-top: 1.5mm;
+              width: 100%;
             }
             h3, h4 { 
-              font-size: 8pt; 
-              font-weight: 600; 
-              margin: 0 0 1mm 0; 
+              font-size: 9pt; 
+              font-weight: 700; 
+              margin: 0 0 1.5mm 0; 
               line-height: 1.1;
+              color: #000;
             }
             p { 
-              margin: 0.3mm 0; 
-              font-size: 6pt; 
+              margin: 0.5mm 0; 
+              font-size: 7pt; 
               color: #333; 
-              line-height: 1;
+              line-height: 1.2;
             }
             .date { 
-              font-size: 5pt; 
-              padding-top: 0.5mm; 
+              font-size: 6pt; 
+              margin-top: 1mm;
+              color: #666;
             }
           </style>
         </head>
