@@ -25,6 +25,10 @@ interface FloorPlanState {
   savePlan: (name?: string, notes?: string) => void;
   loadPlan: (planId: string) => void;
   updatePlanMeta: (updates: Partial<Pick<FloorPlan, 'name' | 'notes' | 'roomWidthM' | 'roomHeightM'>>) => void;
+  
+  exportToCSV: () => string;
+  importFromCSV: (csv: string) => void;
+  checkCollisions: (itemId: string) => string[];
 }
 
 // Convert existing equipment database to catalog format
@@ -214,5 +218,101 @@ export const useFloorPlanStore = create<FloorPlanState>((set, get) => ({
       saveToStorage(state.catalog, plan);
       return { plan };
     });
+  },
+  
+  exportToCSV: () => {
+    const state = get();
+    const headers = ['id', 'name', 'catalogId', 'xM', 'yM', 'widthM', 'heightM', 'rotationDeg', 'capacityL', 'color'];
+    const rows = state.plan.items.map(item => [
+      item.id,
+      `"${item.name.replace(/"/g, '""')}"`,
+      item.catalogId,
+      item.xM,
+      item.yM,
+      item.widthM,
+      item.heightM,
+      item.rotationDeg,
+      item.capacityL || '',
+      item.color,
+    ]);
+    
+    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  },
+  
+  importFromCSV: (csv: string) => {
+    try {
+      const lines = csv.trim().split('\n');
+      if (lines.length < 2) return;
+      
+      const headers = lines[0].split(',');
+      const items: PlacedItem[] = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if (values.length < headers.length) continue;
+        
+        const item: PlacedItem = {
+          id: values[0] || crypto.randomUUID(),
+          name: values[1].replace(/^"|"$/g, '').replace(/""/g, '"'),
+          catalogId: values[2],
+          xM: parseFloat(values[3]) || 0,
+          yM: parseFloat(values[4]) || 0,
+          widthM: parseFloat(values[5]) || 1,
+          heightM: parseFloat(values[6]) || 1,
+          rotationDeg: parseFloat(values[7]) || 0,
+          capacityL: values[8] ? parseFloat(values[8]) : undefined,
+          color: values[9] || '#888',
+        };
+        items.push(item);
+      }
+      
+      set((state) => {
+        const plan = {
+          ...state.plan,
+          items,
+          updatedAt: new Date().toISOString(),
+        };
+        saveToStorage(state.catalog, plan);
+        return { plan };
+      });
+    } catch (error) {
+      console.error('Failed to import CSV:', error);
+      throw new Error('Invalid CSV format');
+    }
+  },
+  
+  checkCollisions: (itemId: string) => {
+    const state = get();
+    const item = state.plan.items.find(i => i.id === itemId);
+    if (!item) return [];
+    
+    const collisions: string[] = [];
+    
+    // Helper to calculate overlap area
+    const getOverlapArea = (a: PlacedItem, b: PlacedItem) => {
+      const aRight = a.xM + a.widthM;
+      const aBottom = a.yM + a.heightM;
+      const bRight = b.xM + b.widthM;
+      const bBottom = b.yM + b.heightM;
+      
+      const overlapX = Math.max(0, Math.min(aRight, bRight) - Math.max(a.xM, b.xM));
+      const overlapY = Math.max(0, Math.min(aBottom, bBottom) - Math.max(a.yM, b.yM));
+      
+      return overlapX * overlapY;
+    };
+    
+    for (const other of state.plan.items) {
+      if (other.id === itemId) continue;
+      
+      const overlapArea = getOverlapArea(item, other);
+      const itemArea = item.widthM * item.heightM;
+      const overlapPercent = (overlapArea / itemArea) * 100;
+      
+      if (overlapPercent > 5) {
+        collisions.push(other.id);
+      }
+    }
+    
+    return collisions;
   },
 }));

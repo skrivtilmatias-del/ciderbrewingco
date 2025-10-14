@@ -11,6 +11,7 @@ export const InteractiveCanvas = () => {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  const [collisionMap, setCollisionMap] = useState<Map<string, string[]>>(new Map());
   
   const {
     plan,
@@ -21,6 +22,7 @@ export const InteractiveCanvas = () => {
     addItem,
     snapToGrid,
     zoomLevel,
+    checkCollisions,
   } = useFloorPlanStore();
   
   useEffect(() => {
@@ -51,6 +53,18 @@ export const InteractiveCanvas = () => {
       }
     }
   }, [selectedItemId]);
+  
+  // Check collisions for all items whenever plan changes
+  useEffect(() => {
+    const newCollisionMap = new Map<string, string[]>();
+    plan.items.forEach(item => {
+      const collisions = checkCollisions(item.id);
+      if (collisions.length > 0) {
+        newCollisionMap.set(item.id, collisions);
+      }
+    });
+    setCollisionMap(newCollisionMap);
+  }, [plan.items, checkCollisions]);
   
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -271,6 +285,7 @@ export const InteractiveCanvas = () => {
           {/* Items */}
           {plan.items.map((item) => {
             const isSelected = item.id === selectedItemId;
+            const hasCollision = collisionMap.has(item.id);
             const rectW = m2px(item.widthM) * zoomLevel;
             const rectH = m2px(item.heightM) * zoomLevel;
             const base = Math.min(rectW, rectH);
@@ -295,8 +310,8 @@ export const InteractiveCanvas = () => {
                   width={rectW}
                   height={rectH}
                   fill={item.color}
-                  stroke={isSelected ? "#2563eb" : "#000"}
-                  strokeWidth={isSelected ? 3 : 1}
+                  stroke={isSelected ? "#2563eb" : hasCollision ? "#dc2626" : "#000"}
+                  strokeWidth={isSelected ? 3 : hasCollision ? 2 : 1}
                   cornerRadius={8}
                   opacity={0.9}
                 />
