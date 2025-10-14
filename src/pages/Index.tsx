@@ -891,7 +891,7 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
+        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
               <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
@@ -1023,9 +1023,7 @@ const Index = () => {
               </div>
             )}
           </div>
-        </div>
 
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
