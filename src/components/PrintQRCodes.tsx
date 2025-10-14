@@ -321,8 +321,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 <Printer className="h-4 w-4" />
               </Button>
               
-              <div id={`qr-card-${batch.id}`} className="qr-card">
-                <div className="qr-code">
+              <div id={`qr-card-${batch.id}`} className="qr-card flex flex-col items-center space-y-4 pt-8">
+                <div className="qr-code bg-white p-3 rounded-lg border shadow-sm">
                   <QRCodeSVG
                     value={makeBatchQrUrl(batch.id)}
                     size={150}
@@ -330,13 +330,13 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                   />
                 </div>
                 
-                <div className="qr-info">
-                  <h4>{batch.name}</h4>
-                  <p>{batch.variety}</p>
-                  <p>Volume: {batch.volume}L</p>
-                  <p>Stage: {batch.current_stage}</p>
+                <div className="qr-info text-center space-y-1">
+                  <h4 className="font-semibold text-base">{batch.name}</h4>
+                  <p className="text-sm text-muted-foreground">{batch.variety}</p>
+                  <p className="text-sm text-muted-foreground">Volume: {batch.volume}L</p>
+                  <p className="text-sm text-muted-foreground">Stage: {batch.current_stage}</p>
                   {includeVintage && (
-                    <p className="date">
+                    <p className="date text-xs text-muted-foreground pt-1">
                       Started: {new Date(batch.started_at).toLocaleDateString()}
                     </p>
                   )}
@@ -367,8 +367,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 <Printer className="h-4 w-4" />
               </Button>
               
-              <div id={`qr-card-${blend.id}`} className="qr-card">
-                <div className="qr-code">
+              <div id={`qr-card-${blend.id}`} className="qr-card flex flex-col items-center space-y-4 pt-8">
+                <div className="qr-code bg-white p-3 rounded-lg border shadow-sm">
                   <QRCodeSVG
                     value={makeBlendQrUrl(blend.id)}
                     size={150}
@@ -376,16 +376,16 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                   />
                 </div>
                 
-                <div className="qr-info">
-                  <h4>{blend.name}</h4>
-                  <p>Volume: {blend.total_volume}L</p>
+                <div className="qr-info text-center space-y-1">
+                  <h4 className="font-semibold text-base">{blend.name}</h4>
+                  <p className="text-sm text-muted-foreground">Volume: {blend.total_volume}L</p>
                   {blend.bottles_75cl && blend.bottles_75cl > 0 && (
-                    <p>75cl: {blend.bottles_75cl} bottles</p>
+                    <p className="text-sm text-muted-foreground">75cl: {blend.bottles_75cl} bottles</p>
                   )}
                   {blend.storage_location && (
-                    <p>Location: {blend.storage_location}</p>
+                    <p className="text-sm text-muted-foreground">Location: {blend.storage_location}</p>
                   )}
-                  <p className="date">
+                  <p className="date text-xs text-muted-foreground pt-1">
                     Created: {new Date(blend.created_at).toLocaleDateString()}
                   </p>
                 </div>
