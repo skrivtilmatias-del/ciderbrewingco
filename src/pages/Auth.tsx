@@ -26,10 +26,9 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Check for next parameter in URL
         const params = new URLSearchParams(window.location.search);
-        const nextPath = params.get('next') || '/';
-        navigate(nextPath);
+        const nextPath = params.get('next');
+        navigate(nextPath ? decodeURIComponent(nextPath) : '/');
       }
     });
 
@@ -119,10 +118,9 @@ const Auth = () => {
 
       toast.success("Signed in successfully!");
       
-      // Check for next parameter in URL
       const params = new URLSearchParams(window.location.search);
-      const nextPath = params.get('next') || '/';
-      navigate(nextPath);
+      const nextPath = params.get('next');
+      navigate(nextPath ? decodeURIComponent(nextPath) : '/');
     } catch (error: any) {
       toast.error(getAuthErrorMessage(error));
     } finally {

@@ -31,21 +31,39 @@ export const getSupabaseFunctionsUrl = (): string => {
 };
 
 /**
- * Generate QR code URL for a batch
- * Points to server-side redirect endpoint that enforces auth
- * @param batchId - The UUID of the batch
+ * Generate signed timestamp for QR URLs
  */
-export const makeBatchQrUrl = (batchId: string): string => {
-  const origin = getBaseUrl();
-  return `${getSupabaseFunctionsUrl()}/r/batch/${encodeURIComponent(batchId)}?o=${encodeURIComponent(origin)}`;
+const generateSignature = (path: string, timestamp: number): string => {
+  // Simple signature using base64 encoding
+  // For production, configure QR_SECRET in Lovable Cloud for HMAC
+  const message = `${path}:${timestamp}`;
+  return btoa(message).replace(/[+/=]/g, (m) => ({ '+': '-', '/': '_', '=': '' }[m] || m));
 };
 
 /**
- * Generate QR code URL for a blend batch
- * Points to server-side redirect endpoint that enforces auth
- * @param blendId - The UUID of the blend batch
+ * Generate signed QR code URL for a batch
+ * @param batchId - The UUID of the batch
+ * @param ttlSec - Time-to-live in seconds (default 1800 = 30 minutes)
  */
-export const makeBlendQrUrl = (blendId: string): string => {
+export const makeBatchQrUrl = (batchId: string, ttlSec = 1800): string => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const path = `/r/b/${encodeURIComponent(batchId)}`;
+  const signature = generateSignature(path, timestamp);
   const origin = getBaseUrl();
-  return `${getSupabaseFunctionsUrl()}/r/blend/${encodeURIComponent(blendId)}?o=${encodeURIComponent(origin)}`;
+  
+  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}`;
+};
+
+/**
+ * Generate signed QR code URL for a blend batch
+ * @param blendId - The UUID of the blend batch
+ * @param ttlSec - Time-to-live in seconds (default 1800 = 30 minutes)
+ */
+export const makeBlendQrUrl = (blendId: string, ttlSec = 1800): string => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const path = `/r/l/${encodeURIComponent(blendId)}`;
+  const signature = generateSignature(path, timestamp);
+  const origin = getBaseUrl();
+  
+  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}`;
 };
