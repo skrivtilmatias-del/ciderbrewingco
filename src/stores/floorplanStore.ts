@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { EquipmentCatalogItem, PlacedItem, FloorPlan } from '@/types/floorplan';
 import { EQUIPMENT_DATABASE } from '@/constants/equipment';
+import { enqueueMutation } from '@/offline/queue';
 
 interface FloorPlanState {
   catalog: EquipmentCatalogItem[];
@@ -74,6 +75,16 @@ const loadFromStorage = () => {
 const saveToStorage = (catalog: EquipmentCatalogItem[], plan: FloorPlan) => {
   try {
     localStorage.setItem('floorplan-state', JSON.stringify({ catalog, plan }));
+    
+    // Queue for offline sync if not online
+    if (!navigator.onLine) {
+      enqueueMutation(
+        '/api/floorplan/save',
+        'POST',
+        { 'Content-Type': 'application/json' },
+        { catalog, plan }
+      ).catch(console.error);
+    }
   } catch (e) {
     console.error('Failed to save floor plan to storage', e);
   }

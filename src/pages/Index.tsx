@@ -24,7 +24,7 @@ import { PrintQRCodes } from "@/components/PrintQRCodes";
 import { FloorPlan } from "@/pages/FloorPlan";
 import { CellarOverview } from "@/components/CellarOverview";
 import { SupplierOverview } from "@/components/SupplierOverview";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -972,6 +972,10 @@ const Index = () => {
                       <DropdownMenuItem onClick={() => navigate("/webhooks")}>
                         <Webhook className="h-4 w-4 mr-2" />
                         Webhooks & API
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/install")}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Install App
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
