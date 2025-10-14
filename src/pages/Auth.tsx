@@ -124,44 +124,69 @@ const Auth = () => {
 
   return (
     <main className="min-h-dvh bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex items-center justify-center gap-3">
-          <Apple className="w-10 h-10 text-primary flex-shrink-0" />
-          <CardTitle className="text-3xl text-foreground">Cider Brewing Co</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <Card className="w-full max-w-md mx-auto rounded-2xl shadow p-8 md:p-10">
+        <div className="flex flex-col items-center text-center">
+          <Apple className="w-10 h-10 text-primary mt-2 mb-6" />
+          <h1 className="text-3xl font-semibold text-foreground mb-2">Cider Brewing Co</h1>
+        </div>
+
+        <div className="mb-6">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-auto p-1">
+              <TabsTrigger value="signin" className="py-2 px-4">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="py-2 px-4">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input id="signin-email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <TabsContent value="signin" className="mt-6">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div>
+                  <Label htmlFor="signin-email" className="mb-1 block">Email</Label>
+                  <Input 
+                    id="signin-email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                    className="h-11 px-4 rounded-lg border"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input id="signin-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <div>
+                  <Label htmlFor="signin-password" className="mb-1 block">Password</Label>
+                  <Input 
+                    id="signin-password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                    className="h-11 px-4 rounded-lg border"
+                  />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-11 mt-2" disabled={loading}>
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <Input id="signup-name" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+            <TabsContent value="signup" className="mt-6">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div>
+                  <Label htmlFor="signup-name" className="mb-1 block">Full Name</Label>
+                  <Input 
+                    id="signup-name" 
+                    type="text" 
+                    placeholder="John Doe" 
+                    value={fullName} 
+                    onChange={(e) => setFullName(e.target.value)} 
+                    required 
+                    className="h-11 px-4 rounded-lg border"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-role">Account Type</Label>
+                <div>
+                  <Label htmlFor="signup-role" className="mb-1 block">Account Type</Label>
                   <Select value={userRole} onValueChange={(value: "production" | "taster") => setUserRole(value)}>
-                    <SelectTrigger id="signup-role">
+                    <SelectTrigger id="signup-role" className="h-11 px-4 rounded-lg border">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -169,23 +194,40 @@ const Auth = () => {
                       <SelectItem value="taster">Taster (Tasting Only)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Production users have full access. Tasters can only access the tasting tab.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Production users have full access. Tasters can only access the tasting tab.</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <div>
+                  <Label htmlFor="signup-email" className="mb-1 block">Email</Label>
+                  <Input 
+                    id="signup-email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                    className="h-11 px-4 rounded-lg border"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input id="signup-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+                <div>
+                  <Label htmlFor="signup-password" className="mb-1 block">Password</Label>
+                  <Input 
+                    id="signup-password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                    minLength={6} 
+                    className="h-11 px-4 rounded-lg border"
+                  />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-11 mt-2" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
-        </CardContent>
+        </div>
       </Card>
     </main>
   );
