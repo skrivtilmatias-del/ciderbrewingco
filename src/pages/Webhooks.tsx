@@ -3,15 +3,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Webhook, CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
+import { Plus, Webhook, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WebhookDialog } from "@/components/webhooks/WebhookDialog";
 import { WebhookLogs } from "@/components/webhooks/WebhookLogs";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/AppLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Webhooks() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { userRole, userProfile } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedWebhook, setSelectedWebhook] = useState<any>(null);
   const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
@@ -67,21 +70,15 @@ export default function Webhooks() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <AppLayout userRole={userRole} userProfile={userProfile}>
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold">Webhooks</h1>
-              <p className="text-muted-foreground mt-2">
-                Automate workflows with outgoing webhooks
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold">Webhooks</h1>
+            <p className="text-muted-foreground mt-1">
+              Automate workflows with outgoing webhooks
+            </p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-2" />
@@ -254,6 +251,6 @@ app.post('/webhook', (req, res) => {
         onOpenChange={setDialogOpen}
         webhook={selectedWebhook}
       />
-    </div>
+    </AppLayout>
   );
 }

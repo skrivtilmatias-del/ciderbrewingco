@@ -1,13 +1,16 @@
 import { Smartphone, Wifi, Download, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AppLayout } from '@/components/AppLayout';
+import { useAuth } from '@/hooks/useAuth';
 
 const Install = () => {
+  const { userRole, userProfile } = useAuth();
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <AppLayout userRole={userRole} userProfile={userProfile}>
+      <div className="space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">Install CiderTrack</h1>
           <p className="text-xl text-muted-foreground">
@@ -127,7 +130,7 @@ const Install = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

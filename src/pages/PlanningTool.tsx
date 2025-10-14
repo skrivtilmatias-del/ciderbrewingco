@@ -14,8 +14,11 @@ import { calcEconomics, applyScenario } from "@/econ/calc";
 import { exportToExcel, importFromExcel } from "@/econ/excel";
 import { Download, Upload, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { AppLayout } from "@/components/AppLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PlanningTool() {
+  const { userRole, userProfile } = useAuth();
   const [baseInput, setBaseInput] = useState<EconInput>(DEFAULT_ECON_INPUT);
   const [activeScenario, setActiveScenario] = useState<Scenario>(DEFAULT_SCENARIOS[0]);
   const [variances] = useState<EconVariance[]>([]); // TODO: Load from actual batches
@@ -86,7 +89,7 @@ export default function PlanningTool() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
+    <AppLayout userRole={userRole} userProfile={userProfile}>
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
         <div className="container max-w-7xl mx-auto px-6 py-4">
@@ -222,6 +225,6 @@ export default function PlanningTool() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

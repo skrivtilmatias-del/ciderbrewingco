@@ -10,10 +10,13 @@ import { DeliveriesList } from "@/components/suppliers/DeliveriesList";
 import { SupplierAlerts } from "@/components/suppliers/SupplierAlerts";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/components/AppLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SupplierDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { userRole, userProfile } = useAuth();
 
   const { data: supplier, isLoading } = useQuery({
     queryKey: ["supplier", id],
@@ -31,27 +34,23 @@ export default function SupplierDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">Loading...</div>
-        </div>
-      </div>
+      <AppLayout userRole={userRole} userProfile={userProfile}>
+        <div className="text-center py-8">Loading...</div>
+      </AppLayout>
     );
   }
 
   if (!supplier) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">Supplier not found</div>
-        </div>
-      </div>
+      <AppLayout userRole={userRole} userProfile={userProfile}>
+        <div className="text-center py-8">Supplier not found</div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <AppLayout userRole={userRole} userProfile={userProfile}>
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -110,6 +109,6 @@ export default function SupplierDetail() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AppLayout>
   );
 }

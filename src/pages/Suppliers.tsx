@@ -9,9 +9,12 @@ import { useNavigate } from "react-router-dom";
 import { SupplierDialog } from "@/components/suppliers/SupplierDialog";
 import { SupplierLeaderboard } from "@/components/suppliers/SupplierLeaderboard";
 import { toast } from "sonner";
+import { AppLayout } from "@/components/AppLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Suppliers() {
   const navigate = useNavigate();
+  const { userRole, userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
@@ -64,8 +67,8 @@ export default function Suppliers() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <AppLayout userRole={userRole} userProfile={userProfile}>
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -176,6 +179,6 @@ export default function Suppliers() {
         onOpenChange={setDialogOpen}
         supplier={selectedSupplier}
       />
-    </div>
+    </AppLayout>
   );
 }
