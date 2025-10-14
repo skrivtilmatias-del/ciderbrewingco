@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import QRCodeSVG from "react-qr-code";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface PrintQRCodesProps {
 }
 
 export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"batch" | "blend">("batch");
   const [batches, setBatches] = useState<Batch[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -262,6 +264,20 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     }, 250);
   };
 
+  const handlePrintWithDOM = () => {
+    const selectedIds = mode === "batch" 
+      ? Array.from(selectedBatches) 
+      : Array.from(selectedBlends);
+    
+    if (selectedIds.length === 0) {
+      toast.error("Please select labels to print");
+      return;
+    }
+
+    const idsParam = selectedIds.join(",");
+    navigate(`/print/labels?mode=${mode}&ids=${idsParam}`);
+  };
+
   const handlePrintMultiple = () => {
     const selectedItems = mode === "batch" 
       ? Array.from(selectedBatches).map(id => batches.find(b => b.id === id)!).filter(Boolean)
@@ -446,7 +462,11 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             <div className="flex items-center gap-4">
               <span className="font-medium text-orange-900">{selectedCount} selected</span>
               <div className="flex gap-2">
-                <Button onClick={() => downloadSelectedAsZip("pdf")} size="sm" variant="default">
+                <Button onClick={handlePrintWithDOM} size="sm" variant="default">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Labels
+                </Button>
+                <Button onClick={() => downloadSelectedAsZip("pdf")} size="sm" variant="outline">
                   <FileArchive className="h-4 w-4 mr-2" />
                   Download PDF ZIP
                 </Button>

@@ -1,0 +1,88 @@
+/* Print-specific styles with physical units */
+
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+@media print {
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Hide all non-print elements */
+  body > *:not(.print-sheet) {
+    display: none !important;
+  }
+}
+
+.print-sheet {
+  display: grid;
+  grid-template-columns: repeat(3, 64mm);
+  gap: 6mm;
+  padding: 0;
+  margin: 0;
+}
+
+.print-label {
+  width: 64mm;
+  height: 64mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 2mm;
+  padding: 3mm;
+  box-sizing: border-box;
+  background: white;
+}
+
+.print-qr {
+  width: 40mm;
+  height: 40mm;
+  margin-bottom: 2mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-qr svg {
+  width: 100%;
+  height: 100%;
+}
+
+.print-label-text {
+  text-align: center;
+  width: 100%;
+}
+
+.print-label-name {
+  font-size: 3.5mm;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5mm;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.print-label-subtitle {
+  font-size: 2.5mm;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media screen {
+  .print-sheet {
+    max-width: 210mm;
+    margin: 20px auto;
+    padding: 10mm;
+    background: #f3f4f6;
+  }
+}
