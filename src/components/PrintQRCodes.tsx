@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, Download, FileArchive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -428,30 +428,30 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       <div className="flex justify-between items-center print:hidden">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold">QR Code Generator</h2>
-          <TabsList className="h-auto p-1">
-            <TabsTrigger
-              value="batch"
-              className="py-1.5 px-3"
-              onClick={() => {
-                setMode("batch");
-                clearSelection();
-              }}
-              data-state={mode === "batch" ? "active" : "inactive"}
-            >
-              Batches
-            </TabsTrigger>
-            <TabsTrigger
-              value="blend"
-              className="py-1.5 px-3"
-              onClick={() => {
-                setMode("blend");
-                clearSelection();
-              }}
-              data-state={mode === "blend" ? "active" : "inactive"}
-            >
-              Blends
-            </TabsTrigger>
-          </TabsList>
+          <Tabs value={mode} className="w-auto">
+            <TabsList className="h-auto p-1">
+              <TabsTrigger
+                value="batch"
+                className="py-1.5 px-3"
+                onClick={() => {
+                  setMode("batch");
+                  clearSelection();
+                }}
+              >
+                Batches
+              </TabsTrigger>
+              <TabsTrigger
+                value="blend"
+                className="py-1.5 px-3"
+                onClick={() => {
+                  setMode("blend");
+                  clearSelection();
+                }}
+              >
+                Blends
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 

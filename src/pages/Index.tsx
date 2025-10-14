@@ -48,10 +48,8 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toolView } = useParams();
+  const { user, userRole, userProfile, loading: authLoading } = useAuth();
   
-  const [user, setUser] = useState<any>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -124,56 +122,8 @@ const Index = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const debouncedBlendSearchQuery = useDebounce(blendSearchQuery, 300);
 
-  useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        // Fetch user role
-        fetchUserRole(session.user.id);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Handle token refresh
-      if (event === 'TOKEN_REFRESHED') {
-        // Session token refreshed successfully
-      }
-      
-      // Handle sign out or expired sessions
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        // Fetch user role when session changes
-        if (session.user) {
-          fetchUserRole(session.user.id);
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const fetchUserRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("role, full_name")
-        .eq("id", userId)
-        .single();
-
-      if (error) throw error;
-      setUserRole(data?.role || null);
-      setUserProfile(data);
-    } catch (error) {
-      // Error fetching user profile - handled by error boundary
-      setUserRole(null);
-      setUserProfile(null);
-    }
-  };
+  // Auth is now handled by useAuth hook
+  // Redirect is handled in useAuth
 
   useEffect(() => {
     if (user) {
@@ -859,6 +809,15 @@ const Index = () => {
     batches.length > 0
       ? Math.round(batches.reduce((sum, b) => sum + b.progress, 0) / batches.length)
       : 0;
+
+  // Show loading while authenticating
+  if (authLoading) {
+    return (
+      <div className="min-h-dvh bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh bg-background overflow-x-hidden">
