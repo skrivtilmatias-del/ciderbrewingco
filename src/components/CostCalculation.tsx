@@ -74,78 +74,93 @@ export const CostCalculation = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* Sticky Header with Key Metrics */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-4 rounded-lg border shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">Interactive Financial Planner</h2>
-            <p className="text-sm text-muted-foreground">
-              Real-time cost simulation & strategic planning
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-lg px-4 py-2">
-              Total Revenue: {(totalRevenue11Years / 1000000).toFixed(1)}M kr
-            </Badge>
-            <Badge variant={totalProfit11Years > 0 ? "default" : "destructive"} className="text-lg px-4 py-2">
-              Profit: {(totalProfit11Years / 1000000).toFixed(1)}M kr
-            </Badge>
-            <Badge variant="secondary" className="text-lg px-4 py-2">
-              Margin: {((totalProfit11Years / totalRevenue11Years) * 100).toFixed(1)}%
-            </Badge>
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container max-w-7xl mx-auto p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Interactive Financial Planner</h1>
+              <p className="text-muted-foreground mt-1">
+                Real-time cost simulation & strategic planning
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col items-end">
+                <span className="text-sm text-muted-foreground">Total Revenue</span>
+                <span className="text-2xl font-bold">{(totalRevenue11Years / 1000000).toFixed(1)}M kr</span>
+              </div>
+              <div className="h-12 w-px bg-border" />
+              <div className="flex flex-col items-end">
+                <span className="text-sm text-muted-foreground">Profit</span>
+                <span className={`text-2xl font-bold ${totalProfit11Years > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {(totalProfit11Years / 1000000).toFixed(1)}M kr
+                </span>
+              </div>
+              <div className="h-12 w-px bg-border" />
+              <div className="flex flex-col items-end">
+                <span className="text-sm text-muted-foreground">Margin</span>
+                <span className="text-2xl font-bold">{((totalProfit11Years / totalRevenue11Years) * 100).toFixed(1)}%</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={resetToDefaults}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reset to Defaults
-          </Button>
-          <Button variant="outline" onClick={handleExportJSON}>
-            <Download className="h-4 w-4 mr-2" />
-            Export JSON
-          </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
+      <div className="container max-w-7xl mx-auto px-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={resetToDefaults}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reset to Defaults
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportJSON}>
+              <Download className="h-4 w-4 mr-2" />
+              Export JSON
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
+          <Button 
+            variant={showScenarioPanel ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowScenarioPanel(!showScenarioPanel)}
+          >
+            <Target className="h-4 w-4 mr-2" />
+            Scenario Planner
           </Button>
         </div>
-        <Button 
-          variant={showScenarioPanel ? "default" : "outline"}
-          onClick={() => setShowScenarioPanel(!showScenarioPanel)}
-        >
-          <Target className="h-4 w-4 mr-2" />
-          Scenario Planner
-        </Button>
       </div>
 
       {/* Cash Flow Warning */}
       {negativeYears.length > 0 && (
-        <Card className="p-6 border-amber-500/50 bg-amber-500/5">
-          <div className="flex items-start gap-4">
-            <AlertCircle className="h-6 w-6 text-amber-500 mt-1 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-700 dark:text-amber-400">Cash Flow Alert</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Negative cash balance in: {negativeYears.map(y => y.year).join(", ")}
-              </p>
-              <p className="text-sm mt-2">
-                <strong>Required:</strong> {Math.abs(Math.min(...negativeYears.map(y => y.cashBalance)) / 1000).toFixed(0)}k kr credit facility
-              </p>
+        <div className="container max-w-7xl mx-auto px-6">
+          <div className="border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/20 p-6 rounded-r-lg">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 dark:text-amber-200 mb-2">Cash Flow Alert</h3>
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  Negative cash balance in: <strong>{negativeYears.map(y => y.year).join(", ")}</strong>
+                </p>
+                <p className="text-sm text-amber-800 dark:text-amber-300 mt-2">
+                  <strong>Required:</strong> {Math.abs(Math.min(...negativeYears.map(y => y.cashBalance)) / 1000).toFixed(0)}k kr credit facility
+                </p>
+              </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Inputs & Scenario Planning */}
-        <div className="lg:col-span-1 space-y-4">
-          {showScenarioPanel && (
-            <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10">
+      <div className="container max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Inputs & Scenario Planning */}
+          <div className="lg:col-span-1 space-y-6">
+            {showScenarioPanel && (
+              <Card className="p-6 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Scenario Settings
@@ -325,17 +340,21 @@ export const CostCalculation = () => {
           </Card>
 
           {/* AI-Generated Recommendations */}
-          <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+          <Card className="p-6 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-blue-600" />
+              <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               Strategic Insights
             </h3>
             <div className="space-y-3">
-              {recommendations.map((rec, idx) => (
-                <div key={idx} className="p-3 bg-card rounded-lg border text-sm">
-                  {rec}
-                </div>
-              ))}
+              {recommendations.length > 0 ? (
+                recommendations.map((rec, idx) => (
+                  <div key={idx} className="p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-blue-200 dark:border-blue-800 text-sm leading-relaxed">
+                    {rec}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Adjust inputs to generate insights</p>
+              )}
             </div>
           </Card>
         </div>
@@ -343,8 +362,8 @@ export const CostCalculation = () => {
         {/* Right Column: Charts & Projections */}
         <div className="lg:col-span-2 space-y-6">
           {/* Revenue & Profit Chart */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Revenue vs Profit Projection</h3>
+          <Card className="p-6 shadow-sm">
+            <h3 className="text-xl font-bold mb-6">Revenue vs Profit Projection</h3>
             <ResponsiveContainer width="100%" height={350}>
               <AreaChart data={yearlyData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -363,8 +382,8 @@ export const CostCalculation = () => {
 
           {/* COGS Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">COGS per Bottle by Scale</h3>
+            <Card className="p-6 shadow-sm">
+              <h3 className="text-xl font-bold mb-6">COGS per Bottle by Scale</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={cogsBreakdown}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -380,8 +399,8 @@ export const CostCalculation = () => {
               </ResponsiveContainer>
             </Card>
 
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Profit Margin Evolution</h3>
+            <Card className="p-6 shadow-sm">
+              <h3 className="text-xl font-bold mb-6">Profit Margin Evolution</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <ComposedChart data={yearlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -399,8 +418,8 @@ export const CostCalculation = () => {
           </div>
 
           {/* COGS Component Breakdown */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">COGS Component Breakdown</h3>
+          <Card className="p-6 shadow-sm">
+            <h3 className="text-xl font-bold mb-6">COGS Component Breakdown</h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={cogsBreakdown} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -421,8 +440,8 @@ export const CostCalculation = () => {
           </Card>
 
           {/* Detailed Projections Table */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Detailed Financial Projections</h3>
+          <Card className="p-6 shadow-sm">
+            <h3 className="text-xl font-bold mb-6">Detailed Financial Projections</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="border-b">
@@ -460,6 +479,7 @@ export const CostCalculation = () => {
               </table>
             </div>
           </Card>
+          </div>
         </div>
       </div>
     </div>
