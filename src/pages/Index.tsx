@@ -1031,8 +1031,9 @@ const Index = () => {
               </div>
             )}
           </div>
+        </div>
 
-          <Tabs value={activeTab} className="mt-4">
+        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
