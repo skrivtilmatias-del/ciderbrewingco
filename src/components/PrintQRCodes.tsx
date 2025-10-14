@@ -472,13 +472,13 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             </div>
             
             {mode === "batch" && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Switch
                   id="vintage"
                   checked={includeVintage}
                   onCheckedChange={setIncludeVintage}
                 />
-                <Label htmlFor="vintage" className="text-sm">Include vintage date</Label>
+                <Label htmlFor="vintage" className="text-sm cursor-pointer">Include vintage date</Label>
               </div>
             )}
           </div>
