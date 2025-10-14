@@ -23,7 +23,7 @@ import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
 import { FloorPlan } from "@/pages/FloorPlan";
 import { CellarOverview } from "@/components/CellarOverview";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -937,6 +937,10 @@ const Index = () => {
                         <Layout className="h-4 w-4 mr-2" />
                         Floor Plan
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("cost-calculation"); }}>
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        Cost Calculation
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -1209,6 +1213,10 @@ const Index = () => {
                 <div className="h-[calc(100vh-250px)]">
                   <FloorPlan />
                 </div>
+              )}
+
+              {toolsView === "cost-calculation" && (
+                <CostCalculation />
               )}
             </TabsContent>
           )}
