@@ -121,7 +121,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       console.error(error);
     }
   };
-  };
 
   const handleDownloadPDF = async (id: string, name: string) => {
     const element = document.getElementById(`label-${id}`);
@@ -255,41 +254,6 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       printWindow.print();
       printWindow.close();
     }, 250);
-  };
-
-  const handleDownloadPDF = async (id: string, name: string) => {
-    const element = document.getElementById(`qr-card-${id}`);
-    if (!element) return;
-
-    try {
-      toast.loading("Generating PDF...");
-      
-      const canvas = await html2canvas(element, {
-        scale: 3,
-        backgroundColor: '#ffffff',
-        logging: false,
-      });
-
-      const imgWidth = 38;
-      const imgHeight = 90;
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: [imgWidth, imgHeight]
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`${name}-label.pdf`);
-      
-      toast.dismiss();
-      toast.success("PDF downloaded successfully");
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to generate PDF");
-      console.error(error);
-    }
   };
 
   const handlePrintMultiple = () => {
