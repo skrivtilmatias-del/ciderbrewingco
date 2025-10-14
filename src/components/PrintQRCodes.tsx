@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Printer, Download } from "lucide-react";
+import { Printer, Download, FileArchive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { makeBatchQrUrl, makeBlendQrUrl } from "@/lib/urls";
-import { Checkbox } from "@/components/ui/checkbox";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 interface Batch {
   id: string;
@@ -63,8 +64,102 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     setBatches(data || []);
   };
 
+  // Utility functions for bulk download
+  const labelToPngBlob = async (node: HTMLElement): Promise<Blob> => {
+    const canvas = await html2canvas(node, { scale: 3, backgroundColor: "#ffffff" });
+    return await new Promise((res) => canvas.toBlob((b) => res(b!), "image/png"));
+  };
+
+  const labelToPdfBlob = async (node: HTMLElement): Promise<Blob> => {
+    const png = await labelToPngBlob(node);
+    const pdf = new jsPDF({ unit: "mm", format: [38, 90], orientation: "portrait" });
+    const img = await new Promise<HTMLImageElement>((r) => {
+      const i = new Image();
+      i.onload = () => r(i);
+      i.src = URL.createObjectURL(png);
+    });
+    pdf.addImage(img, "PNG", 0, 0, 38, 90);
+    return pdf.output("blob");
+  };
+
+  const downloadSelectedAsZip = async (type: "png" | "pdf") => {
+    const selectedIds = mode === "batch" 
+      ? Array.from(selectedBatches) 
+      : Array.from(selectedBlends);
+    
+    if (selectedIds.length === 0) {
+      toast.error("Please select labels to download");
+      return;
+    }
+
+    toast.loading(`Generating ${selectedIds.length} ${type.toUpperCase()} files...`);
+
+    try {
+      const zip = new JSZip();
+      
+      for (const id of selectedIds) {
+        const node = document.querySelector<HTMLElement>(`#label-${id}`);
+        if (!node) continue;
+        
+        const item = mode === "batch" 
+          ? batches.find(b => b.id === id)
+          : blendBatches.find(b => b.id === id);
+        
+        const name = item ? (mode === "batch" ? (item as Batch).name : (item as BlendBatch).name) : id;
+        const blob = type === "png" ? await labelToPngBlob(node) : await labelToPdfBlob(node);
+        zip.file(`${name}.${type}`, blob);
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `labels_${type}_${new Date().toISOString().slice(0, 10)}.zip`);
+      
+      toast.dismiss();
+      toast.success(`Downloaded ${selectedIds.length} labels as ${type.toUpperCase()}`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to generate ZIP file");
+      console.error(error);
+    }
+  };
+  };
+
+  const handleDownloadPDF = async (id: string, name: string) => {
+    const element = document.getElementById(`label-${id}`);
+    if (!element) return;
+
+    try {
+      toast.loading("Generating PDF...");
+      
+      const canvas = await html2canvas(element, {
+        scale: 3,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imgWidth = 38;
+      const imgHeight = 90;
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [imgWidth, imgHeight]
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${name}-label.pdf`);
+      
+      toast.dismiss();
+      toast.success("PDF downloaded successfully");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to generate PDF");
+      console.error(error);
+    }
+  };
+
   const handlePrintSingle = (id: string, type: "batch" | "blend", name: string) => {
-    const printElement = document.getElementById(`qr-card-${id}`);
+    const printElement = document.getElementById(`label-${id}`);
     if (!printElement) return;
 
     const printWindow = window.open('', '', 'width=800,height=600');
@@ -87,6 +182,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 color-adjust: exact !important; 
                 print-color-adjust: exact !important;
               }
+              .no-print { display: none !important; }
             }
             body { 
               font-family: system-ui, -apple-system, sans-serif; 
@@ -99,48 +195,49 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               justify-content: center;
               background: white;
             }
-            .label-container {
+            .label-card {
               width: 38mm;
               height: 90mm;
               background: white;
               border: 1px solid #d1d5db;
               border-radius: 6mm;
-              padding: 8mm;
+              padding: 5mm;
               display: flex;
               flex-direction: column;
               align-items: center;
               text-align: center;
+              box-shadow: none !important;
             }
-            .qr-wrapper {
-              width: 30mm;
-              height: 30mm;
-              border-radius: 4mm;
+            .qr-box {
+              width: 26mm;
+              height: 26mm;
+              border-radius: 3mm;
               overflow: hidden;
               display: flex;
               align-items: center;
               justify-content: center;
               background: white;
             }
-            .qr-wrapper svg {
-              width: 30mm !important;
-              height: 30mm !important;
+            .qr-box svg {
+              width: 26mm !important;
+              height: 26mm !important;
               display: block;
             }
             .code {
-              margin-top: 4mm;
-              font-size: 14pt;
+              margin-top: 3mm;
+              font-size: 12pt;
               font-weight: 600;
-              color: #000;
+              color: #111827;
               line-height: 1.2;
             }
             .variety {
-              font-size: 12pt;
-              color: #000;
+              font-size: 10pt;
+              color: #111827;
               line-height: 1.2;
-              margin-top: 1mm;
+              margin-top: 0.5mm;
             }
             .meta {
-              font-size: 10pt;
+              font-size: 9pt;
               color: #6B7280;
               line-height: 1.2;
               margin-top: 1mm;
@@ -295,8 +392,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     }, 250);
   };
 
-  const toggleSelection = (id: string, type: "batch" | "blend") => {
-    if (type === "batch") {
+  const toggleSelection = (id: string) => {
+    if (mode === "batch") {
       const newSelection = new Set(selectedBatches);
       if (newSelection.has(id)) {
         newSelection.delete(id);
@@ -324,11 +421,8 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
   };
 
   const clearSelection = () => {
-    if (mode === "batch") {
-      setSelectedBatches(new Set());
-    } else {
-      setSelectedBlends(new Set());
-    }
+    setSelectedBatches(new Set());
+    setSelectedBlends(new Set());
   };
 
   const filteredBatches = batches.filter(b => 
@@ -371,14 +465,36 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
             </Button>
           </div>
         </div>
-        
-        {selectedCount > 0 && (
-          <Button onClick={handlePrintMultiple} size="sm">
-            <Printer className="h-4 w-4 mr-2" />
-            Print Selected ({selectedCount})
-          </Button>
-        )}
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {selectedCount > 0 && (
+        <Card className="p-4 print:hidden bg-orange-50 border-orange-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="font-medium text-orange-900">{selectedCount} selected</span>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadSelectedAsZip("pdf")} size="sm" variant="default">
+                  <FileArchive className="h-4 w-4 mr-2" />
+                  Download PDF ZIP
+                </Button>
+                <Button onClick={() => downloadSelectedAsZip("png")} size="sm" variant="outline">
+                  <FileArchive className="h-4 w-4 mr-2" />
+                  Download PNG ZIP
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={selectAll}>
+                Select All
+              </Button>
+              <Button variant="outline" size="sm" onClick={clearSelection}>
+                Clear
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Controls */}
       <Card className="p-4 print:hidden">
@@ -403,31 +519,23 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               </div>
             )}
           </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={selectAll}>
-              Select All
-            </Button>
-            <Button variant="outline" size="sm" onClick={clearSelection}>
-              Clear
-            </Button>
-          </div>
         </div>
       </Card>
 
       {/* Content */}
       {mode === "batch" && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredBatches.map((batch) => (
-            <Card key={batch.id} className="p-4 relative">
-              <div className="absolute top-3 left-3 z-10">
-                <Checkbox
-                  checked={selectedBatches.has(batch.id)}
-                  onCheckedChange={() => toggleSelection(batch.id, "batch")}
-                />
-              </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{filteredBatches.map((batch) => (
+            <Card key={batch.id} className="p-4 relative overflow-visible">
+              <button
+                aria-label="Select label"
+                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-gray-300 bg-white flex items-center justify-center shadow-sm data-[checked=true]:bg-orange-500 data-[checked=true]:border-orange-500 data-[checked=true]:text-white transition-colors"
+                data-checked={selectedBatches.has(batch.id)}
+                onClick={() => toggleSelection(batch.id)}
+              >
+                {selectedBatches.has(batch.id) ? "✓" : ""}
+              </button>
               
-              <div className="absolute top-2 right-2 flex gap-2">
+              <div className="absolute top-2 right-2 flex gap-2 no-print">
                 <Button
                   onClick={() => handleDownloadPDF(batch.id, batch.name)}
                   size="sm"
@@ -446,26 +554,28 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 </Button>
               </div>
               
-              <div 
-                id={`qr-card-${batch.id}`} 
-                className="print:shadow-none shadow-sm print:border border-gray-300 mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[8mm] bg-white text-center flex flex-col items-center mt-12"
-              >
-                <div className="w-[30mm] h-[30mm] rounded-[4mm] overflow-hidden flex items-center justify-center bg-white">
-                  <QRCodeSVG
-                    value={makeBatchQrUrl(batch.id)}
-                    size={113}
-                    level="H"
-                  />
-                </div>
-                <div className="mt-4 text-[14pt] font-semibold text-black leading-tight">{batch.name}</div>
-                <div className="text-[12pt] text-black leading-tight mt-1">{batch.variety}</div>
-                <div className="mt-1 text-[10pt] text-[#6B7280] leading-tight">Volume: {batch.volume}L</div>
-                <div className="text-[10pt] text-[#6B7280] leading-tight">Stage: {batch.current_stage}</div>
-                {includeVintage && (
-                  <div className="text-[10pt] text-[#6B7280] leading-tight">
-                    Started: {new Date(batch.started_at).toLocaleDateString()}
+              <div className="preview-scale origin-top scale-[0.85] md:scale-90 mt-8">
+                <div 
+                  id={`label-${batch.id}`} 
+                  className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
+                >
+                  <div className="qr-box w-[26mm] h-[26mm] rounded-[3mm] overflow-hidden flex items-center justify-center">
+                    <QRCodeSVG
+                      value={makeBatchQrUrl(batch.id)}
+                      size={98}
+                      level="H"
+                    />
                   </div>
-                )}
+                  <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{batch.name}</div>
+                  <div className="text-[10pt] text-gray-900 leading-tight">{batch.variety}</div>
+                  <div className="mt-1 text-[9pt] text-gray-500 leading-tight">Volume: {batch.volume}L</div>
+                  <div className="text-[9pt] text-gray-500 leading-tight">Stage: {batch.current_stage}</div>
+                  {includeVintage && (
+                    <div className="text-[9pt] text-gray-500 leading-tight">
+                      Started: {new Date(batch.started_at).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
@@ -473,17 +583,19 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       )}
 
       {mode === "blend" && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredBlends.map((blend) => (
-            <Card key={blend.id} className="p-4 relative">
-              <div className="absolute top-3 left-3 z-10">
-                <Checkbox
-                  checked={selectedBlends.has(blend.id)}
-                  onCheckedChange={() => toggleSelection(blend.id, "blend")}
-                />
-              </div>
+            <Card key={blend.id} className="p-4 relative overflow-visible">
+              <button
+                aria-label="Select label"
+                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-gray-300 bg-white flex items-center justify-center shadow-sm data-[checked=true]:bg-orange-500 data-[checked=true]:border-orange-500 data-[checked=true]:text-white transition-colors"
+                data-checked={selectedBlends.has(blend.id)}
+                onClick={() => toggleSelection(blend.id)}
+              >
+                {selectedBlends.has(blend.id) ? "✓" : ""}
+              </button>
               
-              <div className="absolute top-2 right-2 flex gap-2">
+              <div className="absolute top-2 right-2 flex gap-2 no-print">
                 <Button
                   onClick={() => handleDownloadPDF(blend.id, blend.name)}
                   size="sm"
@@ -502,28 +614,30 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 </Button>
               </div>
               
-              <div 
-                id={`qr-card-${blend.id}`} 
-                className="print:shadow-none shadow-sm print:border border-gray-300 mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[8mm] bg-white text-center flex flex-col items-center mt-12"
-              >
-                <div className="w-[30mm] h-[30mm] rounded-[4mm] overflow-hidden flex items-center justify-center bg-white">
-                  <QRCodeSVG
-                    value={makeBlendQrUrl(blend.id)}
-                    size={113}
-                    level="H"
-                  />
-                </div>
-                <div className="mt-4 text-[14pt] font-semibold text-black leading-tight">{blend.name}</div>
-                <div className="text-[12pt] text-black leading-tight mt-1">Blend</div>
-                <div className="mt-1 text-[10pt] text-[#6B7280] leading-tight">Volume: {blend.total_volume}L</div>
-                {blend.bottles_75cl && blend.bottles_75cl > 0 && (
-                  <div className="text-[10pt] text-[#6B7280] leading-tight">75cl: {blend.bottles_75cl} bottles</div>
-                )}
-                {blend.storage_location && (
-                  <div className="text-[10pt] text-[#6B7280] leading-tight">Location: {blend.storage_location}</div>
-                )}
-                <div className="text-[10pt] text-[#6B7280] leading-tight">
-                  Created: {new Date(blend.created_at).toLocaleDateString()}
+              <div className="preview-scale origin-top scale-[0.85] md:scale-90 mt-8">
+                <div 
+                  id={`label-${blend.id}`} 
+                  className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
+                >
+                  <div className="qr-box w-[26mm] h-[26mm] rounded-[3mm] overflow-hidden flex items-center justify-center">
+                    <QRCodeSVG
+                      value={makeBlendQrUrl(blend.id)}
+                      size={98}
+                      level="H"
+                    />
+                  </div>
+                  <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{blend.name}</div>
+                  <div className="text-[10pt] text-gray-900 leading-tight">Blend</div>
+                  <div className="mt-1 text-[9pt] text-gray-500 leading-tight">Volume: {blend.total_volume}L</div>
+                  {blend.bottles_75cl && blend.bottles_75cl > 0 && (
+                    <div className="text-[9pt] text-gray-500 leading-tight">75cl: {blend.bottles_75cl} bottles</div>
+                  )}
+                  {blend.storage_location && (
+                    <div className="text-[9pt] text-gray-500 leading-tight">Location: {blend.storage_location}</div>
+                  )}
+                  <div className="text-[9pt] text-gray-500 leading-tight">
+                    Created: {new Date(blend.created_at).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
             </Card>
