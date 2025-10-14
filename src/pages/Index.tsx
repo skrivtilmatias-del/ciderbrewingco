@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -177,12 +177,9 @@ const Index = () => {
     if (batchId && batches.length > 0) {
       const batch = batches.find((b) => b.id === batchId);
       if (batch) {
-        // Select the batch
         setSelectedBatch(batch);
         fetchLogs(batch.id);
-        // Switch to production tab
         setActiveTab("production");
-        // Clean up URL
         window.history.replaceState({}, '', '/');
       }
     }
@@ -894,38 +891,50 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
-              <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
+              <div className="inline-flex min-w-full sm:min-w-0 h-auto p-1 bg-muted rounded-lg gap-1">
                 {userRole === "production" && (
                   <>
-                    <TabsTrigger value="batches" className="py-1.5 px-3">
-                      <Package className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">All Batches</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="production" className="py-1.5 px-3">
-                      <Activity className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Production</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="blending" className="py-1.5 px-3">
-                      <Wine className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Blending</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="cellar" className="py-1.5 px-3">
-                      <Warehouse className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Cellar</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="suppliers" className="py-1.5 px-3">
-                      <TrendingUp className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Suppliers</span>
-                    </TabsTrigger>
+                    <Link to="/">
+                      <Button variant={activeTab === 'batches' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                        <Package className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">All Batches</span>
+                      </Button>
+                    </Link>
+                    <Link to="/production">
+                      <Button variant={activeTab === 'production' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                        <Activity className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Production</span>
+                      </Button>
+                    </Link>
+                    <Link to="/blending">
+                      <Button variant={activeTab === 'blending' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                        <Wine className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Blending</span>
+                      </Button>
+                    </Link>
+                    <Link to="/cellar">
+                      <Button variant={activeTab === 'cellar' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                        <Warehouse className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Cellar</span>
+                      </Button>
+                    </Link>
+                    <Link to="/suppliers">
+                      <Button variant={location.pathname.includes('/suppliers') ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                        <TrendingUp className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Suppliers</span>
+                      </Button>
+                    </Link>
                   </>
                 )}
-                <TabsTrigger value="tasting" className="py-1.5 px-3">
-                  <Award className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Tasting</span>
-                </TabsTrigger>
+                <Link to="/tasting">
+                  <Button variant={activeTab === 'tasting' ? 'default' : 'ghost'} size="sm" className="py-1.5 px-3">
+                    <Award className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Tasting</span>
+                  </Button>
+                </Link>
                 {userRole === "production" && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -941,33 +950,29 @@ const Index = () => {
                     <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
                       <DropdownMenuLabel>Tools</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("analytics"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Analytics
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("calculators"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
                         <FlaskConical className="h-4 w-4 mr-2" />
                         Calculators
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("print-labels"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
                         <QrCode className="h-4 w-4 mr-2" />
                         Print Labels
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("floor-plan"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
                         <Layout className="h-4 w-4 mr-2" />
                         Floor Plan
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setActiveTab("tools"); setToolsView("cost-calculation"); }}>
+                      <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Cost Calculation
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/planning")}>
                         <Settings2 className="h-4 w-4 mr-2" />
                         Economic Planning Tool
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/suppliers")}>
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Supplier Ledger
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/webhooks")}>
                         <Webhook className="h-4 w-4 mr-2" />
@@ -980,7 +985,7 @@ const Index = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-              </TabsList>
+              </div>
             </div>
             
             {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
@@ -1027,6 +1032,7 @@ const Index = () => {
             )}
           </div>
 
+          <Tabs value={activeTab} className="mt-4">
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
