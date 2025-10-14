@@ -23,11 +23,13 @@ import { StageProgressionUI } from "@/components/StageProgressionUI";
 import { PrintQRCodes } from "@/components/PrintQRCodes";
 import { FloorPlan } from "@/pages/FloorPlan";
 import { CellarOverview } from "@/components/CellarOverview";
-import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign } from "lucide-react";
+import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import type { Batch } from "@/components/BatchCard";
 import { BatchLogCard, type BatchLog } from "@/components/BatchLogCard";
@@ -816,8 +818,26 @@ const Index = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-dvh bg-background">
+        <header className="border-b border-border bg-card/95 backdrop-blur">
+          <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
+            <Skeleton className="h-8 w-48" />
+          </div>
+        </header>
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full max-w-md" />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <Card key={i} className="p-6">
+                  <Skeleton className="h-6 w-32 mb-4" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -843,20 +863,30 @@ const Index = () => {
               <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
                 {userProfile?.full_name || user.email}
               </span>
-              <Button 
-                className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
-                size="sm"
-                onClick={() => setTastingDialogOpen(true)}
-              >
-                <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">New </span>Tasting
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
+                    size="sm"
+                    onClick={() => setTastingDialogOpen(true)}
+                  >
+                    <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden xs:inline">New </span>Tasting
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Create a new tasting analysis</TooltipContent>
+              </Tooltip>
               {userRole !== "taster" && (
                 <NewBatchDialog onBatchCreated={handleBatchCreated} />
               )}
-              <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" onClick={handleSignOut} title="Sign Out">
-                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" onClick={handleSignOut}>
+                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Sign out</TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -1238,9 +1268,15 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {blendBatches.length === 0 ? (
                     <Card className="col-span-full p-12 text-center border-dashed">
-                      <p className="text-muted-foreground">
-                        No blend batches yet. Click "New Blend" to get started.
+                      <Wine className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                      <h3 className="text-lg font-semibold mb-2">No Blends Yet</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Create your first blend batch to start tracking your cider blends.
                       </p>
+                      <NewBlendDialog 
+                        availableBatches={availableBatchesForBlending}
+                        onBlendCreated={handleBlendCreated}
+                      />
                     </Card>
                   ) : (
                     blendBatches
@@ -1275,10 +1311,15 @@ const Index = () => {
               <TabsContent value="cellar" className="mt-4 sm:mt-6">
                 {blendBatches.length === 0 ? (
                   <Card className="p-12 text-center border-dashed">
-                    <Warehouse className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      No blends in the cellar yet. Create blend batches to start tracking inventory.
+                    <Warehouse className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                    <h3 className="text-lg font-semibold mb-2">Cellar is Empty</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create blend batches and bottle them to start tracking your cellar inventory.
                     </p>
+                    <NewBlendDialog 
+                      availableBatches={availableBatchesForBlending}
+                      onBlendCreated={handleBlendCreated}
+                    />
                   </Card>
                 ) : (
                   <CellarOverview 
@@ -1319,9 +1360,22 @@ const Index = () => {
                 );
               }).length === 0 ? (
                 <Card className="col-span-full p-12 text-center border-dashed">
-                  <p className="text-muted-foreground">
-                    {tastingSearchQuery ? "No tastings match your search." : "No tasting analyses yet. Click 'New Tasting' in the header to get started."}
+                  <Award className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {tastingSearchQuery ? "No Results Found" : "No Tastings Yet"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {tastingSearchQuery 
+                      ? "Try adjusting your search to find tasting analyses." 
+                      : "Start documenting your tasting notes with detailed sensory analysis."
+                    }
                   </p>
+                  {!tastingSearchQuery && (
+                    <Button onClick={handleNewTasting}>
+                      <Award className="h-4 w-4 mr-2" />
+                      Create First Tasting
+                    </Button>
+                  )}
                 </Card>
               ) : (
                 tastingAnalyses.filter((analysis) => {

@@ -2,6 +2,8 @@ import { Card } from "@/components/ui/card";
 import { CalendarDays, TrendingUp, BarChart3, Wine, Award, Package, Timer, Activity, Zap, Target, Boxes, FlaskConical } from "lucide-react";
 import type { Batch } from "@/components/BatchCard";
 import { AIInsights } from "./AIInsights";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
 interface ProductionAnalyticsProps {
   batches: Batch[];
@@ -80,6 +82,39 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
   const avgTastingScore = tastingAnalyses.length > 0
     ? Math.round(tastingAnalyses.reduce((sum, t) => sum + (t.overall_score || 0), 0) / tastingAnalyses.length)
     : 0;
+
+  // Prepare stage distribution data for pie chart
+  const stageChartData = Object.entries(stageDistribution).map(([stage, count]) => ({
+    name: stage,
+    value: count,
+  }));
+
+  const STAGE_COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--warning))", "hsl(var(--success))"];
+
+  // Prepare variety trends over time (by month)
+  const varietyTrendsData = batches.reduce((acc, batch) => {
+    const month = new Date(batch.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    if (!acc[month]) acc[month] = {};
+    acc[month][batch.variety] = (acc[month][batch.variety] || 0) + batch.volume;
+    return acc;
+  }, {} as Record<string, Record<string, number>>);
+
+  const varietyTrendsChartData = Object.entries(varietyTrendsData)
+    .map(([month, varieties]) => ({
+      month,
+      ...varieties,
+    }))
+    .slice(-12); // Last 12 months
+
+  // Prepare quality evolution data (tasting scores over time)
+  const qualityEvolutionData = tastingAnalyses
+    .filter(t => t.overall_score != null)
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .map(t => ({
+      date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      score: t.overall_score,
+      name: t.blend_name || t.competitor_brand || "Unknown",
+    }));
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -276,7 +311,35 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
         </Card>
       </div>
 
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {stageChartData.length > 0 && (
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
+              Stage Distribution
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={stageChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => `${entry.name}: ${entry.value}`}
+                  outerRadius={80}
+                  fill="hsl(var(--primary))"
+                  dataKey="value"
+                >
+                  {stageChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        )}
+
         {topVariety && (
           <Card className="p-4 sm:p-6">
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
@@ -307,6 +370,46 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
                   );
                 })}
             </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Trends Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {varietyTrendsChartData.length > 0 && (
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
+              Variety Trends Over Time
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={varietyTrendsChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--foreground))" fontSize={12} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+                {Object.keys(varietyBreakdown).map((variety, index) => (
+                  <Bar key={variety} dataKey={variety} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        )}
+
+        {qualityEvolutionData.length > 0 && (
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
+              Quality Score Evolution
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={qualityEvolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" stroke="hsl(var(--foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--foreground))" fontSize={12} domain={[0, 100]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line type="monotone" dataKey="score" stroke="hsl(var(--success))" strokeWidth={2} dot={{ fill: "hsl(var(--success))" }} />
+              </LineChart>
+            </ResponsiveContainer>
           </Card>
         )}
 
@@ -351,7 +454,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
         )}
       </div>
 
-      <AIInsights 
+      <AIInsights
         batches={batches} 
         blendBatches={blendBatches} 
         tastingAnalyses={tastingAnalyses}
