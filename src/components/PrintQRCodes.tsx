@@ -207,19 +207,18 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               text-align: center;
               box-shadow: none !important;
             }
-            .qr-box {
-              width: 26mm;
-              height: 26mm;
-              border-radius: 3mm;
-              overflow: hidden;
+            .qr-wrapper {
+              width: 28mm;
+              height: 28mm;
+              background: white;
+              padding: 2mm;
               display: flex;
               align-items: center;
               justify-content: center;
-              background: white;
             }
-            .qr-box svg {
-              width: 26mm !important;
-              height: 26mm !important;
+            .qr-wrapper svg {
+              width: 100% !important;
+              height: 100% !important;
               display: block;
             }
             .code {
@@ -523,11 +522,16 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                   id={`label-${batch.id}`} 
                   className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
                 >
-                  <div className="qr-box w-[26mm] h-[26mm] rounded-[3mm] overflow-hidden flex items-center justify-center">
+                  <div className="mx-auto w-[28mm] h-[28mm] bg-white p-[2mm] flex items-center justify-center">
                     <QRCodeSVG
                       value={makeBatchQrUrl(batch.id)}
-                      size={98}
-                      level="H"
+                      size={90}
+                      level="M"
+                      style={{ 
+                        width: '100%', 
+                        height: '100%',
+                        display: 'block'
+                      }}
                     />
                   </div>
                   <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{batch.name}</div>
@@ -583,11 +587,16 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                   id={`label-${blend.id}`} 
                   className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
                 >
-                  <div className="qr-box w-[26mm] h-[26mm] rounded-[3mm] overflow-hidden flex items-center justify-center">
+                  <div className="mx-auto w-[28mm] h-[28mm] bg-white p-[2mm] flex items-center justify-center">
                     <QRCodeSVG
                       value={makeBlendQrUrl(blend.id)}
-                      size={98}
-                      level="H"
+                      size={90}
+                      level="M"
+                      style={{ 
+                        width: '100%', 
+                        height: '100%',
+                        display: 'block'
+                      }}
                     />
                   </div>
                   <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{blend.name}</div>
