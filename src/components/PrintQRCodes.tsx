@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, Download, FileArchive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,7 +158,7 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     }
   };
 
-  const handlePrintSingle = (id: string, type: "batch" | "blend", name: string) => {
+  const handlePrintSingle = async (id: string, type: "batch" | "blend", name: string) => {
     const printElement = document.getElementById(`label-${id}`);
     if (!printElement) return;
 
@@ -248,6 +249,12 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       </html>
     `);
     printWindow.document.close();
+    
+    // Wait for fonts and DOM to be fully ready before printing
+    if (printWindow.document.fonts) {
+      await printWindow.document.fonts.ready;
+    }
+    
     printWindow.focus();
     setTimeout(() => {
       printWindow.print();
@@ -405,28 +412,30 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       <div className="flex justify-between items-center print:hidden">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold">QR Code Generator</h2>
-          <div className="flex items-center gap-2 border rounded-lg p-1">
-            <Button
-              variant={mode === "batch" ? "default" : "ghost"}
-              size="sm"
+          <TabsList className="h-auto p-1">
+            <TabsTrigger
+              value="batch"
+              className="py-1.5 px-3"
               onClick={() => {
                 setMode("batch");
                 clearSelection();
               }}
+              data-state={mode === "batch" ? "active" : "inactive"}
             >
               Batches
-            </Button>
-            <Button
-              variant={mode === "blend" ? "default" : "ghost"}
-              size="sm"
+            </TabsTrigger>
+            <TabsTrigger
+              value="blend"
+              className="py-1.5 px-3"
               onClick={() => {
                 setMode("blend");
                 clearSelection();
               }}
+              data-state={mode === "blend" ? "active" : "inactive"}
             >
               Blends
-            </Button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
         </div>
       </div>
 
@@ -487,11 +496,12 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
 
       {/* Content */}
       {mode === "batch" && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{filteredBatches.map((batch) => (
-            <Card key={batch.id} className="p-4 relative overflow-visible">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredBatches.map((batch) => (
+            <Card key={batch.id} className="p-4 flex flex-col relative overflow-visible">
               <button
                 aria-label="Select label"
-                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-gray-300 bg-white flex items-center justify-center shadow-sm data-[checked=true]:bg-orange-500 data-[checked=true]:border-orange-500 data-[checked=true]:text-white transition-colors"
+                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-border bg-card flex items-center justify-center shadow-sm data-[checked=true]:bg-primary data-[checked=true]:border-primary data-[checked=true]:text-primary-foreground transition-colors"
                 data-checked={selectedBatches.has(batch.id)}
                 onClick={() => toggleSelection(batch.id)}
               >
@@ -517,29 +527,27 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 </Button>
               </div>
               
-              <div className="preview-scale origin-top scale-[0.85] md:scale-90 mt-8">
+              <div className="flex items-center justify-center pt-8 pb-4">
                 <div 
                   id={`label-${batch.id}`} 
-                  className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
+                  className="label-card w-full max-w-[180px] aspect-[38/90] rounded-lg p-4 bg-white border border-border text-center flex flex-col items-center justify-start shadow-sm"
                 >
-                  <div className="mx-auto w-[28mm] h-[28mm] bg-white p-[2mm] flex items-center justify-center">
-                    <QRCodeSVG
-                      value={makeBatchQrUrl(batch.id)}
-                      size={90}
-                      level="M"
-                      style={{ 
-                        width: '100%', 
-                        height: '100%',
-                        display: 'block'
-                      }}
-                    />
+                  <div className="w-full aspect-square bg-white rounded flex items-center justify-center mb-3">
+                    <div className="w-[85%] h-[85%]">
+                      <QRCodeSVG
+                        value={makeBatchQrUrl(batch.id)}
+                        size={128}
+                        level="M"
+                        className="w-full h-full"
+                      />
+                    </div>
                   </div>
-                  <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{batch.name}</div>
-                  <div className="text-[10pt] text-gray-900 leading-tight">{batch.variety}</div>
-                  <div className="mt-1 text-[9pt] text-gray-500 leading-tight">Volume: {batch.volume}L</div>
-                  <div className="text-[9pt] text-gray-500 leading-tight">Stage: {batch.current_stage}</div>
+                  <div className="text-sm font-semibold text-foreground leading-tight line-clamp-2">{batch.name}</div>
+                  <div className="text-xs text-foreground leading-tight mt-0.5">{batch.variety}</div>
+                  <div className="mt-2 text-xs text-muted-foreground leading-tight">Volume: {batch.volume}L</div>
+                  <div className="text-xs text-muted-foreground leading-tight">Stage: {batch.current_stage}</div>
                   {includeVintage && (
-                    <div className="text-[9pt] text-gray-500 leading-tight">
+                    <div className="text-xs text-muted-foreground leading-tight">
                       Started: {new Date(batch.started_at).toLocaleDateString()}
                     </div>
                   )}
@@ -551,12 +559,12 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
       )}
 
       {mode === "blend" && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredBlends.map((blend) => (
-            <Card key={blend.id} className="p-4 relative overflow-visible">
+            <Card key={blend.id} className="p-4 flex flex-col relative overflow-visible">
               <button
                 aria-label="Select label"
-                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-gray-300 bg-white flex items-center justify-center shadow-sm data-[checked=true]:bg-orange-500 data-[checked=true]:border-orange-500 data-[checked=true]:text-white transition-colors"
+                className="absolute top-3 left-3 z-10 h-5 w-5 rounded-md border border-border bg-card flex items-center justify-center shadow-sm data-[checked=true]:bg-primary data-[checked=true]:border-primary data-[checked=true]:text-primary-foreground transition-colors"
                 data-checked={selectedBlends.has(blend.id)}
                 onClick={() => toggleSelection(blend.id)}
               >
@@ -582,33 +590,31 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
                 </Button>
               </div>
               
-              <div className="preview-scale origin-top scale-[0.85] md:scale-90 mt-8">
+              <div className="flex items-center justify-center pt-8 pb-4">
                 <div 
                   id={`label-${blend.id}`} 
-                  className="label-card mx-auto w-[38mm] h-[90mm] rounded-[6mm] p-[5mm] bg-white border border-gray-300 text-center flex flex-col items-center justify-start shadow-sm print:shadow-none"
+                  className="label-card w-full max-w-[180px] aspect-[38/90] rounded-lg p-4 bg-white border border-border text-center flex flex-col items-center justify-start shadow-sm"
                 >
-                  <div className="mx-auto w-[28mm] h-[28mm] bg-white p-[2mm] flex items-center justify-center">
-                    <QRCodeSVG
-                      value={makeBlendQrUrl(blend.id)}
-                      size={90}
-                      level="M"
-                      style={{ 
-                        width: '100%', 
-                        height: '100%',
-                        display: 'block'
-                      }}
-                    />
+                  <div className="w-full aspect-square bg-white rounded flex items-center justify-center mb-3">
+                    <div className="w-[85%] h-[85%]">
+                      <QRCodeSVG
+                        value={makeBlendQrUrl(blend.id)}
+                        size={128}
+                        level="M"
+                        className="w-full h-full"
+                      />
+                    </div>
                   </div>
-                  <div className="mt-3 text-[12pt] font-semibold text-gray-900 leading-tight">{blend.name}</div>
-                  <div className="text-[10pt] text-gray-900 leading-tight">Blend</div>
-                  <div className="mt-1 text-[9pt] text-gray-500 leading-tight">Volume: {blend.total_volume}L</div>
+                  <div className="text-sm font-semibold text-foreground leading-tight line-clamp-2">{blend.name}</div>
+                  <div className="text-xs text-foreground leading-tight mt-0.5">Blend</div>
+                  <div className="mt-2 text-xs text-muted-foreground leading-tight">Volume: {blend.total_volume}L</div>
                   {blend.bottles_75cl && blend.bottles_75cl > 0 && (
-                    <div className="text-[9pt] text-gray-500 leading-tight">75cl: {blend.bottles_75cl} bottles</div>
+                    <div className="text-xs text-muted-foreground leading-tight">75cl: {blend.bottles_75cl} bottles</div>
                   )}
                   {blend.storage_location && (
-                    <div className="text-[9pt] text-gray-500 leading-tight">Location: {blend.storage_location}</div>
+                    <div className="text-xs text-muted-foreground leading-tight">Location: {blend.storage_location}</div>
                   )}
-                  <div className="text-[9pt] text-gray-500 leading-tight">
+                  <div className="text-xs text-muted-foreground leading-tight">
                     Created: {new Date(blend.created_at).toLocaleDateString()}
                   </div>
                 </div>

@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Apple } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Apple, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { signUpSchema, signInSchema } from "@/lib/validationSchemas";
 import { getAuthErrorMessage } from "@/lib/errorHandler";
@@ -19,6 +20,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [userRole, setUserRole] = useState<"production" | "taster">("taster");
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -30,6 +32,12 @@ const Auth = () => {
         navigate(nextPath);
       }
     });
+
+    // Detect in-app browsers (Facebook, Instagram, etc.)
+    const ua = navigator.userAgent || navigator.vendor;
+    const isInApp = /FBAN|FBAV|Instagram/.test(ua) || 
+                    (navigator as any).standalone === false;
+    setIsInAppBrowser(isInApp);
   }, [navigate]);
 
   // SEO: set page title and description
@@ -129,6 +137,15 @@ const Auth = () => {
           <Apple className="w-10 h-10 text-primary mt-2 mb-6" />
           <h1 className="text-3xl font-semibold text-foreground mb-2">Cider Brewing Co</h1>
         </div>
+
+        {isInAppBrowser && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <ExternalLink className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-sm text-orange-800">
+              For best experience, open this page in your default browser (Safari, Chrome, etc.)
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="mb-6">
           <Tabs defaultValue="signin" className="w-full">

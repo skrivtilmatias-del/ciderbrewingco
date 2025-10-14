@@ -59,20 +59,14 @@ Deno.serve(async (req) => {
     const forwardedHost = req.headers.get('x-forwarded-host');
     const forwardedOrigin = forwardedHost ? `${url.protocol}//${forwardedHost}` : undefined;
 
+    // Hard fallback to production URL to prevent "Base URL not configured" errors
     const baseUrl =
       (queryOrigin && queryOrigin.replace(/\/$/, '')) ||
       (Deno.env.get('APP_URL')?.replace(/\/$/, '')) ||
-      (refererOrigin && refererOrigin.replace(/\/$/, '')) ||
       (forwardedOrigin && forwardedOrigin.replace(/\/$/, '')) ||
-      undefined;
+      'https://cidertrack.lovable.app';
 
-    if (!baseUrl) {
-      console.warn('[QR Redirect] No baseUrl could be determined (no o/origin param, no APP_URL secret, no referer).');
-      return new Response(JSON.stringify({ error: 'Base URL not configured for redirects.' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
+    console.log(`[QR Redirect] Using baseUrl: ${baseUrl}`);
     
     if (user) {
       // User is authenticated - redirect to target

@@ -9,7 +9,12 @@ export const getBaseUrl = (): string => {
     return envUrl.replace(/\/+$/, '');
   }
   
-  // In production, use the current origin (works for deployed app)
+  // In production, VITE_APP_BASE_URL is mandatory
+  if (import.meta.env.PROD) {
+    throw new Error('VITE_APP_BASE_URL is required in production. Please set it in your environment variables.');
+  }
+  
+  // In development, fall back to window.location.origin
   if (typeof window !== 'undefined') {
     return window.location.origin;
   }

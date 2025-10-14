@@ -866,43 +866,28 @@ const Index = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
-              <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 flex-nowrap sm:flex-wrap justify-start items-center gap-1 bg-transparent p-0">
+              <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
                 {userRole === "production" && (
                   <>
-                    <TabsTrigger 
-                      value="batches" 
-                      className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                    >
+                    <TabsTrigger value="batches" className="py-1.5 px-3">
                       <Package className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">All Batches</span>
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="production" 
-                      className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                    >
+                    <TabsTrigger value="production" className="py-1.5 px-3">
                       <Activity className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Production</span>
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="blending" 
-                      className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                    >
+                    <TabsTrigger value="blending" className="py-1.5 px-3">
                       <Wine className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Blending</span>
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="cellar" 
-                      className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                    >
+                    <TabsTrigger value="cellar" className="py-1.5 px-3">
                       <Warehouse className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Cellar</span>
                     </TabsTrigger>
                   </>
                 )}
-                <TabsTrigger 
-                  value="tasting" 
-                  className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                >
+                <TabsTrigger value="tasting" className="py-1.5 px-3">
                   <Award className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Tasting</span>
                 </TabsTrigger>
