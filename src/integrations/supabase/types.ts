@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      batch_bom: {
+        Row: {
+          batch_id: string | null
+          blend_id: string | null
+          created_at: string
+          id: string
+          ingredients: Json
+          labor: Json
+          overheads: Json
+          packaging: Json
+          sell_price_150cl: number | null
+          sell_price_75cl: number | null
+          updated_at: string
+          user_id: string
+          wastage_percent: number
+        }
+        Insert: {
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          ingredients?: Json
+          labor?: Json
+          overheads?: Json
+          packaging?: Json
+          sell_price_150cl?: number | null
+          sell_price_75cl?: number | null
+          updated_at?: string
+          user_id: string
+          wastage_percent?: number
+        }
+        Update: {
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          ingredients?: Json
+          labor?: Json
+          overheads?: Json
+          packaging?: Json
+          sell_price_150cl?: number | null
+          sell_price_75cl?: number | null
+          updated_at?: string
+          user_id?: string
+          wastage_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_bom_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: true
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_bom_blend_id_fkey"
+            columns: ["blend_id"]
+            isOneToOne: true
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batch_history: {
         Row: {
           batch_id: string
