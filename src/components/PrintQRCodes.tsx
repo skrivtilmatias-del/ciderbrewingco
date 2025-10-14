@@ -95,21 +95,21 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               justify-content: flex-start;
               width: 38mm;
               height: 90mm;
-              padding: 3mm 2mm;
+              padding: 4mm 3mm;
               box-sizing: border-box;
               background: white;
             }
             .qr-code { 
               background: white; 
               padding: 0; 
-              margin: 0 0 2mm 0;
+              margin: 0 0 3mm 0;
               display: flex;
               align-items: center;
               justify-content: center;
             }
             .qr-code svg {
-              width: 32mm !important;
-              height: 32mm !important;
+              width: 30mm !important;
+              height: 30mm !important;
               display: block;
             }
             .qr-info { 
@@ -117,21 +117,21 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 9pt; 
+              font-size: 10pt; 
               font-weight: 700; 
-              margin: 0 0 1.5mm 0; 
-              line-height: 1.1;
+              margin: 0 0 2mm 0; 
+              line-height: 1;
               color: #000;
             }
             p { 
-              margin: 0.5mm 0; 
-              font-size: 7pt; 
-              color: #333; 
+              margin: 1mm 0; 
+              font-size: 8pt; 
+              color: #666; 
               line-height: 1.2;
             }
             .date { 
-              font-size: 6pt; 
-              margin-top: 1mm;
+              font-size: 7pt; 
+              margin-top: 1.5mm;
               color: #666;
             }
           </style>
@@ -195,21 +195,21 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               justify-content: flex-start;
               width: 38mm;
               height: 90mm;
-              padding: 3mm 2mm;
+              padding: 4mm 3mm;
               box-sizing: border-box;
               background: white;
             }
             .qr-code { 
               background: white; 
               padding: 0; 
-              margin: 0 0 2mm 0;
+              margin: 0 0 3mm 0;
               display: flex;
               align-items: center;
               justify-content: center;
             }
             .qr-code svg {
-              width: 32mm !important;
-              height: 32mm !important;
+              width: 30mm !important;
+              height: 30mm !important;
               display: block;
             }
             .qr-info { 
@@ -217,21 +217,21 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
               width: 100%;
             }
             h3, h4 { 
-              font-size: 9pt; 
+              font-size: 10pt; 
               font-weight: 700; 
-              margin: 0 0 1.5mm 0; 
-              line-height: 1.1;
+              margin: 0 0 2mm 0; 
+              line-height: 1;
               color: #000;
             }
             p { 
-              margin: 0.5mm 0; 
-              font-size: 7pt; 
-              color: #333; 
+              margin: 1mm 0; 
+              font-size: 8pt; 
+              color: #666; 
               line-height: 1.2;
             }
             .date { 
-              font-size: 6pt; 
-              margin-top: 1mm;
+              font-size: 7pt; 
+              margin-top: 1.5mm;
               color: #666;
             }
           </style>
