@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Download, FileArchive } from "lucide-react";
+import { Printer, Download, FileArchive, QrCode } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { makeBatchQrUrl, makeBlendQrUrl } from "@/lib/urls";
+import { paths } from "@/routes/paths";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
@@ -36,10 +37,10 @@ interface BlendBatch {
 }
 
 interface PrintQRCodesProps {
-  blendBatches: BlendBatch[];
+  blendBatches?: BlendBatch[];
 }
 
-export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
+export const PrintQRCodes = ({ blendBatches = [] }: PrintQRCodesProps) => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"batch" | "blend">("batch");
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -416,11 +417,54 @@ export const PrintQRCodes = ({ blendBatches }: PrintQRCodesProps) => {
     b.variety.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredBlends = blendBatches.filter(b =>
+  const filteredBlends = (blendBatches || []).filter(b =>
     b.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const selectedCount = mode === "batch" ? selectedBatches.size : selectedBlends.size;
+
+  // Show empty state if no data available
+  if (mode === "blend" && (!blendBatches || blendBatches.length === 0)) {
+    return (
+      <Card className="p-12">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <QrCode className="h-16 w-16 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">No Blends Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Create a blend first to generate QR codes for printing.
+            </p>
+            <Button onClick={() => navigate(paths.blending())}>
+              Create Blend
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (mode === "batch" && batches.length === 0) {
+    return (
+      <Card className="p-12">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <QrCode className="h-16 w-16 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">No Batches Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Create a batch first to generate QR codes for printing.
+            </p>
+            <Button onClick={() => navigate(paths.batches())}>
+              View Batches
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
