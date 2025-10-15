@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wine, Apple, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Wine, Apple, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBlends } from '@/hooks/useBlends';
 import { BlendBatchCard } from '@/components/BlendBatchCard';
@@ -17,6 +18,7 @@ interface BlendingTabProps {
 }
 
 export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
+  const [showAllBatches, setShowAllBatches] = useState(false);
   const { 
     blendSearchQuery,
     setBlendSearchQuery, 
@@ -123,7 +125,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {batchUsageInfo
             .filter(b => b.isAvailable)
-            .slice(0, 10)
+            .slice(0, showAllBatches ? undefined : 10)
             .map((batch) => (
               <div key={batch.id} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
@@ -154,9 +156,26 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         )}
         
         {batchUsageInfo.filter(b => b.isAvailable).length > 10 && (
-          <p className="text-xs text-muted-foreground text-center pt-3">
-            + {batchUsageInfo.filter(b => b.isAvailable).length - 10} more batches available
-          </p>
+          <div className="flex justify-center pt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAllBatches(!showAllBatches)}
+              className="text-xs"
+            >
+              {showAllBatches ? (
+                <>
+                  <ChevronUp className="h-3 w-3 mr-1" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3 w-3 mr-1" />
+                  + {batchUsageInfo.filter(b => b.isAvailable).length - 10} more batches available
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </Card>
 
