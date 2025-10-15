@@ -98,16 +98,16 @@ export default function PlanningTool() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button variant="outline" size="sm" onClick={handleReset} className="w-28">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
+              <Button variant="outline" size="sm" onClick={handleExport} className="w-28">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
-              <Button variant="outline" size="sm" asChild>
-                <label>
+              <Button variant="outline" size="sm" asChild className="w-28">
+                <label className="cursor-pointer">
                   <Upload className="h-4 w-4 mr-2" />
                   Import
                   <input
