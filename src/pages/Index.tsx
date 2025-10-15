@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/hooks/useAuth";
+import { paths } from "@/routes/paths";
 import { AppLayout } from "@/components/AppLayout";
 import { BatchCard } from "@/components/BatchCard";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
@@ -876,31 +877,31 @@ const Index = () => {
                 {userRole === "production" && (
                   <>
                     <TabsTrigger value="batches" asChild>
-                      <button onClick={() => navigate('/batches')} className="py-1.5 px-3">
+                      <button onClick={() => navigate(paths.batches())} className="py-1.5 px-3">
                         <Package className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">All Batches</span>
                       </button>
                     </TabsTrigger>
                     <TabsTrigger value="production" asChild>
-                      <button onClick={() => navigate('/production')} className="py-1.5 px-3">
+                      <button onClick={() => navigate(paths.production())} className="py-1.5 px-3">
                         <Activity className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Production</span>
                       </button>
                     </TabsTrigger>
                     <TabsTrigger value="blending" asChild>
-                      <button onClick={() => navigate('/blending')} className="py-1.5 px-3">
+                      <button onClick={() => navigate(paths.blending())} className="py-1.5 px-3">
                         <Wine className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Blending</span>
                       </button>
                     </TabsTrigger>
                     <TabsTrigger value="cellar" asChild>
-                      <button onClick={() => navigate('/cellar')} className="py-1.5 px-3">
+                      <button onClick={() => navigate(paths.cellar())} className="py-1.5 px-3">
                         <Warehouse className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Cellar</span>
                       </button>
                     </TabsTrigger>
                     <TabsTrigger value="suppliers" asChild>
-                      <button onClick={() => navigate('/suppliers')} className="py-1.5 px-3">
+                      <button onClick={() => navigate(paths.suppliers())} className="py-1.5 px-3">
                         <TrendingUp className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Suppliers</span>
                       </button>
@@ -908,7 +909,7 @@ const Index = () => {
                   </>
                 )}
                 <TabsTrigger value="tasting" asChild>
-                  <button onClick={() => navigate('/tasting')} className="py-1.5 px-3">
+                  <button onClick={() => navigate(paths.tasting())} className="py-1.5 px-3">
                     <Award className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Tasting</span>
                   </button>
@@ -928,35 +929,35 @@ const Index = () => {
                     <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
                       <DropdownMenuLabel>Tools</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Analytics
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                         <FlaskConical className="h-4 w-4 mr-2" />
                         Calculators
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                         <QrCode className="h-4 w-4 mr-2" />
                         Print Labels
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                         <Layout className="h-4 w-4 mr-2" />
                         Floor Plan
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                         <DollarSign className="h-4 w-4 mr-2" />
                         Cost Calculation
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/planning")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.planning())}>
                         <Settings2 className="h-4 w-4 mr-2" />
                         Economic Planning Tool
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/webhooks")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.webhooks())}>
                         <Webhook className="h-4 w-4 mr-2" />
                         Webhooks & API
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/install")}>
+                      <DropdownMenuItem onClick={() => navigate(paths.install())}>
                         <Download className="h-4 w-4 mr-2" />
                         Install App
                       </DropdownMenuItem>

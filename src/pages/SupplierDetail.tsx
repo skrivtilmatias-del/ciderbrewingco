@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { paths } from "@/routes/paths";
 
 export default function SupplierDetail() {
   const { id } = useParams();
@@ -54,7 +55,7 @@ export default function SupplierDetail() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/suppliers")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(paths.suppliers())}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>

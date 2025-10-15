@@ -6,6 +6,7 @@ import { TrendingUp, DollarSign, AlertTriangle, ArrowRight, Package } from "luci
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { avgYield, avgCostPerL, detectPriceIncrease, detectYieldDecrease } from "@/lib/supplierMetrics";
+import { paths } from "@/routes/paths";
 
 export function SupplierOverview() {
   const navigate = useNavigate();
@@ -120,7 +121,7 @@ export function SupplierOverview() {
                 <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
                 Active Alerts
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/suppliers")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate(paths.suppliers())}>
                 View All
               </Button>
             </div>
@@ -150,7 +151,7 @@ export function SupplierOverview() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Deliveries</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/suppliers")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(paths.suppliers())}>
               View All
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
@@ -185,7 +186,7 @@ export function SupplierOverview() {
 
       {/* Quick Actions */}
       <div className="flex gap-2">
-        <Button onClick={() => navigate("/suppliers")} className="flex-1">
+        <Button onClick={() => navigate(paths.suppliers())} className="flex-1">
           Manage Suppliers
         </Button>
       </div>

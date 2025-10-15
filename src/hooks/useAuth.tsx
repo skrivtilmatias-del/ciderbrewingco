@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { paths } from '@/routes/paths';
 
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export const useAuth = () => {
     // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        navigate("/auth");
+        navigate(paths.auth());
       } else {
         setUser(session.user);
         fetchUserRole(session.user.id);
@@ -25,7 +26,7 @@ export const useAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        navigate("/auth");
+        navigate(paths.auth());
       } else {
         setUser(session.user);
         if (session.user) {
