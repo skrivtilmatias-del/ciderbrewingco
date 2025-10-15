@@ -97,21 +97,25 @@ export const useBatches = () => {
     },
   });
 
-  // Update stage mutation
+  // Helper function to calculate progress based on stage
+  const calculateProgress = (stage: string) => {
+    const allStages = [
+      'Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling',
+      'Enzymes', 'Pitching', 'Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
+      'Stabilisation', 'Blending', 'Backsweetening', 'Bottling',
+      'Conditioning', 'Lees Aging', 'Tasting', 'Complete'
+    ];
+    
+    const stageIndex = allStages.indexOf(stage);
+    return stageIndex === allStages.length - 1 
+      ? 100 
+      : Math.round(((stageIndex + 1) / allStages.length) * 100);
+  };
+
+  // Update stage mutation with optimistic updates
   const updateStageMutation = useMutation({
     mutationFn: async ({ batchId, newStage }: { batchId: string; newStage: string }) => {
-      // Calculate progress based on stage
-      const allStages = [
-        'Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling',
-        'Enzymes', 'Pitching', 'Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
-        'Stabilisation', 'Blending', 'Backsweetening', 'Bottling',
-        'Conditioning', 'Lees Aging', 'Tasting', 'Complete'
-      ];
-      
-      const stageIndex = allStages.indexOf(newStage);
-      const progress = stageIndex === allStages.length - 1 
-        ? 100 
-        : Math.round(((stageIndex + 1) / allStages.length) * 100);
+      const progress = calculateProgress(newStage);
 
       const { data, error } = await supabase
         .from('batches')
@@ -127,12 +131,34 @@ export const useBatches = () => {
       if (error) throw error;
       return data;
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['batches'] });
+      
+      // Snapshot the previous value
+      const previousBatches = queryClient.getQueryData(['batches']);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(['batches'], (old: any) => 
+        old?.map((b: any) => b.id === variables.batchId 
+          ? { ...b, currentStage: variables.newStage, progress: calculateProgress(variables.newStage) } 
+          : b
+        )
+      );
+      
+      return { previousBatches };
+    },
+    onError: (err, variables, context) => {
+      // Rollback to the previous value on error
+      if (context?.previousBatches) {
+        queryClient.setQueryData(['batches'], context.previousBatches);
+      }
+      toast.error(getUserFriendlyError(err));
+    },
     onSuccess: () => {
+      // Refetch to ensure we have the latest data
       queryClient.invalidateQueries({ queryKey: ['batches'] });
       toast.success('Batch stage updated');
-    },
-    onError: (error: any) => {
-      toast.error(getUserFriendlyError(error));
     },
   });
 
