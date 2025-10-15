@@ -100,9 +100,26 @@ export const useBatches = () => {
   // Update stage mutation
   const updateStageMutation = useMutation({
     mutationFn: async ({ batchId, newStage }: { batchId: string; newStage: string }) => {
+      // Calculate progress based on stage
+      const allStages = [
+        'Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling',
+        'Enzymes', 'Pitching', 'Fermentation', 'Cold Crash', 'Racking', 'Malolactic',
+        'Stabilisation', 'Blending', 'Backsweetening', 'Bottling',
+        'Conditioning', 'Lees Aging', 'Tasting', 'Complete'
+      ];
+      
+      const stageIndex = allStages.indexOf(newStage);
+      const progress = stageIndex === allStages.length - 1 
+        ? 100 
+        : Math.round(((stageIndex + 1) / allStages.length) * 100);
+
       const { data, error } = await supabase
         .from('batches')
-        .update({ current_stage: newStage })
+        .update({ 
+          current_stage: newStage,
+          progress: progress,
+          completed_at: newStage === "Complete" ? new Date().toISOString() : null,
+        })
         .eq('id', batchId)
         .select()
         .single();
@@ -112,7 +129,7 @@ export const useBatches = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
-      toast.success('Stage updated successfully');
+      toast.success('Batch stage updated');
     },
     onError: (error: any) => {
       toast.error(getUserFriendlyError(error));

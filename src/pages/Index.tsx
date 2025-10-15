@@ -37,7 +37,7 @@ const Index = () => {
   const queryClient = useQueryClient();
   
   // Use hooks for data fetching
-  const { batches, isLoading: batchesLoading, error: batchesError } = useBatches();
+  const { batches, isLoading: batchesLoading, error: batchesError, updateStage } = useBatches();
   const { blends, isLoading: blendsLoading, error: blendsError } = useBlends();
   
   // Use state from useAppStore
@@ -98,16 +98,18 @@ const Index = () => {
   };
 
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
-    // Invalidate and refetch batches after stage update
-    await queryClient.invalidateQueries({ queryKey: ['batches'] });
+    // Use the mutation from useBatches hook
+    updateStage({ batchId, newStage });
     
-    // Update selected batch if it's the one being updated
-    if (selectedBatch?.id === batchId) {
-      const updatedBatch = batches.find(b => b.id === batchId);
-      if (updatedBatch) {
-        setSelectedBatch(updatedBatch);
+    // Update selected batch state after a short delay to allow query to update
+    setTimeout(() => {
+      if (selectedBatch?.id === batchId) {
+        const updatedBatch = batches.find(b => b.id === batchId);
+        if (updatedBatch) {
+          setSelectedBatch(updatedBatch);
+        }
       }
-    }
+    }, 100);
   };
 
   const handleGoToProduction = (batch: Batch) => {
