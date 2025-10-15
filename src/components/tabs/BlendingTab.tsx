@@ -26,18 +26,29 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   const batchUsageInfo = useMemo(() => {
     return batches.map(batch => {
       const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+        // Ensure components array exists
+        if (!blend.components || !Array.isArray(blend.components)) {
+          return total;
+        }
+        
         const componentVolume = blend.components
-          ?.filter((comp: any) => comp.source_batch_id === batch.id)
+          .filter((comp: any) => comp.source_batch_id === batch.id)
           .reduce((sum: number, comp: any) => {
-            const volume = parseFloat(comp.volume_liters) || 0;
-            const spillage = parseFloat(comp.spillage) || 0;
+            const volume = typeof comp.volume_liters === 'number' 
+              ? comp.volume_liters 
+              : parseFloat(comp.volume_liters || '0') || 0;
+            const spillage = typeof comp.spillage === 'number'
+              ? comp.spillage
+              : parseFloat(comp.spillage || '0') || 0;
             return sum + volume + spillage; // Include spillage in total usage
-          }, 0) || 0;
+          }, 0);
         return total + componentVolume;
       }, 0);
       
-      const remainingVolume = batch.volume - volumeUsedInBlends;
-      const usagePercentage = (volumeUsedInBlends / batch.volume) * 100;
+      const remainingVolume = Math.max(0, batch.volume - volumeUsedInBlends);
+      const usagePercentage = batch.volume > 0 
+        ? Math.min(100, (volumeUsedInBlends / batch.volume) * 100)
+        : 0;
       
       return {
         ...batch,
@@ -58,8 +69,16 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
 
   // Filter blends based on search query
   const filteredBlends = blendBatches.filter((blend) => {
+    if (!blendSearchQuery) return true;
     const query = blendSearchQuery.toLowerCase();
-    return blend.name.toLowerCase().includes(query);
+    return (
+      blend.name?.toLowerCase().includes(query) ||
+      blend.notes?.toLowerCase().includes(query) ||
+      blend.components?.some((c: any) => 
+        c.batch_name?.toLowerCase().includes(query) ||
+        c.batch_variety?.toLowerCase().includes(query)
+      )
+    );
   });
 
   const handleBlendClick = (blend: any) => {
@@ -149,6 +168,9 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
                 blend={blend}
                 onClick={() => handleBlendClick(blend)}
                 onDelete={() => handleDeleteBlend(blend.id)}
+                onAddTastingNote={(blendId) => {
+                  // Handle tasting note - could be integrated if needed
+                }}
               />
             ))
           )}
