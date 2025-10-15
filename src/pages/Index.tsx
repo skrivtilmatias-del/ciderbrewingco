@@ -314,7 +314,9 @@ const Index = () => {
 
       const formattedAnalyses = tastingData.map((analysis: any) => ({
         ...analysis,
-        blend_name: analysis.blend_batches?.name || "Unknown Blend",
+        blend_name: analysis.competitor_brand 
+          ? `${analysis.competitor_brand} (Competitor)` 
+          : (analysis.blend_batches?.name || "Unknown Blend"),
         user_name: profilesMap.get(analysis.user_id) || "Unknown User",
       }));
 
