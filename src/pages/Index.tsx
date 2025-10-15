@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
 import { useBlends } from "@/hooks/useBlends";
-import { useBatchLogs } from "@/hooks/useBatchLogs";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from '@/stores/appStore';
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BatchesTab } from "@/components/tabs/BatchesTab";
@@ -17,8 +17,9 @@ import { ToolsTab } from "@/components/tabs/ToolsTab";
 import { BlendBatchDetailsTabbed } from "@/components/BlendBatchDetailsTabbed";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
-import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,10 +34,11 @@ const Index = () => {
   const location = useLocation();
   const { toolView } = useParams();
   const { user, userRole, userProfile, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   
   // Use hooks for data fetching
-  const { batches, isLoading: batchesLoading, updateStage } = useBatches();
-  const { blends, isLoading: blendsLoading } = useBlends();
+  const { batches, isLoading: batchesLoading, error: batchesError } = useBatches();
+  const { blends, isLoading: blendsLoading, error: blendsError } = useBlends();
   
   // Use state from useAppStore
   const {
@@ -96,7 +98,8 @@ const Index = () => {
   };
 
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
-    updateStage({ batchId, newStage });
+    // Invalidate and refetch batches after stage update
+    await queryClient.invalidateQueries({ queryKey: ['batches'] });
     
     // Update selected batch if it's the one being updated
     if (selectedBatch?.id === batchId) {
@@ -163,7 +166,44 @@ const Index = () => {
   };
 
   const loading = batchesLoading || blendsLoading;
+  const hasError = batchesError || blendsError;
 
+  // Retry function
+  const handleRetry = () => {
+    queryClient.invalidateQueries({ queryKey: ['batches'] });
+    queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+  };
+
+  // Show error state
+  if (hasError && !loading) {
+    return (
+      <div className="min-h-dvh bg-background">
+        <header className="border-b border-border bg-card/95 backdrop-blur">
+          <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
+            <h1 className="text-xl font-bold">CiderTracker</h1>
+          </div>
+        </header>
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <Alert variant="destructive" className="max-w-2xl mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error Loading Data</AlertTitle>
+            <AlertDescription className="space-y-4">
+              <div>
+                {batchesError && <p>Failed to load batches: {batchesError.message}</p>}
+                {blendsError && <p>Failed to load blends: {blendsError.message}</p>}
+              </div>
+              <Button onClick={handleRetry} variant="outline" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </main>
+      </div>
+    );
+  }
+
+  // Show loading state
   if (loading || !user) {
     return (
       <div className="min-h-dvh bg-background">
