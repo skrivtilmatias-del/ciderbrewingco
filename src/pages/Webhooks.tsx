@@ -8,13 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { WebhookDialog } from "@/components/webhooks/WebhookDialog";
 import { WebhookLogs } from "@/components/webhooks/WebhookLogs";
 import { Badge } from "@/components/ui/badge";
-import { AppLayout } from "@/components/AppLayout";
-import { useAuth } from "@/hooks/useAuth";
-
 export default function Webhooks() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { userRole, userProfile } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedWebhook, setSelectedWebhook] = useState<any>(null);
   const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
@@ -70,8 +66,7 @@ export default function Webhooks() {
   };
 
   return (
-    <AppLayout userRole={userRole} userProfile={userProfile}>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -244,13 +239,12 @@ app.post('/webhook', (req, res) => {
             </pre>
           </CardContent>
         </Card>
-      </div>
 
-      <WebhookDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        webhook={selectedWebhook}
-      />
-    </AppLayout>
+        <WebhookDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          webhook={selectedWebhook}
+        />
+    </div>
   );
 }
