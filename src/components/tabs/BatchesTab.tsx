@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BatchCard } from '@/components/BatchCard';
 import { Card } from '@/components/ui/card';
@@ -19,9 +18,15 @@ interface BatchesTabProps {
 
 export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabProps) => {
   const navigate = useNavigate();
-  const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
-  const { deleteBatch, isDeleting } = useBatches();
-  const [batchSortOrder, setBatchSortOrder] = useState("newest");
+  const { 
+    batchSearchQuery, 
+    setBatchSearchQuery,
+    batchSortOrder,
+    setBatchSortOrder,
+    setSelectedBatch,
+    setDetailsOpen
+  } = useAppStore();
+  const { deleteBatch } = useBatches();
 
   const handleDeleteBatch = async (batchId: string) => {
     if (!confirm("Delete this batch and all its logs?")) return;
@@ -29,25 +34,29 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   const handleBatchClick = (batch: Batch) => {
+    // Convert new Batch type to old BatchCard Batch type
+    const legacyBatch: LegacyBatch = {
+      id: batch.id,
+      name: batch.name,
+      variety: batch.variety,
+      volume: batch.volume,
+      startDate: batch.started_at,
+      currentStage: batch.current_stage as any,
+      progress: batch.progress,
+      apple_origin: batch.apple_origin || undefined,
+      yeast_type: batch.yeast_type || undefined,
+      notes: batch.notes || undefined,
+      attachments: batch.attachments || undefined,
+      target_og: batch.target_og || undefined,
+      target_fg: batch.target_fg || undefined,
+      target_ph: batch.target_ph || undefined,
+      target_end_ph: batch.target_end_ph || undefined,
+    };
+    
+    setSelectedBatch(legacyBatch);
+    setDetailsOpen(false);
+    
     if (onBatchClick) {
-      // Convert new Batch type to old BatchCard Batch type
-      const legacyBatch: any = {
-        id: batch.id,
-        name: batch.name,
-        variety: batch.variety,
-        volume: batch.volume,
-        startDate: batch.started_at,
-        currentStage: batch.current_stage,
-        progress: batch.progress,
-        apple_origin: batch.apple_origin || undefined,
-        yeast_type: batch.yeast_type || undefined,
-        notes: batch.notes || undefined,
-        attachments: batch.attachments || undefined,
-        target_og: batch.target_og || undefined,
-        target_fg: batch.target_fg || undefined,
-        target_ph: batch.target_ph || undefined,
-        target_end_ph: batch.target_end_ph || undefined,
-      };
       onBatchClick(legacyBatch);
     }
     navigate(paths.production());
@@ -155,3 +164,4 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     </div>
   );
 };
+
