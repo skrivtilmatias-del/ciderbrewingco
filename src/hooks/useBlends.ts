@@ -1,87 +1,172 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BlendBatch, CreateBlendBatchInput, UpdateBlendBatchInput } from '@/types/blend.types';
 import { toast } from 'sonner';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 export const useBlends = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all blends
+  // Fetch blend batches with components and tasting data
   const { data: blends = [], isLoading, error } = useQuery({
-    queryKey: ['blends'],
+    queryKey: ['blend-batches'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: blendsData, error: blendsError } = await supabase
         .from('blend_batches')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as BlendBatch[];
+      if (blendsError) throw blendsError;
+
+      // Fetch components and tasting data for each blend
+      const blendsWithData = await Promise.all(
+        blendsData.map(async (blend) => {
+          // Fetch components with batch details
+          const { data: componentsData, error: componentsError } = await supabase
+            .from('blend_components')
+            .select(`
+              id,
+              source_batch_id,
+              percentage,
+              volume_liters,
+              spillage,
+              batches:source_batch_id (
+                name,
+                variety
+              )
+            `)
+            .eq('blend_batch_id', blend.id);
+
+          if (componentsError) throw componentsError;
+
+          // Fetch tasting analyses
+          const { data: tastingData, error: tastingError } = await supabase
+            .from('tasting_analysis')
+            .select('overall_score, notes, created_at')
+            .eq('blend_batch_id', blend.id)
+            .order('created_at', { ascending: false });
+
+          if (tastingError) throw tastingError;
+
+          // Calculate average score
+          const average_score = tastingData.length > 0
+            ? tastingData.reduce((sum, t) => sum + (t.overall_score || 0), 0) / tastingData.length
+            : null;
+
+          // Get latest tasting note
+          const latest_tasting = tastingData.length > 0 && tastingData[0].notes
+            ? tastingData[0].notes
+            : null;
+
+          return {
+            ...blend,
+            components: componentsData.map((comp: any) => ({
+              id: comp.id,
+              source_batch_id: comp.source_batch_id,
+              batch_name: comp.batches?.name || 'Unknown',
+              batch_variety: comp.batches?.variety || '',
+              percentage: comp.percentage,
+              volume_liters: comp.volume_liters,
+              spillage: comp.spillage || 0,
+            })),
+            average_score,
+            tasting_count: tastingData.length,
+            latest_tasting,
+          };
+        })
+      );
+
+      return blendsWithData;
     },
   });
 
   // Create blend mutation
-  const createMutation = useMutation({
-    mutationFn: async (input: CreateBlendBatchInput) => {
+  const createBlendMutation = useMutation({
+    mutationFn: async ({
+      name,
+      total_volume,
+      storage_location,
+      bottles_75cl,
+      bottles_150cl,
+      notes,
+      components,
+    }: {
+      name: string;
+      total_volume: number;
+      storage_location?: string;
+      bottles_75cl?: number;
+      bottles_150cl?: number;
+      notes?: string;
+      components: Array<{
+        source_batch_id: string;
+        percentage?: number;
+        volume_liters?: number;
+        spillage?: number;
+      }>;
+    }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      // Create blend batch
+      const { data: blendData, error: blendError } = await supabase
         .from('blend_batches')
-        .insert([{ ...input, user_id: user.id }])
+        .insert([
+          {
+            user_id: user.id,
+            name,
+            total_volume,
+            storage_location: storage_location || null,
+            bottles_75cl: bottles_75cl || 0,
+            bottles_150cl: bottles_150cl || 0,
+            notes: notes || null,
+          },
+        ])
         .select()
         .single();
 
-      if (error) throw error;
-      return data as BlendBatch;
+      if (blendError) throw blendError;
+
+      // Create blend components
+      const componentsToInsert = components.map((comp) => ({
+        blend_batch_id: blendData.id,
+        source_batch_id: comp.source_batch_id,
+        percentage: comp.percentage,
+        volume_liters: comp.volume_liters,
+        spillage: comp.spillage || 0,
+      }));
+
+      const { error: componentsError } = await supabase
+        .from('blend_components')
+        .insert(componentsToInsert);
+
+      if (componentsError) throw componentsError;
+
+      return blendData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
-      toast.success('Blend created successfully');
+      queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+      toast.success('Blend batch created');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to create blend: ${error.message}`);
-    },
-  });
-
-  // Update blend mutation
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: UpdateBlendBatchInput }) => {
-      const { data, error } = await supabase
-        .from('blend_batches')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as BlendBatch;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
-      toast.success('Blend updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update blend: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
   // Delete blend mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const deleteBlendMutation = useMutation({
+    mutationFn: async (blendId: string) => {
       const { error } = await supabase
         .from('blend_batches')
         .delete()
-        .eq('id', id);
+        .eq('id', blendId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
-      toast.success('Blend deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+      toast.success('Blend batch deleted');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete blend: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
@@ -89,11 +174,9 @@ export const useBlends = () => {
     blends,
     isLoading,
     error,
-    createBlend: createMutation.mutate,
-    updateBlend: updateMutation.mutate,
-    deleteBlend: deleteMutation.mutate,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
+    createBlend: createBlendMutation.mutate,
+    deleteBlend: deleteBlendMutation.mutate,
+    isCreating: createBlendMutation.isPending,
+    isDeleting: deleteBlendMutation.isPending,
   };
 };
