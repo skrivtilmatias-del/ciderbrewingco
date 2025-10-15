@@ -148,6 +148,13 @@ const Index = () => {
     }
   }, [location.search, batches, navigate]);
 
+  // Auto-select first batch when batches are loaded
+  useEffect(() => {
+    if (!selectedBatch && batches.length > 0) {
+      setSelectedBatch(batches[0]);
+    }
+  }, [batches, selectedBatch, setSelectedBatch]);
+
   const fetchBatches = async () => {
     try {
       const { data, error } = await supabase
@@ -177,20 +184,7 @@ const Index = () => {
 
       setBatches(formattedBatches);
 
-      // Reconcile selected batch with latest data
-      const exists = selectedBatch && formattedBatches.some(b => b.id === selectedBatch.id);
-
-      // Auto-select first batch on initial load
-      if (!selectedBatch && formattedBatches.length > 0) {
-        setSelectedBatch(formattedBatches[0]);
-        fetchLogs(formattedBatches[0].id);
-      } else if (selectedBatch && !exists && formattedBatches.length > 0) {
-        // Previously selected batch no longer exists or is not visible
-        setSelectedBatch(formattedBatches[0]);
-        fetchLogs(formattedBatches[0].id);
-      }
-
-      // If no batches, clear logs and details
+      // Clear state if no batches
       if (formattedBatches.length === 0) {
         setLogs([]);
         setSelectedBatch(null);
