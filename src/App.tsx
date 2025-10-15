@@ -15,7 +15,6 @@ import BatchRedirect from "./pages/BatchRedirect";
 import BlendRedirect from "./pages/BlendRedirect";
 import PrintLabels from "./pages/PrintLabels";
 import PlanningTool from "./pages/PlanningTool";
-import Suppliers from "./pages/Suppliers";
 import SupplierDetail from "./pages/SupplierDetail";
 import Webhooks from "./pages/Webhooks";
 import Install from "./pages/Install";
@@ -46,7 +45,7 @@ const App = () => (
             <Route path={paths.blending()} element={<Index />} />
             <Route path={paths.cellar()} element={<Index />} />
             <Route path={paths.tasting()} element={<Index />} />
-            <Route path={paths.suppliers()} element={<Suppliers />} />
+            <Route path={paths.suppliers()} element={<Index />} />
             <Route path="/tools/:toolView?" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/blend/:id" element={<PublicBlend />} />
