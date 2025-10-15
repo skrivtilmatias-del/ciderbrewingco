@@ -106,7 +106,7 @@ const Index = () => {
         setSelectedBatch(updatedBatch);
       }
     }
-  }, [batches, selectedBatch?.id]);
+  }, [batches, selectedBatch?.id, setSelectedBatch]);
 
   const handleBatchClick = (batch: Batch) => {
     setSelectedBatch(batch);
@@ -359,8 +359,8 @@ const Index = () => {
                 </TabsList>
               </div>
 
-              {/* Search and Sort Controls - Only show on batches tab */}
-              {activeTab === "batches" && userRole === "production" && (
+              {/* Search and Sort Controls - Show on batches, production, and blending tabs */}
+              {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
                 <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
                   <div className="relative w-full sm:w-[220px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -416,7 +416,7 @@ const Index = () => {
             <TabsContent value="tools" className="mt-4 sm:mt-6">
               <ToolsTab 
                 batches={batches}
-                blendBatches={blends}
+                blendBatches={blends || []}
                 toolView={toolView}
               />
             </TabsContent>
@@ -427,12 +427,12 @@ const Index = () => {
               <TabsContent value="blending" className="mt-4 sm:mt-6">
                 <BlendingTab 
                   batches={batches}
-                  blendBatches={blends}
+                  blendBatches={blends || []}
                 />
               </TabsContent>
 
               <TabsContent value="cellar" className="mt-4 sm:mt-6">
-                <CellarTab blendBatches={blends} />
+                <CellarTab blendBatches={blends || []} />
               </TabsContent>
             </>
           )}
@@ -444,7 +444,7 @@ const Index = () => {
           )}
 
           <TabsContent value="tasting" className="mt-4 sm:mt-6">
-            <TastingTab blendBatches={blends} />
+            <TastingTab blendBatches={blends || []} />
           </TabsContent>
         </Tabs>
       </main>
@@ -479,7 +479,7 @@ const Index = () => {
             setEditingTasting(null);
           }
         }}
-        blendBatches={blends
+        blendBatches={(blends || [])
           .filter(b => (b.bottles_75cl || 0) > 0 || (b.bottles_150cl || 0) > 0)
           .map(b => ({ id: b.id, name: b.name }))
         }
