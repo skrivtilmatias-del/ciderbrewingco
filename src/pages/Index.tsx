@@ -246,7 +246,7 @@ const Index = () => {
         user={user}
         userProfile={userProfile}
         userRole={userRole}
-        onBatchCreated={() => {}}
+        onBatchCreated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
         onTastingSaved={handleSaveTasting}
         blendBatches={blends}
       />
@@ -413,7 +413,7 @@ const Index = () => {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onUpdateStage={handleUpdateStage}
-        onBatchUpdated={() => {}}
+        onBatchUpdated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
         onGoToProduction={handleGoToProduction}
       />
       
@@ -421,7 +421,7 @@ const Index = () => {
         blend={selectedBlend}
         open={blendDetailsOpen}
         onOpenChange={setBlendDetailsOpen}
-        onBlendUpdated={() => {}}
+        onBlendUpdated={() => queryClient.invalidateQueries({ queryKey: ['blend-batches'] })}
         onAddTastingNote={(blendId) => {
           setBlendDetailsOpen(false);
           setSelectedBlendIdForTasting(blendId);
