@@ -21,7 +21,7 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
   const [editingTasting, setEditingTasting] = useState<any>(null);
 
   // Fetch tasting analyses
-  const { data: tastingAnalyses = [], isLoading } = useQuery({
+  const { data: tastingAnalyses = [], isLoading, error } = useQuery({
     queryKey: ['tasting-analyses'],
     queryFn: async () => {
       const { data: tastingData, error: tastingError } = await supabase
@@ -45,14 +45,32 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
 
       if (tastingError) throw tastingError;
 
+      // Handle empty data
+      if (!tastingData || tastingData.length === 0) return [];
+
       // Fetch all unique user profiles
-      const userIds = [...new Set(tastingData.map((t: any) => t.user_id))];
+      const userIds = [...new Set(tastingData.map((t: any) => t.user_id).filter(Boolean))];
+      
+      if (userIds.length === 0) {
+        // If no user IDs, return data without user names
+        return tastingData.map((analysis: any) => ({
+          ...analysis,
+          blend_name: analysis.competitor_brand 
+            ? `${analysis.competitor_brand} (Competitor)` 
+            : (analysis.blend_batches?.name || 'Unknown Blend'),
+          user_name: 'Unknown User',
+        }));
+      }
+
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name')
         .in('id', userIds);
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without user names rather than failing
+      }
 
       // Create a map of user profiles for quick lookup
       const profilesMap = new Map(
@@ -140,7 +158,8 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasting-analyses'] });
-      toast.success('Tasting analysis saved');
+      queryClient.invalidateQueries({ queryKey: ['blend-batches'] }); // Also invalidate blends as they may have new attachments
+      toast.success(editingTasting ? 'Tasting analysis updated' : 'Tasting analysis saved');
       setTastingDialogOpen(false);
       setEditingTasting(null);
     },
@@ -184,11 +203,15 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
 
   // Filter analyses based on search query
   const filteredAnalyses = tastingAnalyses.filter((analysis) => {
+    if (!tastingSearchQuery) return true;
     const query = tastingSearchQuery.toLowerCase();
     return (
-      analysis.blend_name.toLowerCase().includes(query) ||
-      analysis.user_name.toLowerCase().includes(query) ||
-      analysis.notes?.toLowerCase().includes(query)
+      analysis.blend_name?.toLowerCase().includes(query) ||
+      analysis.user_name?.toLowerCase().includes(query) ||
+      analysis.notes?.toLowerCase().includes(query) ||
+      analysis.taste?.toLowerCase().includes(query) ||
+      analysis.colour?.toLowerCase().includes(query) ||
+      analysis.palate?.toLowerCase().includes(query)
     );
   });
 
@@ -205,8 +228,16 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
         />
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="text-center py-8 text-muted-foreground">
+          Loading tasting analyses...
+        </div>
+      )}
+
       {/* Tasting Analyses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {!isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredAnalyses.length === 0 ? (
           <Card className="col-span-full p-12 text-center border-dashed">
             {tastingSearchQuery ? (
@@ -235,7 +266,8 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
             />
           ))
         )}
-      </div>
+        </div>
+      )}
 
       {/* Tasting Analysis Dialog */}
       <TastingAnalysisDialog
