@@ -771,34 +771,61 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          address: string | null
+          category: string | null
           contact: string | null
           created_at: string
+          email: string | null
           id: string
           name: string
           notes: string | null
+          payment_net_days: number | null
+          phone: string | null
+          primary_contact_name: string | null
+          rating: number | null
+          tax_id: string | null
           terms: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
+          address?: string | null
+          category?: string | null
           contact?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name: string
           notes?: string | null
+          payment_net_days?: number | null
+          phone?: string | null
+          primary_contact_name?: string | null
+          rating?: number | null
+          tax_id?: string | null
           terms?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
+          address?: string | null
+          category?: string | null
           contact?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
           notes?: string | null
+          payment_net_days?: number | null
+          phone?: string | null
+          primary_contact_name?: string | null
+          rating?: number | null
+          tax_id?: string | null
           terms?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
