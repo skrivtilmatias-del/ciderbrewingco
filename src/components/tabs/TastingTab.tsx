@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Award, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { TastingAnalysisCard } from '@/components/TastingAnalysisCard';
@@ -230,8 +231,10 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="text-center py-8 text-muted-foreground">
-          Loading tasting analyses...
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
       )}
 

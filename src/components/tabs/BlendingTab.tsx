@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Wine, Apple, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBlends } from '@/hooks/useBlends';
@@ -22,7 +23,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
     setSelectedBlend,
     setBlendDetailsOpen 
   } = useAppStore();
-  const { deleteBlend } = useBlends();
+  const { deleteBlend, isLoading, isDeleting } = useBlends();
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
@@ -92,6 +93,23 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
     if (!confirm("Delete this blend batch?")) return;
     deleteBlend(blendId);
   };
+
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-48 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

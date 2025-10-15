@@ -3,6 +3,7 @@ import { BatchCard, Batch } from '@/components/BatchCard';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
@@ -24,7 +25,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     setSelectedBatch,
     setDetailsOpen
   } = useAppStore();
-  const { deleteBatch } = useBatches();
+  const { deleteBatch, isDeleting } = useBatches();
 
   const handleDeleteBatch = async (batchId: string) => {
     if (!confirm("Delete this batch and all its logs?")) return;

@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FlaskConical } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { FlaskConical, Loader2 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { BatchProductionHeader } from '@/components/BatchProductionHeader';
@@ -27,7 +28,7 @@ export const ProductionTab = ({
   onAddLog: onAddLogProp
 }: ProductionTabProps) => {
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
-  const { logs, addLog, deleteLog, updateLog, isAdding } = useBatchLogs(selectedBatch?.id || null);
+  const { logs, addLog, deleteLog, updateLog, isLoading, isAdding, isDeleting } = useBatchLogs(selectedBatch?.id || null);
 
   // Handle adding a log - use hook's addLog or fallback to prop
   const handleAddLog = (title: string = '', role: string = 'General') => {
@@ -48,6 +49,22 @@ export const ProductionTab = ({
           Select a batch from the "All Batches" tab to view production details.
         </p>
       </Card>
+    );
+  }
+
+  // Show loading skeleton while logs are loading
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-40 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
@@ -156,7 +173,13 @@ export const ProductionTab = ({
       />
 
       {/* Organized Logs List */}
-      {logs.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      ) : logs.length === 0 ? (
         <Card className="p-12 text-center border-dashed">
           <p className="text-muted-foreground">
             No notes yet. Click "Add Note" above to get started.
