@@ -1,23 +1,39 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, DollarSign, AlertTriangle, ArrowRight, Package } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { TrendingUp, DollarSign, AlertTriangle, ArrowRight, Package, Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { avgYield, avgCostPerL, detectPriceIncrease, detectYieldDecrease } from "@/lib/supplierMetrics";
 import { paths } from "@/routes/paths";
+import { SupplierDialog } from "@/components/suppliers/SupplierDialog";
 
 export function SupplierOverview() {
   const navigate = useNavigate();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAllSuppliers, setShowAllSuppliers] = useState(false);
+
+  const { data: suppliers } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: stats } = useQuery({
     queryKey: ["supplier-overview-stats"],
     queryFn: async () => {
-      const { data: suppliers } = await supabase
-        .from("suppliers")
-        .select("id, name");
-      
       const { data: deliveries } = await supabase
         .from("deliveries")
         .select("*, press_results(*)")
@@ -76,6 +92,21 @@ export function SupplierOverview() {
       };
     },
   });
+
+  const filteredSuppliers = suppliers?.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.contact?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCreate = () => {
+    setSelectedSupplier(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -184,12 +215,81 @@ export function SupplierOverview() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="flex gap-2">
-        <Button onClick={() => navigate(paths.suppliers())} className="flex-1">
-          Manage Suppliers
-        </Button>
-      </div>
+      {/* Supplier Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Suppliers</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAllSuppliers(!showAllSuppliers)}>
+                {showAllSuppliers ? "Show Less" : "Show All"}
+              </Button>
+              <Button size="sm" onClick={handleCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Supplier
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showAllSuppliers && (
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search suppliers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+          )}
+          
+          {filteredSuppliers && filteredSuppliers.length > 0 ? (
+            <div className="space-y-2">
+              {(showAllSuppliers ? filteredSuppliers : filteredSuppliers.slice(0, 3)).map((supplier) => (
+                <div
+                  key={supplier.id}
+                  className="flex justify-between items-center p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                  onClick={() => navigate(`/suppliers/${supplier.id}`)}
+                >
+                  <div>
+                    <h3 className="font-semibold text-sm">{supplier.name}</h3>
+                    {supplier.contact && (
+                      <p className="text-xs text-muted-foreground">{supplier.contact}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(supplier);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="mb-4">No suppliers yet</p>
+              <Button onClick={handleCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Your First Supplier
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <SupplierDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        supplier={selectedSupplier}
+      />
     </div>
   );
 }
