@@ -1,47 +1,63 @@
 import { create } from 'zustand';
+import { Batch } from '@/components/BatchCard';
 
 interface AppState {
   // Selected items
-  selectedBatchId: string | null;
-  selectedBlendId: string | null;
+  selectedBatch: Batch | null;
+  selectedBlend: any | null;
   
   // UI state
   detailsOpen: boolean;
+  blendDetailsOpen: boolean;
   
   // Search queries
   batchSearchQuery: string;
   blendSearchQuery: string;
-  supplierSearchQuery: string;
+  tastingSearchQuery: string;
+  
+  // Filters and sorting
+  batchSortOrder: string;
+  stageFilter: string;
   
   // Setters
-  setSelectedBatchId: (id: string | null) => void;
-  setSelectedBlendId: (id: string | null) => void;
+  setSelectedBatch: (batch: Batch | null) => void;
+  setSelectedBlend: (blend: any | null) => void;
   setDetailsOpen: (open: boolean) => void;
+  setBlendDetailsOpen: (open: boolean) => void;
   setBatchSearchQuery: (query: string) => void;
   setBlendSearchQuery: (query: string) => void;
-  setSupplierSearchQuery: (query: string) => void;
+  setTastingSearchQuery: (query: string) => void;
+  setBatchSortOrder: (order: string) => void;
+  setStageFilter: (filter: string) => void;
   clearSelection: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   // Initial state
-  selectedBatchId: null,
-  selectedBlendId: null,
+  selectedBatch: null,
+  selectedBlend: null,
   detailsOpen: false,
+  blendDetailsOpen: false,
   batchSearchQuery: '',
   blendSearchQuery: '',
-  supplierSearchQuery: '',
+  tastingSearchQuery: '',
+  batchSortOrder: 'newest',
+  stageFilter: 'All',
   
   // Setters
-  setSelectedBatchId: (id) => set({ selectedBatchId: id }),
-  setSelectedBlendId: (id) => set({ selectedBlendId: id }),
+  setSelectedBatch: (batch) => set({ selectedBatch: batch }),
+  setSelectedBlend: (blend) => set({ selectedBlend: blend }),
   setDetailsOpen: (open) => set({ detailsOpen: open }),
+  setBlendDetailsOpen: (open) => set({ blendDetailsOpen: open }),
   setBatchSearchQuery: (query) => set({ batchSearchQuery: query }),
   setBlendSearchQuery: (query) => set({ blendSearchQuery: query }),
-  setSupplierSearchQuery: (query) => set({ supplierSearchQuery: query }),
+  setTastingSearchQuery: (query) => set({ tastingSearchQuery: query }),
+  setBatchSortOrder: (order) => set({ batchSortOrder: order }),
+  setStageFilter: (filter) => set({ stageFilter: filter }),
   clearSelection: () => set({ 
-    selectedBatchId: null, 
-    selectedBlendId: null,
-    detailsOpen: false 
+    selectedBatch: null, 
+    selectedBlend: null,
+    detailsOpen: false,
+    blendDetailsOpen: false
   }),
 }));
