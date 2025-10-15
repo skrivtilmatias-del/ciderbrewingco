@@ -1,93 +1,132 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BatchLog, CreateBatchLogInput, UpdateBatchLogInput } from '@/types/batchLog.types';
 import { toast } from 'sonner';
+import { getUserFriendlyError } from '@/lib/errorHandler';
+import type { BatchLog } from '@/components/BatchLogCard';
 
-export const useBatchLogs = (batchId?: string) => {
+export const useBatchLogs = (batchId: string | null) => {
   const queryClient = useQueryClient();
 
   // Fetch batch logs
   const { data: logs = [], isLoading, error } = useQuery({
-    queryKey: ['batchLogs', batchId],
+    queryKey: ['batch-logs', batchId],
     queryFn: async () => {
-      let query = supabase
-        .from('batch_logs')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (batchId) {
-        query = query.eq('batch_id', batchId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as BatchLog[];
-    },
-    enabled: !!batchId || batchId === undefined,
-  });
-
-  // Create log mutation
-  const createMutation = useMutation({
-    mutationFn: async (input: CreateBatchLogInput) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!batchId) return [];
 
       const { data, error } = await supabase
         .from('batch_logs')
-        .insert([{ ...input, user_id: user.id }])
+        .select('*')
+        .eq('batch_id', batchId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as BatchLog[];
+    },
+    enabled: !!batchId, // Only fetch when batchId is not null
+  });
+
+  // Add log mutation
+  const addLogMutation = useMutation({
+    mutationFn: async ({
+      batchId,
+      title = '',
+      role = 'General',
+      stage,
+    }: {
+      batchId: string;
+      title?: string;
+      role?: string;
+      stage: string;
+    }) => {
+      // Verify session before critical operation
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Session expired. Please log in again');
+      }
+
+      // Sanity check against backend to verify batch ownership
+      const { data: batchRow, error: batchCheckError } = await supabase
+        .from('batches')
+        .select('id, user_id, current_stage')
+        .eq('id', batchId)
+        .single();
+
+      if (batchCheckError || !batchRow || batchRow.user_id !== session.user.id) {
+        throw new Error('Could not verify selected batch. Please refresh and try again.');
+      }
+
+      // Create the log entry
+      const { data, error } = await supabase
+        .from('batch_logs')
+        .insert([
+          {
+            batch_id: batchId,
+            user_id: session.user.id,
+            stage: stage,
+            role: role,
+            title: title,
+            content: '',
+            tags: [],
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
-      return data as BatchLog;
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['batchLogs'] });
-      toast.success('Log created successfully');
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['batch-logs', variables.batchId] });
+      toast.success('Log entry created');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to create log: ${error.message}`);
+    onError: (error: any) => {
+      if (error?.code === '42501') {
+        toast.error('Permission denied while creating note. Please refresh and try again.');
+        queryClient.invalidateQueries({ queryKey: ['batches'] });
+      } else {
+        toast.error(getUserFriendlyError(error));
+      }
     },
   });
 
   // Update log mutation
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: UpdateBatchLogInput }) => {
+  const updateLogMutation = useMutation({
+    mutationFn: async ({ logId, updates }: { logId: string; updates: Partial<BatchLog> }) => {
       const { data, error } = await supabase
         .from('batch_logs')
         .update(updates)
-        .eq('id', id)
+        .eq('id', logId)
         .select()
         .single();
 
       if (error) throw error;
-      return data as BatchLog;
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['batchLogs'] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
       toast.success('Log updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to update log: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
   // Delete log mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const deleteLogMutation = useMutation({
+    mutationFn: async (logId: string) => {
       const { error } = await supabase
         .from('batch_logs')
         .delete()
-        .eq('id', id);
+        .eq('id', logId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['batchLogs'] });
+      queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
       toast.success('Log deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete log: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
@@ -95,11 +134,11 @@ export const useBatchLogs = (batchId?: string) => {
     logs,
     isLoading,
     error,
-    createLog: createMutation.mutate,
-    updateLog: updateMutation.mutate,
-    deleteLog: deleteMutation.mutate,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
+    addLog: addLogMutation.mutate,
+    updateLog: updateLogMutation.mutate,
+    deleteLog: deleteLogMutation.mutate,
+    isAdding: addLogMutation.isPending,
+    isUpdating: updateLogMutation.isPending,
+    isDeleting: deleteLogMutation.isPending,
   };
 };
