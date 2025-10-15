@@ -312,67 +312,38 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {stageChartData.length > 0 && (
-          <Card className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
-              Stage Distribution
-            </h3>
-            <ChartContainer config={{}} className="h-[250px]">
-              <PieChart>
-                <Pie
-                  data={stageChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                  outerRadius={80}
-                  fill="hsl(var(--primary))"
-                  dataKey="value"
-                >
-                  {stageChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </Card>
-        )}
-
-        {topVariety && (
-          <Card className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
-              Variety Breakdown
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              {Object.entries(varietyBreakdown)
-                .sort((a, b) => b[1] - a[1])
-                .map(([variety, volume]) => {
-                  const percentage = Math.round(
-                    (volume / batches.reduce((sum, b) => sum + b.volume, 0)) * 100
-                  );
-                  return (
-                    <div key={variety} className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                        <span className="font-medium text-sm sm:text-base text-foreground truncate">{variety}</span>
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
+      {topVariety && (
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
+            Variety Breakdown
+          </h3>
+          <div className="space-y-2 sm:space-y-3">
+            {Object.entries(varietyBreakdown)
+              .sort((a, b) => b[1] - a[1])
+              .map(([variety, volume]) => {
+                const percentage = Math.round(
+                  (volume / batches.reduce((sum, b) => sum + b.volume, 0)) * 100
+                );
+                return (
+                  <div key={variety} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <span className="font-medium text-sm sm:text-base text-foreground truncate">{variety}</span>
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
                       </div>
-                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-2">
-                        {volume}L ({percentage}%)
-                      </span>
                     </div>
-                  );
-                })}
-            </div>
-          </Card>
-        )}
-      </div>
+                    <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-2">
+                      {volume}L ({percentage}%)
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
+        </Card>
+      )}
 
       {/* Trends Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
