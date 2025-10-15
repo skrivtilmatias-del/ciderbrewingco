@@ -46,8 +46,9 @@ describe('Route Smoke Tests', () => {
     expect(paths.auth()).toMatch(/^\//);
     expect(paths.tools.analytics()).toMatch(/^\//);
     expect(paths.tools.calculators()).toMatch(/^\//);
-    expect(paths.planning()).toMatch(/^\//);
-    expect(paths.webhooks()).toMatch(/^\//);
+    expect(paths.tools.planning()).toMatch(/^\//);
+    expect(paths.tools.webhooks()).toMatch(/^\//);
+    expect(paths.tools.install()).toMatch(/^\//);
   });
 
   it('should generate correct dynamic paths', () => {
@@ -83,9 +84,9 @@ describe('Path Helper Consistency', () => {
       paths.tools.printLabels(),
       paths.tools.floorPlan(),
       paths.tools.costCalculation(),
-      paths.planning(),
-      paths.webhooks(),
-      paths.install(),
+      paths.tools.planning(),
+      paths.tools.webhooks(),
+      paths.tools.install(),
     ];
 
     allPaths.forEach((path) => {

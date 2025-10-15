@@ -14,10 +14,7 @@ import PublicBlend from "./pages/PublicBlend";
 import BatchRedirect from "./pages/BatchRedirect";
 import BlendRedirect from "./pages/BlendRedirect";
 import PrintLabels from "./pages/PrintLabels";
-import PlanningTool from "./pages/PlanningTool";
 import SupplierDetail from "./pages/SupplierDetail";
-import Webhooks from "./pages/Webhooks";
-import Install from "./pages/Install";
 import "@/styles/print.css";
 
 const queryClient = new QueryClient({
@@ -52,10 +49,7 @@ const App = () => (
             <Route path="/r/b/:id" element={<BatchRedirect />} />
             <Route path="/r/l/:id" element={<BlendRedirect />} />
             <Route path="/print/labels" element={<PrintLabels />} />
-            <Route path={paths.planning()} element={<PlanningTool />} />
             <Route path="/suppliers/:id" element={<SupplierDetail />} />
-            <Route path={paths.webhooks()} element={<Webhooks />} />
-            <Route path={paths.install()} element={<Install />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

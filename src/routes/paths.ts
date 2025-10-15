@@ -25,16 +25,14 @@ export const paths = {
     printLabels: () => '/tools/print-labels',
     floorPlan: () => '/tools/floor-plan',
     costCalculation: () => '/tools/cost-calculation',
+    planning: () => '/tools/planning',
+    webhooks: () => '/tools/webhooks',
+    install: () => '/tools/install',
   },
   
   // Detail pages
   blend: (id: string) => `/blend/${id}`,
   supplier: (id: string) => `/suppliers/${id}`,
-  
-  // Utility pages
-  planning: () => '/planning',
-  webhooks: () => '/webhooks',
-  install: () => '/install',
   
   // Print
   printLabels: (mode: 'batch' | 'blend', ids: string[]) => 
@@ -73,9 +71,9 @@ export const getPathName = (pathname: string): string => {
     '/tools/print-labels': 'Print Labels',
     '/tools/floor-plan': 'Floor Plan',
     '/tools/cost-calculation': 'Cost Calculation',
-    '/planning': 'Planning Tool',
-    '/webhooks': 'Webhooks',
-    '/install': 'Install',
+    '/tools/planning': 'Planning Tool',
+    '/tools/webhooks': 'Webhooks',
+    '/tools/install': 'Install',
     '/auth': 'Authentication',
   };
   

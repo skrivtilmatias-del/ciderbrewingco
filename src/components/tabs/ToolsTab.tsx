@@ -5,6 +5,9 @@ import { SO2Calculator } from '@/components/calculators/SO2Calculator';
 import { PrintQRCodes } from '@/components/PrintQRCodes';
 import { FloorPlan } from '@/pages/FloorPlan';
 import { CostCalculation } from '@/components/CostCalculation';
+import PlanningTool from '@/pages/PlanningTool';
+import Webhooks from '@/pages/Webhooks';
+import Install from '@/pages/Install';
 import { Card } from '@/components/ui/card';
 import type { Batch } from '@/components/BatchCard';
 
@@ -50,6 +53,21 @@ export const ToolsTab = ({ batches, blendBatches, toolView }: ToolsTabProps) => 
   // Show cost calculation
   if (toolView === 'cost-calculation') {
     return <CostCalculation />;
+  }
+
+  // Show planning tool
+  if (toolView === 'planning') {
+    return <PlanningTool />;
+  }
+
+  // Show webhooks
+  if (toolView === 'webhooks') {
+    return <Webhooks />;
+  }
+
+  // Show install
+  if (toolView === 'install') {
+    return <Install />;
   }
 
   // Fallback for unknown tool views

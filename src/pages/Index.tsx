@@ -341,15 +341,15 @@ const Index = () => {
                           <DollarSign className="h-4 w-4 mr-2" />
                           Cost Calculation
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.planning())}>
+                        <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
                           <Settings2 className="h-4 w-4 mr-2" />
                           Economic Planning Tool
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.webhooks())}>
+                        <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                           <Webhook className="h-4 w-4 mr-2" />
                           Webhooks & API
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.install())}>
+                        <DropdownMenuItem onClick={() => navigate(paths.tools.install())}>
                           <Download className="h-4 w-4 mr-2" />
                           Install App
                         </DropdownMenuItem>
