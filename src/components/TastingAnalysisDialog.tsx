@@ -16,6 +16,8 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { tastingAnalysisSchema } from "@/lib/validationSchemas";
+import { toast } from "@/hooks/use-toast";
 
 const APPEARANCE_DESCRIPTORS = [
   "brilliant", "clear", "slightly hazy", "cloudy", "sedimented", "pale straw", 
@@ -51,19 +53,6 @@ const GLASS_TYPES = [
   "Tumbler"
 ];
 
-const tastingSchema = z.object({
-  blend_batch_id: z.string().optional(),
-  competitor_brand: z.string().optional(),
-  taste: z.string().max(500, "Taste must be less than 500 characters").optional(),
-  colour: z.string().max(500, "Colour must be less than 500 characters").optional(),
-  palate: z.string().max(500, "Palate must be less than 500 characters").optional(),
-  overall_score: z.number().min(0).max(100).optional(),
-  notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
-  attachments: z.array(z.string()).optional(),
-}).refine(
-  (data) => data.blend_batch_id || data.competitor_brand,
-  { message: "Either blend batch or competitor brand is required" }
-);
 
 interface BlendBatch {
   id: string;
@@ -87,7 +76,7 @@ interface TastingAnalysisDialogProps {
   onOpenChange: (open: boolean) => void;
   blendBatches: BlendBatch[];
   existingAnalysis?: TastingAnalysis | null;
-  onSave: (data: z.infer<typeof tastingSchema>, analysisId?: string) => void;
+  onSave: (data: z.infer<typeof tastingAnalysisSchema>, analysisId?: string) => void;
   preSelectedBlendId?: string | null;
 }
 
@@ -105,10 +94,10 @@ export function TastingAnalysisDialog({
   const [taste, setTaste] = useState("");
   const [colour, setColour] = useState("");
   const [palate, setPalate] = useState("");
-  const [overallScore, setOverallScore] = useState(50);
+  const [overallScore, setOverallScore] = useState<number>(50);
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
   // New fields
   const [tastingDate, setTastingDate] = useState<Date>(new Date());
@@ -193,7 +182,7 @@ export function TastingAnalysisDialog({
     setSourceType("blend");
     setBlendBatchId("");
     resetFormFields();
-    setErrors([]);
+    setFieldErrors({});
   };
 
   const addDescriptor = (field: 'colour' | 'taste' | 'palate', descriptor: string) => {
@@ -232,21 +221,35 @@ export function TastingAnalysisDialog({
   };
 
   const handleSave = () => {
-    setErrors([]);
+    setFieldErrors({});
 
-    const validation = tastingSchema.safeParse({
-      blend_batch_id: sourceType === "blend" ? blendBatchId : undefined,
-      competitor_brand: sourceType === "competitor" ? (competitorBrand.trim() || undefined) : undefined,
+    const validation = tastingAnalysisSchema.safeParse({
+      blend_batch_id: sourceType === "blend" ? blendBatchId || undefined : undefined,
+      competitor_brand: sourceType === "competitor" ? competitorBrand.trim() || undefined : undefined,
       taste: taste.trim() || undefined,
       colour: colour.trim() || undefined,
       palate: palate.trim() || undefined,
       overall_score: overallScore,
       notes: notes.trim() || undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
+      serving_temp: servingTemp.trim() || undefined,
+      glass_type: glassType || undefined,
+      tasting_date: tastingDate,
     });
 
     if (!validation.success) {
-      setErrors(validation.error.errors.map(e => e.message));
+      const errors: Record<string, string> = {};
+      validation.error.errors.forEach(err => {
+        const path = err.path.join('.');
+        errors[path] = err.message;
+      });
+      setFieldErrors(errors);
+      
+      toast({
+        title: "Validation Error",
+        description: "Please check the form for errors and try again.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -335,14 +338,6 @@ export function TastingAnalysisDialog({
 
         <div className="space-y-4 sm:space-y-6">
           {showRadarChart && <RadarChart />}
-          
-          {errors.length > 0 && (
-            <div className="bg-destructive/10 border border-destructive rounded p-3">
-              {errors.map((error, i) => (
-                <p key={i} className="text-sm text-destructive">{error}</p>
-              ))}
-            </div>
-          )}
 
           {/* Basic Info Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -370,30 +365,40 @@ export function TastingAnalysisDialog({
               </div>
 
               {sourceType === "blend" ? (
-                <Select 
-                  value={blendBatchId} 
-                  onValueChange={setBlendBatchId}
-                  disabled={!!existingAnalysis}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select blend" />
-                  </SelectTrigger>
-                  <SelectContent className="z-[100] bg-card border-border max-h-[300px]">
-                    {blendBatches.map((blend) => (
-                      <SelectItem key={blend.id} value={blend.id}>
-                        {blend.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div>
+                  <Select 
+                    value={blendBatchId} 
+                    onValueChange={setBlendBatchId}
+                    disabled={!!existingAnalysis}
+                  >
+                    <SelectTrigger className={cn("h-10", fieldErrors.blend_batch_id && "border-destructive")}>
+                      <SelectValue placeholder="Select blend" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[100] bg-card border-border max-h-[300px]">
+                      {blendBatches.map((blend) => (
+                        <SelectItem key={blend.id} value={blend.id}>
+                          {blend.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldErrors.blend_batch_id && (
+                    <p className="text-xs text-destructive mt-1">{fieldErrors.blend_batch_id}</p>
+                  )}
+                </div>
               ) : (
-                <Input
-                  placeholder="Competitor brand"
-                  value={competitorBrand}
-                  onChange={(e) => setCompetitorBrand(e.target.value)}
-                  disabled={!!existingAnalysis}
-                  className="h-10"
-                />
+                <div>
+                  <Input
+                    placeholder="Competitor brand"
+                    value={competitorBrand}
+                    onChange={(e) => setCompetitorBrand(e.target.value)}
+                    disabled={!!existingAnalysis}
+                    className={cn("h-10", fieldErrors.competitor_brand && "border-destructive")}
+                  />
+                  {fieldErrors.competitor_brand && (
+                    <p className="text-xs text-destructive mt-1">{fieldErrors.competitor_brand}</p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -478,9 +483,14 @@ export function TastingAnalysisDialog({
                   placeholder="Tap descriptors above or type your notes..."
                   rows={2}
                   maxLength={500}
-                  className="text-sm"
+                  className={cn("text-sm md:text-base", fieldErrors.colour && "border-destructive")}
                 />
-                <p className="text-xs text-muted-foreground text-right">{colour.length}/500</p>
+                <div className="flex justify-between items-center">
+                  {fieldErrors.colour && (
+                    <p className="text-xs text-destructive">{fieldErrors.colour}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-auto">{colour.length}/500</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -507,9 +517,14 @@ export function TastingAnalysisDialog({
                   placeholder="Tap descriptors above or type your notes..."
                   rows={2}
                   maxLength={500}
-                  className="text-sm"
+                  className={cn("text-sm md:text-base", fieldErrors.taste && "border-destructive")}
                 />
-                <p className="text-xs text-muted-foreground text-right">{taste.length}/500</p>
+                <div className="flex justify-between items-center">
+                  {fieldErrors.taste && (
+                    <p className="text-xs text-destructive">{fieldErrors.taste}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-auto">{taste.length}/500</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -536,9 +551,14 @@ export function TastingAnalysisDialog({
                   placeholder="Tap descriptors above or type your notes..."
                   rows={2}
                   maxLength={500}
-                  className="text-sm"
+                  className={cn("text-sm md:text-base", fieldErrors.palate && "border-destructive")}
                 />
-                <p className="text-xs text-muted-foreground text-right">{palate.length}/500</p>
+                <div className="flex justify-between items-center">
+                  {fieldErrors.palate && (
+                    <p className="text-xs text-destructive">{fieldErrors.palate}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-auto">{palate.length}/500</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -564,6 +584,9 @@ export function TastingAnalysisDialog({
                     <span>50</span>
                     <span>100</span>
                   </div>
+                  {fieldErrors.overall_score && (
+                    <p className="text-xs text-destructive mt-2">{fieldErrors.overall_score}</p>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -579,9 +602,14 @@ export function TastingAnalysisDialog({
                   placeholder="Any other observations or comments..."
                   rows={3}
                   maxLength={1000}
-                  className="text-sm"
+                  className={cn("text-sm md:text-base", fieldErrors.notes && "border-destructive")}
                 />
-                <p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
+                <div className="flex justify-between items-center">
+                  {fieldErrors.notes && (
+                    <p className="text-xs text-destructive">{fieldErrors.notes}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-auto">{notes.length}/1000</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
 

@@ -143,7 +143,26 @@ export const batchLogSchema = z.object({
     .nullable(),
 });
 
+// Tasting analysis schemas
+export const tastingAnalysisSchema = z.object({
+  blend_batch_id: z.string().optional(),
+  competitor_brand: z.string().trim().min(1, { message: 'Competitor brand name is required' }).max(100).optional(),
+  taste: z.string().trim().max(500, { message: 'Aroma notes must be less than 500 characters' }).optional(),
+  colour: z.string().trim().max(500, { message: 'Appearance notes must be less than 500 characters' }).optional(),
+  palate: z.string().trim().max(500, { message: 'Palate notes must be less than 500 characters' }).optional(),
+  overall_score: z.coerce.number().min(0, { message: 'Score must be at least 0' }).max(100, { message: 'Score must be at most 100' }),
+  notes: z.string().trim().max(1000, { message: 'Additional notes must be less than 1000 characters' }).optional(),
+  attachments: z.array(z.string()).optional(),
+  serving_temp: z.string().trim().max(50).optional(),
+  glass_type: z.string().trim().max(100).optional(),
+  tasting_date: z.coerce.date().optional(),
+}).refine(
+  (data) => data.blend_batch_id || data.competitor_brand,
+  { message: "Either blend batch or competitor brand is required", path: ["blend_batch_id"] }
+);
+
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type BatchInput = z.infer<typeof batchSchema>;
 export type BatchLogInput = z.infer<typeof batchLogSchema>;
+export type TastingAnalysisInput = z.infer<typeof tastingAnalysisSchema>;
