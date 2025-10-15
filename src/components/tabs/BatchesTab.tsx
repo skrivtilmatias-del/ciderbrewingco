@@ -8,11 +8,12 @@ import { Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
 import { Batch } from '@/types/batch.types';
+import { Batch as LegacyBatch } from '@/components/BatchCard';
 import { paths } from '@/routes/paths';
 
 interface BatchesTabProps {
   batches: Batch[];
-  onBatchClick?: (batch: Batch) => void;
+  onBatchClick?: (batch: LegacyBatch) => void;
   onUpdateStage?: (batchId: string, newStage: string) => void;
 }
 
@@ -29,7 +30,25 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
   const handleBatchClick = (batch: Batch) => {
     if (onBatchClick) {
-      onBatchClick(batch);
+      // Convert new Batch type to old BatchCard Batch type
+      const legacyBatch: any = {
+        id: batch.id,
+        name: batch.name,
+        variety: batch.variety,
+        volume: batch.volume,
+        startDate: batch.started_at,
+        currentStage: batch.current_stage,
+        progress: batch.progress,
+        apple_origin: batch.apple_origin || undefined,
+        yeast_type: batch.yeast_type || undefined,
+        notes: batch.notes || undefined,
+        attachments: batch.attachments || undefined,
+        target_og: batch.target_og || undefined,
+        target_fg: batch.target_fg || undefined,
+        target_ph: batch.target_ph || undefined,
+        target_end_ph: batch.target_end_ph || undefined,
+      };
+      onBatchClick(legacyBatch);
     }
     navigate(paths.production());
   };

@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { paths } from "@/routes/paths";
 import { AppLayout } from "@/components/AppLayout";
 import { BatchCard } from "@/components/BatchCard";
+import { BatchesTab } from "@/components/tabs/BatchesTab";
 import { NewBatchDialog } from "@/components/NewBatchDialog";
 import { NewBlendDialog } from "@/components/NewBlendDialog";
 import { BlendBatchCard } from "@/components/BlendBatchCard";
@@ -1013,64 +1014,35 @@ const Index = () => {
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                {batches.filter((batch) => {
-                  const query = batchSearchQuery.toLowerCase();
-                  return (
-                    batch.name.toLowerCase().includes(query) ||
-                    batch.variety.toLowerCase().includes(query) ||
-                    batch.yeast_type?.toLowerCase().includes(query)
-                  );
-                }).length === 0 ? (
-                  <Card className="col-span-full p-12 text-center border-dashed">
-                    <p className="text-muted-foreground">
-                      {batchSearchQuery ? "No batches match your search." : "No batches yet. Click 'New Batch' to get started."}
-                    </p>
-                  </Card>
-                ) : (
-                  batches
-                    .filter((batch) => {
-                      const query = batchSearchQuery.toLowerCase();
-                      return (
-                        batch.name.toLowerCase().includes(query) ||
-                        batch.variety.toLowerCase().includes(query) ||
-                        batch.yeast_type?.toLowerCase().includes(query)
-                      );
-                    })
-                    .sort((a, b) => {
-                      switch (batchSortOrder) {
-                        case "newest":
-                          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-                        case "oldest":
-                          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-                        case "name-asc":
-                          return a.name.localeCompare(b.name);
-                        case "name-desc":
-                          return b.name.localeCompare(a.name);
-                        case "volume-high":
-                          return (b.volume || 0) - (a.volume || 0);
-                        case "volume-low":
-                          return (a.volume || 0) - (b.volume || 0);
-                        case "progress-high":
-                          return (b.progress || 0) - (a.progress || 0);
-                        case "progress-low":
-                          return (a.progress || 0) - (b.progress || 0);
-                        default:
-                          return 0;
-                      }
-                    })
-                    .map((batch) => (
-                      <BatchCard
-                        key={batch.id}
-                        batch={batch}
-                        onClick={() => handleBatchClick(batch)}
-                        onDelete={() => handleDeleteBatch(batch.id)}
-                        onAdvanceStage={(newStage) => handleUpdateStage(batch.id, newStage)}
-                        onPreviousStage={(newStage) => handleUpdateStage(batch.id, newStage)}
-                      />
-                    ))
-                )}
-              </div>
+              <BatchesTab 
+                batches={batches.map(batch => ({
+                  id: batch.id,
+                  user_id: user?.id || '',
+                  name: batch.name,
+                  variety: batch.variety,
+                  volume: batch.volume,
+                  current_stage: batch.currentStage,
+                  progress: batch.progress,
+                  started_at: batch.startDate,
+                  completed_at: null,
+                  created_at: batch.startDate,
+                  updated_at: batch.startDate,
+                  apple_origin: batch.apple_origin || null,
+                  yeast_type: batch.yeast_type || null,
+                  style: null,
+                  apple_mix: null,
+                  notes: batch.notes || null,
+                  attachments: batch.attachments || null,
+                  target_og: batch.target_og || null,
+                  target_fg: batch.target_fg || null,
+                  target_ph: batch.target_ph || null,
+                  target_end_ph: batch.target_end_ph || null,
+                  target_ta: null,
+                  target_temp_c: null,
+                }))}
+                onBatchClick={handleBatchClick}
+                onUpdateStage={handleUpdateStage}
+              />
             </TabsContent>
           )}
 
