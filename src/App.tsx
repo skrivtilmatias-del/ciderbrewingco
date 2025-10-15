@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { paths } from "@/routes/paths";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -39,23 +40,23 @@ const App = () => (
         <InstallPrompt />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Navigate to="/batches" replace />} />
-            <Route path="/batches" element={<Index />} />
-            <Route path="/production" element={<Index />} />
-            <Route path="/blending" element={<Index />} />
-            <Route path="/cellar" element={<Index />} />
-            <Route path="/tasting" element={<Index />} />
+            <Route path={paths.root()} element={<Navigate to={paths.batches()} replace />} />
+            <Route path={paths.batches()} element={<Index />} />
+            <Route path={paths.production()} element={<Index />} />
+            <Route path={paths.blending()} element={<Index />} />
+            <Route path={paths.cellar()} element={<Index />} />
+            <Route path={paths.tasting()} element={<Index />} />
+            <Route path={paths.suppliers()} element={<Suppliers />} />
             <Route path="/tools/:toolView?" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/blend/:id" element={<PublicBlend />} />
             <Route path="/r/b/:id" element={<BatchRedirect />} />
             <Route path="/r/l/:id" element={<BlendRedirect />} />
             <Route path="/print/labels" element={<PrintLabels />} />
-            <Route path="/planning" element={<PlanningTool />} />
-            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path={paths.planning()} element={<PlanningTool />} />
             <Route path="/suppliers/:id" element={<SupplierDetail />} />
-            <Route path="/webhooks" element={<Webhooks />} />
-            <Route path="/install" element={<Install />} />
+            <Route path={paths.webhooks()} element={<Webhooks />} />
+            <Route path={paths.install()} element={<Install />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

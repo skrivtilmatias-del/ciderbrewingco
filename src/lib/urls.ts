@@ -1,17 +1,23 @@
 /**
  * Get the base URL for the application
- * Falls back to window.location.origin in development
+ * CRITICAL: In production, VITE_APP_BASE_URL is mandatory and will fail fast if missing
+ * In development, falls back to window.location.origin
  */
 export const getBaseUrl = (): string => {
-  // Use environment variable if available
   const envUrl = import.meta.env.VITE_APP_BASE_URL;
-  if (envUrl) {
-    return envUrl.replace(/\/+$/, '');
+  
+  // In production, fail fast if VITE_APP_BASE_URL is not set
+  if (import.meta.env.PROD && !envUrl) {
+    const error = new Error(
+      'CRITICAL: VITE_APP_BASE_URL is required in production. ' +
+      'Please set it in your environment variables before deploying.'
+    );
+    console.error(error);
+    throw error;
   }
   
-  // In production, VITE_APP_BASE_URL is mandatory
-  if (import.meta.env.PROD) {
-    throw new Error('VITE_APP_BASE_URL is required in production. Please set it in your environment variables.');
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, '');
   }
   
   // In development, fall back to window.location.origin
@@ -19,6 +25,7 @@ export const getBaseUrl = (): string => {
     return window.location.origin;
   }
   
+  // Final fallback (shouldn't reach here in normal operation)
   return '';
 };
 

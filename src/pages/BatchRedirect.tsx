@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { paths } from "@/routes/paths";
 
 const BatchRedirect = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,7 +12,7 @@ const BatchRedirect = () => {
   useEffect(() => {
     const handleRedirect = async () => {
       if (!id) {
-        navigate("/", { replace: true });
+        navigate(paths.batches(), { replace: true });
         return;
       }
 
@@ -35,10 +36,10 @@ const BatchRedirect = () => {
 
       if (session) {
         // Authenticated - go to batch page
-        navigate(`/?batch=${id}`, { replace: true });
+        navigate(paths.batchWithId(id), { replace: true });
       } else {
         // Not authenticated - redirect to login with next parameter
-        navigate(`/auth?next=${encodeURIComponent(`/?batch=${id}`)}`, { replace: true });
+        navigate(paths.auth(paths.batchWithId(id)), { replace: true });
       }
     };
 

@@ -1,11 +1,13 @@
 import { ReactNode } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Apple, TrendingUp, Package, Activity, LogOut, Settings2, Wine, Award, Warehouse, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Apple, LogOut, Settings2, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download, TrendingUp } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { TopNav } from '@/components/TopNav';
+import { paths } from '@/routes/paths';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -21,7 +23,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
     try {
       await supabase.auth.signOut();
       toast.success("Logged out successfully");
-      navigate("/auth");
+      navigate(paths.auth());
     } catch (error) {
       toast.error("Failed to logout");
     }
@@ -38,58 +40,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
             </div>
 
             <nav className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-              {userRole === "production" && (
-                <>
-                  <NavLink to="/batches">
-                    {({ isActive }) => (
-                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                        <Package className="h-4 w-4 inline-block mr-2" />
-                        Batches
-                      </button>
-                    )}
-                  </NavLink>
-                  <NavLink to="/production">
-                    {({ isActive }) => (
-                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                        <Activity className="h-4 w-4 inline-block mr-2" />
-                        Production
-                      </button>
-                    )}
-                  </NavLink>
-                  <NavLink to="/blending">
-                    {({ isActive }) => (
-                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                        <Wine className="h-4 w-4 inline-block mr-2" />
-                        Blending
-                      </button>
-                    )}
-                  </NavLink>
-                  <NavLink to="/cellar">
-                    {({ isActive }) => (
-                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                        <Warehouse className="h-4 w-4 inline-block mr-2" />
-                        Cellar
-                      </button>
-                    )}
-                  </NavLink>
-                  <NavLink to="/suppliers">
-                    {({ isActive }) => (
-                      <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                        <TrendingUp className="h-4 w-4 inline-block mr-2" />
-                        Suppliers
-                      </button>
-                    )}
-                  </NavLink>
-                </>
-              )}
-              <NavLink to="/tasting">
-                {({ isActive }) => (
-                  <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                    <Award className="h-4 w-4 inline-block mr-2" />
-                    Tasting
-                  </button>
-                )}
-              </NavLink>
+              <TopNav userRole={userRole} />
               {userRole === "production" && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -101,35 +52,35 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Tools</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
                       <TrendingUp className="h-4 w-4 mr-2" />
                       Analytics
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                       <FlaskConical className="h-4 w-4 mr-2" />
                       Calculators
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                       <QrCode className="h-4 w-4 mr-2" />
                       Print Labels
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                       <Layout className="h-4 w-4 mr-2" />
                       Floor Plan
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       Cost Calculation
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/planning")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.planning())}>
                       <Settings2 className="h-4 w-4 mr-2" />
                       Planning Tool
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/webhooks")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.webhooks())}>
                       <Webhook className="h-4 w-4 mr-2" />
                       Webhooks
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/install")}>
+                    <DropdownMenuItem onClick={() => navigate(paths.install())}>
                       <Download className="h-4 w-4 mr-2" />
                       Install
                     </DropdownMenuItem>
@@ -155,52 +106,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
 
           {/* Mobile Navigation */}
           <nav className="md:hidden flex items-center gap-1 overflow-x-auto pb-2 bg-muted/50 rounded-lg p-1">
-            {userRole === "production" && (
-              <>
-                <NavLink to="/batches">
-                  {({ isActive }) => (
-                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                      <Package className="h-4 w-4" />
-                    </button>
-                  )}
-                </NavLink>
-                <NavLink to="/production">
-                  {({ isActive }) => (
-                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                      <Activity className="h-4 w-4" />
-                    </button>
-                  )}
-                </NavLink>
-                <NavLink to="/blending">
-                  {({ isActive }) => (
-                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                      <Wine className="h-4 w-4" />
-                    </button>
-                  )}
-                </NavLink>
-                <NavLink to="/cellar">
-                  {({ isActive }) => (
-                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                      <Warehouse className="h-4 w-4" />
-                    </button>
-                  )}
-                </NavLink>
-                <NavLink to="/suppliers">
-                  {({ isActive }) => (
-                    <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                      <TrendingUp className="h-4 w-4" />
-                    </button>
-                  )}
-                </NavLink>
-              </>
-            )}
-            <NavLink to="/tasting">
-              {({ isActive }) => (
-                <button className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                  <Award className="h-4 w-4" />
-                </button>
-              )}
-            </NavLink>
+            <TopNav userRole={userRole} isMobile />
             {userRole === "production" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -211,35 +117,35 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Tools</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/tools/analytics")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Analytics
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/tools/calculators")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                     <FlaskConical className="h-4 w-4 mr-2" />
                     Calculators
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/tools/print-labels")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                     <QrCode className="h-4 w-4 mr-2" />
                     Print Labels
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/tools/floor-plan")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                     <Layout className="h-4 w-4 mr-2" />
                     Floor Plan
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/tools/cost-calculation")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                     <DollarSign className="h-4 w-4 mr-2" />
                     Cost Calculation
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/planning")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.planning())}>
                     <Settings2 className="h-4 w-4 mr-2" />
                     Planning Tool
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/webhooks")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.webhooks())}>
                     <Webhook className="h-4 w-4 mr-2" />
                     Webhooks
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/install")}>
+                  <DropdownMenuItem onClick={() => navigate(paths.install())}>
                     <Download className="h-4 w-4 mr-2" />
                     Install
                   </DropdownMenuItem>

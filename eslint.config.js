@@ -28,6 +28,13 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "warn",
       "prefer-const": "error",
       "no-var": "error",
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='to'] > Literal[value=/^\\/[^{]/]",
+          message: "Use paths.ts helpers instead of literal path strings. Import from '@/routes/paths'."
+        }
+      ],
     },
   },
 );

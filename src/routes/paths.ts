@@ -1,0 +1,83 @@
+/**
+ * Centralized route path definitions
+ * All navigation should use these helpers to ensure consistency
+ */
+
+export const paths = {
+  // Root
+  root: () => '/',
+  
+  // Main navigation
+  batches: () => '/batches',
+  production: () => '/production',
+  blending: () => '/blending',
+  cellar: () => '/cellar',
+  tasting: () => '/tasting',
+  suppliers: () => '/suppliers',
+  
+  // Auth
+  auth: (next?: string) => next ? `/auth?next=${encodeURIComponent(next)}` : '/auth',
+  
+  // Tools
+  tools: {
+    analytics: () => '/tools/analytics',
+    calculators: () => '/tools/calculators',
+    printLabels: () => '/tools/print-labels',
+    floorPlan: () => '/tools/floor-plan',
+    costCalculation: () => '/tools/cost-calculation',
+  },
+  
+  // Detail pages
+  blend: (id: string) => `/blend/${id}`,
+  supplier: (id: string) => `/suppliers/${id}`,
+  
+  // Utility pages
+  planning: () => '/planning',
+  webhooks: () => '/webhooks',
+  install: () => '/install',
+  
+  // Print
+  printLabels: (mode: 'batch' | 'blend', ids: string[]) => 
+    `/print/labels?mode=${mode}&ids=${ids.join(',')}`,
+  
+  // QR redirects
+  qr: {
+    batch: (id: string) => `/r/b/${id}`,
+    blend: (id: string) => `/r/l/${id}`,
+  },
+  
+  // Batch with query params
+  batchWithId: (id: string) => `/?batch=${id}`,
+} as const;
+
+/**
+ * Check if a URL is external
+ */
+export const isExternalUrl = (url: string): boolean => {
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//');
+};
+
+/**
+ * Get display name for a path
+ */
+export const getPathName = (pathname: string): string => {
+  const pathMap: Record<string, string> = {
+    '/batches': 'Batches',
+    '/production': 'Production',
+    '/blending': 'Blending',
+    '/cellar': 'Cellar',
+    '/tasting': 'Tasting',
+    '/suppliers': 'Suppliers',
+    '/tools/analytics': 'Analytics',
+    '/tools/calculators': 'Calculators',
+    '/tools/print-labels': 'Print Labels',
+    '/tools/floor-plan': 'Floor Plan',
+    '/tools/cost-calculation': 'Cost Calculation',
+    '/planning': 'Planning Tool',
+    '/webhooks': 'Webhooks',
+    '/install': 'Install',
+    '/auth': 'Authentication',
+  };
+  
+  return pathMap[pathname] || 'Unknown';
+};

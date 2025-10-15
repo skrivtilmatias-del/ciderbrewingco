@@ -1,5 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { SafeLink } from "@/components/SafeLink";
+import { paths } from "@/routes/paths";
 
 const NotFound = () => {
   const location = useLocation();
@@ -13,9 +15,9 @@ const NotFound = () => {
       <div className="text-center">
         <h1 className="mb-4 text-3xl sm:text-4xl font-bold">404</h1>
         <p className="mb-4 text-lg sm:text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/80">
+        <SafeLink to={paths.batches()} className="text-primary underline hover:text-primary/80">
           Return to Home
-        </a>
+        </SafeLink>
       </div>
     </div>
   );
