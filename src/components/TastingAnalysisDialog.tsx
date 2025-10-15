@@ -236,7 +236,7 @@ export function TastingAnalysisDialog({
 
     const validation = tastingSchema.safeParse({
       blend_batch_id: sourceType === "blend" ? blendBatchId : undefined,
-      competitor_brand: sourceType === "competitor" ? competitorBrand.trim() : undefined,
+      competitor_brand: sourceType === "competitor" ? (competitorBrand.trim() || undefined) : undefined,
       taste: taste.trim() || undefined,
       colour: colour.trim() || undefined,
       palate: palate.trim() || undefined,
