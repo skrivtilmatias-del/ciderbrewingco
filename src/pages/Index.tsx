@@ -283,6 +283,7 @@ const Index = () => {
         .select(`
           id,
           blend_batch_id,
+          competitor_brand,
           user_id,
           taste,
           colour,
