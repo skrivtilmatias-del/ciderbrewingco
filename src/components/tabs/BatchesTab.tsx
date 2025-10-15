@@ -1,18 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { BatchCard } from '@/components/BatchCard';
+import { BatchCard, Batch } from '@/components/BatchCard';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
-import { Batch } from '@/types/batch.types';
-import { Batch as LegacyBatch } from '@/components/BatchCard';
 import { paths } from '@/routes/paths';
 
 interface BatchesTabProps {
   batches: Batch[];
-  onBatchClick?: (batch: LegacyBatch) => void;
+  onBatchClick?: (batch: Batch) => void;
   onUpdateStage?: (batchId: string, newStage: string) => void;
 }
 
@@ -34,30 +32,11 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   const handleBatchClick = (batch: Batch) => {
-    // Convert new Batch type to old BatchCard Batch type
-    const legacyBatch: LegacyBatch = {
-      id: batch.id,
-      name: batch.name,
-      variety: batch.variety,
-      volume: batch.volume,
-      startDate: batch.started_at,
-      currentStage: batch.current_stage as any,
-      progress: batch.progress,
-      apple_origin: batch.apple_origin || undefined,
-      yeast_type: batch.yeast_type || undefined,
-      notes: batch.notes || undefined,
-      attachments: batch.attachments || undefined,
-      target_og: batch.target_og || undefined,
-      target_fg: batch.target_fg || undefined,
-      target_ph: batch.target_ph || undefined,
-      target_end_ph: batch.target_end_ph || undefined,
-    };
-    
-    setSelectedBatch(legacyBatch);
+    setSelectedBatch(batch);
     setDetailsOpen(false);
     
     if (onBatchClick) {
-      onBatchClick(legacyBatch);
+      onBatchClick(batch);
     }
     navigate(paths.production());
   };
@@ -68,15 +47,15 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
       return (
         batch.name.toLowerCase().includes(query) ||
         batch.variety.toLowerCase().includes(query) ||
-        batch.yeast_type?.toLowerCase().includes(query)
+        batch.currentStage.toLowerCase().includes(query)
       );
     })
     .sort((a, b) => {
       switch (batchSortOrder) {
         case "newest":
-          return new Date(b.started_at).getTime() - new Date(a.started_at).getTime();
+          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
         case "oldest":
-          return new Date(a.started_at).getTime() - new Date(b.started_at).getTime();
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         case "name-asc":
           return a.name.localeCompare(b.name);
         case "name-desc":
@@ -136,23 +115,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
           filteredAndSortedBatches.map((batch) => (
             <BatchCard
               key={batch.id}
-              batch={{
-                id: batch.id,
-                name: batch.name,
-                variety: batch.variety,
-                volume: batch.volume,
-                startDate: batch.started_at,
-                currentStage: batch.current_stage as any,
-                progress: batch.progress,
-                apple_origin: batch.apple_origin || undefined,
-                yeast_type: batch.yeast_type || undefined,
-                notes: batch.notes || undefined,
-                attachments: batch.attachments || undefined,
-                target_og: batch.target_og || undefined,
-                target_fg: batch.target_fg || undefined,
-                target_ph: batch.target_ph || undefined,
-                target_end_ph: batch.target_end_ph || undefined,
-              }}
+              batch={batch}
               onClick={() => handleBatchClick(batch)}
               onDelete={() => handleDeleteBatch(batch.id)}
               onAdvanceStage={onUpdateStage ? (newStage) => onUpdateStage(batch.id, newStage) : undefined}

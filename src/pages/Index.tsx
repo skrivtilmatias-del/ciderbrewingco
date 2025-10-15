@@ -968,31 +968,7 @@ const Index = () => {
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
               <BatchesTab 
-                batches={batches.map(batch => ({
-                  id: batch.id,
-                  user_id: user?.id || '',
-                  name: batch.name,
-                  variety: batch.variety,
-                  volume: batch.volume,
-                  current_stage: batch.currentStage,
-                  progress: batch.progress,
-                  started_at: batch.startDate,
-                  completed_at: null,
-                  created_at: batch.startDate,
-                  updated_at: batch.startDate,
-                  apple_origin: batch.apple_origin || null,
-                  yeast_type: batch.yeast_type || null,
-                  style: null,
-                  apple_mix: null,
-                  notes: batch.notes || null,
-                  attachments: batch.attachments || null,
-                  target_og: batch.target_og || null,
-                  target_fg: batch.target_fg || null,
-                  target_ph: batch.target_ph || null,
-                  target_end_ph: batch.target_end_ph || null,
-                  target_ta: null,
-                  target_temp_c: null,
-                }))}
+                batches={batches}
                 onBatchClick={handleBatchClick}
                 onUpdateStage={handleUpdateStage}
               />
