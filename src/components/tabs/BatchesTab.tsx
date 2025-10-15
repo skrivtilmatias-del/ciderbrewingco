@@ -1,10 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { BatchCard, Batch } from '@/components/BatchCard';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
 import { paths } from '@/routes/paths';
@@ -76,34 +72,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
   return (
     <div className="space-y-4">
-      {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative w-full sm:w-[300px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search batches..."
-            value={batchSearchQuery}
-            onChange={(e) => setBatchSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Sort by..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-            <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-            <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
-            <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
-            <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
-            <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Batches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
         {filteredAndSortedBatches.length === 0 ? (
