@@ -1,0 +1,107 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Apple, Award, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NewBatchDialog } from '@/components/NewBatchDialog';
+import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
+import { toast } from 'sonner';
+
+interface AppHeaderProps {
+  user: any;
+  userProfile: any;
+  userRole: string;
+  onBatchCreated?: () => void;
+  onTastingSaved?: (data: any, analysisId?: string) => void;
+  blendBatches?: any[];
+}
+
+export const AppHeader = ({ 
+  user, 
+  userProfile, 
+  userRole,
+  onBatchCreated,
+  onTastingSaved,
+  blendBatches = []
+}: AppHeaderProps) => {
+  const navigate = useNavigate();
+  const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Failed to sign out');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleTastingSave = async (data: any, analysisId?: string) => {
+    if (onTastingSaved) {
+      await onTastingSaved(data, analysisId);
+    }
+    setTastingDialogOpen(false);
+  };
+
+  return (
+    <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Apple className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary flex-shrink-0" />
+            <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-foreground">
+              Cider Brewing Co
+            </h1>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
+              {userProfile?.full_name || user?.email}
+            </span>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
+                  size="sm"
+                  onClick={() => setTastingDialogOpen(true)}
+                >
+                  <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">New </span>Tasting
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Create a new tasting analysis</TooltipContent>
+            </Tooltip>
+            
+            {userRole !== "taster" && onBatchCreated && (
+              <NewBatchDialog onBatchCreated={onBatchCreated} />
+            )}
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Sign out</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+      </div>
+
+      {/* Tasting Analysis Dialog */}
+      <TastingAnalysisDialog
+        open={tastingDialogOpen}
+        onOpenChange={setTastingDialogOpen}
+        onSave={handleTastingSave}
+        blendBatches={blendBatches}
+      />
+    </header>
+  );
+};
