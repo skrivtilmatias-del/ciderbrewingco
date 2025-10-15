@@ -5,7 +5,7 @@ import { getUserFriendlyError } from "@/lib/errorHandler";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/hooks/useAuth";
 import { paths } from "@/routes/paths";
-import { AppLayout } from "@/components/AppLayout";
+import { useAppStore } from '@/stores/appStore';
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BatchesTab } from "@/components/tabs/BatchesTab";
 import { ProductionTab } from "@/components/tabs/ProductionTab";
@@ -42,9 +42,19 @@ const Index = () => {
   const { toolView } = useParams();
   const { user, userRole, userProfile, loading: authLoading } = useAuth();
   
+  // Use state from useAppStore for modals and selection
+  const {
+    selectedBatch,
+    setSelectedBatch,
+    detailsOpen,
+    setDetailsOpen,
+    selectedBlend,
+    setSelectedBlend,
+    blendDetailsOpen,
+    setBlendDetailsOpen,
+  } = useAppStore();
+  
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,8 +87,6 @@ const Index = () => {
   }, [toolView]);
   
   const [blendBatches, setBlendBatches] = useState<any[]>([]);
-  const [selectedBlend, setSelectedBlend] = useState<any>(null);
-  const [blendDetailsOpen, setBlendDetailsOpen] = useState(false);
   const [tastingAnalyses, setTastingAnalyses] = useState<any[]>([]);
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const [editingTasting, setEditingTasting] = useState<any>(null);
@@ -541,11 +549,14 @@ const Index = () => {
         )
       );
 
-      setSelectedBatch((prev) =>
-        prev?.id === batchId
-          ? { ...prev, currentStage: newStage, progress: progress }
-          : prev
-      );
+      // Update selected batch if it's the one being updated
+      if (selectedBatch?.id === batchId) {
+        setSelectedBatch({ 
+          ...selectedBatch, 
+          currentStage: newStage as any, 
+          progress: progress 
+        });
+      }
 
       toast.success(`Batch advanced to ${newStage}`);
     } catch (error: any) {
