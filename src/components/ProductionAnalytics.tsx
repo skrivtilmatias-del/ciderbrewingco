@@ -311,42 +311,40 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
         </Card>
       </div>
 
-      {/* Charts Section */}
-      {topVariety && (
-        <Card className="p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
-            Variety Breakdown
-          </h3>
-          <div className="space-y-2 sm:space-y-3">
-            {Object.entries(varietyBreakdown)
-              .sort((a, b) => b[1] - a[1])
-              .map(([variety, volume]) => {
-                const percentage = Math.round(
-                  (volume / batches.reduce((sum, b) => sum + b.volume, 0)) * 100
-                );
-                return (
-                  <div key={variety} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <span className="font-medium text-sm sm:text-base text-foreground truncate">{variety}</span>
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                    <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-2">
-                      {volume}L ({percentage}%)
-                    </span>
-                  </div>
-                );
-              })}
-          </div>
-        </Card>
-      )}
-
-      {/* Trends Section */}
+      {/* Charts and Trends Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {topVariety && (
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
+              Variety Breakdown
+            </h3>
+            <div className="space-y-2 sm:space-y-3">
+              {Object.entries(varietyBreakdown)
+                .sort((a, b) => b[1] - a[1])
+                .map(([variety, volume]) => {
+                  const percentage = Math.round(
+                    (volume / batches.reduce((sum, b) => sum + b.volume, 0)) * 100
+                  );
+                  return (
+                    <div key={variety} className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <span className="font-medium text-sm sm:text-base text-foreground truncate">{variety}</span>
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-2">
+                        {volume}L ({percentage}%)
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </Card>
+        )}
         {varietyTrendsChartData.length > 0 && (
           <Card className="p-4 sm:p-6">
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
