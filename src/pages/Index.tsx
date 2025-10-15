@@ -147,7 +147,7 @@ const Index = () => {
         navigate("/production");
       }
     }
-  }, [location.search, batches, navigate]);
+  }, [location.search, batches, navigate, setSelectedBatch]);
 
   // Auto-select first batch when batches are loaded
   useEffect(() => {
