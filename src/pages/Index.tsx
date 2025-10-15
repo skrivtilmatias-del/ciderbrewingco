@@ -92,6 +92,16 @@ const Index = () => {
     }
   }, [batches, selectedBatch, setSelectedBatch]);
 
+  // Automatically sync selectedBatch when batches data updates
+  useEffect(() => {
+    if (selectedBatch) {
+      const updatedBatch = batches.find(b => b.id === selectedBatch.id);
+      if (updatedBatch && JSON.stringify(updatedBatch) !== JSON.stringify(selectedBatch)) {
+        setSelectedBatch(updatedBatch);
+      }
+    }
+  }, [batches, selectedBatch?.id]);
+
   const handleBatchClick = (batch: Batch) => {
     setSelectedBatch(batch);
     setDetailsOpen(true);
@@ -100,16 +110,6 @@ const Index = () => {
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
     // Use the mutation from useBatches hook
     updateStage({ batchId, newStage });
-    
-    // Update selected batch state after a short delay to allow query to update
-    setTimeout(() => {
-      if (selectedBatch?.id === batchId) {
-        const updatedBatch = batches.find(b => b.id === batchId);
-        if (updatedBatch) {
-          setSelectedBatch(updatedBatch);
-        }
-      }
-    }, 100);
   };
 
   const handleGoToProduction = (batch: Batch) => {
