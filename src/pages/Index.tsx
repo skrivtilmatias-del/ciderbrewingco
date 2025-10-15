@@ -6,27 +6,17 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/hooks/useAuth";
 import { paths } from "@/routes/paths";
 import { AppLayout } from "@/components/AppLayout";
-import { BatchCard } from "@/components/BatchCard";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { BatchesTab } from "@/components/tabs/BatchesTab";
-import { NewBatchDialog } from "@/components/NewBatchDialog";
-import { NewBlendDialog } from "@/components/NewBlendDialog";
-import { BlendBatchCard } from "@/components/BlendBatchCard";
+import { ProductionTab } from "@/components/tabs/ProductionTab";
+import { BlendingTab } from "@/components/tabs/BlendingTab";
+import { CellarTab } from "@/components/tabs/CellarTab";
+import { SuppliersTab } from "@/components/tabs/SuppliersTab";
+import { TastingTab } from "@/components/tabs/TastingTab";
+import { ToolsTab } from "@/components/tabs/ToolsTab";
 import { BlendBatchDetailsTabbed } from "@/components/BlendBatchDetailsTabbed";
-import { TastingAnalysisCard } from "@/components/TastingAnalysisCard";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
-import { BatchOverviewHeader } from "@/components/BatchOverviewHeader";
-import { BatchProductionHeader } from "@/components/BatchProductionHeader";
-import { ParameterTrendChart } from "@/components/ParameterTrendChart";
-import { QuickActionsPanel } from "@/components/QuickActionsPanel";
-import { SmartInsights } from "@/components/SmartInsights";
-import { OrganizedLogsList } from "@/components/OrganizedLogsList";
-import { ProductionAnalytics } from "@/components/ProductionAnalytics";
-import { StageProgressionUI } from "@/components/StageProgressionUI";
-import { PrintQRCodes } from "@/components/PrintQRCodes";
-import { FloorPlan } from "@/pages/FloorPlan";
-import { CellarOverview } from "@/components/CellarOverview";
-import { SupplierOverview } from "@/components/SupplierOverview";
 import { Apple, TrendingUp, Package, Activity, LogOut, Plus, Search, Calendar, FlaskConical, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -830,45 +820,14 @@ const Index = () => {
   return (
     <div className="min-h-dvh bg-background overflow-x-hidden">
       {/* Header */}
-      <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Apple className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary flex-shrink-0" />
-              <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-foreground">Cider Brewing Co</h1>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
-                {userProfile?.full_name || user.email}
-              </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
-                    size="sm"
-                    onClick={() => setTastingDialogOpen(true)}
-                  >
-                    <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden xs:inline">New </span>Tasting
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Create a new tasting analysis</TooltipContent>
-              </Tooltip>
-              {userRole !== "taster" && (
-                <NewBatchDialog onBatchCreated={handleBatchCreated} />
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" onClick={handleSignOut}>
-                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Sign out</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader 
+        user={user}
+        userProfile={userProfile}
+        userRole={userRole}
+        onBatchCreated={fetchBatches}
+        onTastingSaved={handleSaveTasting}
+        blendBatches={blendBatches}
+      />
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs value={activeTab} className="mb-6 sm:mb-8">
@@ -1002,12 +961,6 @@ const Index = () => {
                     </SelectContent>
                   </Select>
                 )}
-                {activeTab === "blending" && (
-                  <NewBlendDialog 
-                    availableBatches={availableBatchesForBlending}
-                    onBlendCreated={handleBlendCreated}
-                  />
-                )}
               </div>
             )}
           </div>
@@ -1047,342 +1000,51 @@ const Index = () => {
           )}
 
           {userRole === "production" && (
-            <TabsContent value="production" className="space-y-4 mt-4 sm:mt-6">
-              {selectedBatch ? (
-                <>
-                  {/* Show filtered results if searching */}
-                  {batchSearchQuery && (
-                    <Card className="p-2 max-h-[200px] overflow-y-auto">
-                      {batches
-                        .filter((batch) => {
-                          const query = batchSearchQuery.toLowerCase();
-                          return (
-                            batch.name.toLowerCase().includes(query) ||
-                            batch.variety.toLowerCase().includes(query) ||
-                            batch.currentStage.toLowerCase().includes(query)
-                          );
-                        })
-                        .map((batch) => (
-                          <button
-                            key={batch.id}
-                            onClick={() => {
-                              handleBatchSelect(batch);
-                              setBatchSearchQuery("");
-                            }}
-                            className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2"
-                          >
-                            <FlaskConical className="h-4 w-4 text-primary flex-shrink-0" />
-                            <span className="font-medium text-sm">{batch.name}</span>
-                            <span className="text-xs text-muted-foreground">• {batch.variety}</span>
-                            <Badge variant="outline" className="text-xs ml-auto">{batch.currentStage}</Badge>
-                          </button>
-                        ))}
-                      {batches.filter((batch) => {
-                        const query = batchSearchQuery.toLowerCase();
-                        return (
-                          batch.name.toLowerCase().includes(query) ||
-                          batch.variety.toLowerCase().includes(query) ||
-                          batch.currentStage.toLowerCase().includes(query)
-                        );
-                      }).length === 0 && (
-                        <p className="text-center text-sm text-muted-foreground py-4">
-                          No batches found
-                        </p>
-                      )}
-                    </Card>
-                  )}
-
-                  {/* Batch Production Header */}
-                  <BatchProductionHeader batch={selectedBatch} />
-
-                  {/* Stage Progression */}
-                  <StageProgressionUI
-                    currentStage={selectedBatch.currentStage}
-                    batchId={selectedBatch.id}
-                    batchName={selectedBatch.name}
-                    onAdvanceStage={handleUpdateStage}
-                  />
-
-
-                  {/* Smart Insights */}
-                  <SmartInsights
-                    batch={selectedBatch}
-                    logs={logs}
-                  />
-
-                  {/* Parameter Trend Charts */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <ParameterTrendChart
-                      title="OG"
-                      data={logs.map(l => ({
-                        date: l.created_at,
-                        value: l.og || null
-                      }))}
-                      color="hsl(var(--info))"
-                      unit="SG"
-                      targetValue={selectedBatch.target_og}
-                    />
-                    <ParameterTrendChart
-                      title="pH Level"
-                      data={logs.map(l => ({
-                        date: l.created_at,
-                        value: l.ph || null
-                      }))}
-                      color="hsl(var(--warning))"
-                      unit=""
-                      targetValue={selectedBatch.target_ph}
-                    />
-                    <ParameterTrendChart
-                      title="Temperature"
-                      data={logs.map(l => ({
-                        date: l.created_at,
-                        value: l.temp_c || null
-                      }))}
-                      color="hsl(var(--destructive))"
-                      unit="°C"
-                      targetValue={selectedBatch.target_temp_c}
-                    />
-                  </div>
-
-                  {/* Quick Actions Panel */}
-                  <QuickActionsPanel
-                    onAddMeasurement={() => handleAddLog('Measurement', 'Lab')}
-                    onAddObservation={() => handleAddLog('Observation', 'Observation')}
-                    onScheduleTask={() => handleAddLog('Note', 'General')}
-                    onAddGeneral={() => handleAddLog('Note', 'General')}
-                  />
-                  
-                  {/* Organized Logs List */}
-                  <div className="space-y-3 sm:space-y-4">
-                    {filteredLogs.length === 0 ? (
-                      <Card className="p-8 sm:p-12 text-center border-dashed">
-                        <p className="text-sm sm:text-base text-muted-foreground">
-                          No notes yet. Click "Add Note" to get started.
-                        </p>
-                      </Card>
-                    ) : (
-                      <OrganizedLogsList
-                        logs={filteredLogs}
-                        onDeleteLog={(logId) => selectedBatch && fetchLogs(selectedBatch.id)}
-                        onUpdateLog={() => selectedBatch && fetchLogs(selectedBatch.id)}
-                      />
-                    )}
-                  </div>
-                </>
-              ) : (
-                <Card className="p-8 sm:p-12 text-center border-dashed">
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    Select a batch to view production progress and notes
-                  </p>
-                </Card>
-              )}
+            <TabsContent value="production" className="mt-4 sm:mt-6">
+              <ProductionTab 
+                batches={batches}
+                selectedBatch={selectedBatch}
+                onSelectBatch={setSelectedBatch}
+                onUpdateStage={handleUpdateStage}
+                onAddLog={handleAddLog}
+              />
             </TabsContent>
           )}
 
           {userRole === "production" && (
             <TabsContent value="tools" className="mt-4 sm:mt-6">
-              {toolsView === "analytics" && batches.length > 0 && (
-                <ProductionAnalytics 
-                  batches={batches} 
-                  blendBatches={blendBatches}
-                  tastingAnalyses={tastingAnalyses}
-                />
-              )}
-
-              {toolsView === "calculators" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                  <ABVCalculator />
-                  <PrimingCalculator />
-                  <SO2Calculator />
-                </div>
-              )}
-
-              {toolsView === "print-labels" && (
-                <PrintQRCodes blendBatches={blendBatches} />
-              )}
-
-              {toolsView === "floor-plan" && (
-                <div className="h-[calc(100vh-250px)]">
-                  <FloorPlan />
-                </div>
-              )}
-
-              {toolsView === "cost-calculation" && (
-                <CostCalculation />
-              )}
+              <ToolsTab 
+                batches={batches}
+                blendBatches={blendBatches}
+                toolView={toolView}
+              />
             </TabsContent>
           )}
 
           {userRole === "production" && (
             <>
               <TabsContent value="blending" className="mt-4 sm:mt-6">
-                {/* Available Batches Overview - Compact */}
-                {batchUsageInfo.filter(b => b.isAvailable).length > 0 && (
-                  <Card className="mb-4">
-                    <div className="p-3 sm:p-4">
-                      <h3 className="text-sm sm:text-base font-semibold mb-3">Available for Blending</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {batchUsageInfo.filter(b => b.isAvailable).map((batch) => (
-                          <div key={batch.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded border border-border">
-                            <Apple className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium truncate">{batch.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {batch.volumeRemaining.toFixed(1)}L / {batch.volume.toFixed(1)}L
-                              </div>
-                            </div>
-                            <div className="text-xs font-semibold text-primary">
-                              {(100 - batch.usagePercentage).toFixed(0)}%
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </Card>
-                )}
-
-                {/* Blend Batches */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                  {blendBatches.length === 0 ? (
-                    <Card className="col-span-full p-12 text-center border-dashed">
-                      <Wine className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
-                      <h3 className="text-lg font-semibold mb-2">No Blends Yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Create your first blend batch to start tracking your cider blends.
-                      </p>
-                      <NewBlendDialog 
-                        availableBatches={availableBatchesForBlending}
-                        onBlendCreated={handleBlendCreated}
-                      />
-                    </Card>
-                  ) : (
-                    blendBatches
-                      .filter(blend => {
-                        if (debouncedBlendSearchQuery === "") return true;
-                        const searchLower = debouncedBlendSearchQuery.toLowerCase();
-                        return (
-                          blend.name.toLowerCase().includes(searchLower) ||
-                          blend.notes?.toLowerCase().includes(searchLower) ||
-                          blend.components.some((c: any) => 
-                            c.batch_name.toLowerCase().includes(searchLower) ||
-                            c.batch_variety.toLowerCase().includes(searchLower)
-                          )
-                        );
-                      })
-                      .map((blend) => (
-                        <BlendBatchCard
-                          key={blend.id}
-                          blend={blend}
-                          onDelete={handleDeleteBlend}
-                          onClick={handleBlendClick}
-                          onAddTastingNote={(blendId) => {
-                            setSelectedBlendIdForTasting(blendId);
-                            setTastingDialogOpen(true);
-                          }}
-                        />
-                      ))
-                  )}
-                </div>
+                <BlendingTab 
+                  batches={batches}
+                  blendBatches={blendBatches}
+                />
               </TabsContent>
 
               <TabsContent value="cellar" className="mt-4 sm:mt-6">
-                {blendBatches.length === 0 ? (
-                  <Card className="p-12 text-center border-dashed">
-                    <Warehouse className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
-                    <h3 className="text-lg font-semibold mb-2">Cellar is Empty</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Create blend batches and bottle them to start tracking your cellar inventory.
-                    </p>
-                    <NewBlendDialog 
-                      availableBatches={availableBatchesForBlending}
-                      onBlendCreated={handleBlendCreated}
-                    />
-                  </Card>
-                ) : (
-                  <CellarOverview 
-                    blends={blendBatches}
-                    onBlendClick={(blend) => handleBlendClick(blend, true)}
-                    onRefresh={fetchBlendBatches}
-                  />
-                )}
+                <CellarTab blendBatches={blendBatches} />
             </TabsContent>
           </>
         )}
 
         {userRole === "production" && (
           <TabsContent value="suppliers" className="mt-4 sm:mt-6">
-            <SupplierOverview />
+            <SuppliersTab />
           </TabsContent>
         )}
 
         <TabsContent value="tasting" className="mt-4 sm:mt-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-4">Tasting Analysis</h2>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search tastings by blend name, notes, or descriptors..."
-                  value={tastingSearchQuery}
-                  onChange={(e) => setTastingSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-              {tastingAnalyses.filter((analysis) => {
-                if (!tastingSearchQuery) return true;
-                const query = tastingSearchQuery.toLowerCase();
-                const blendName = blendBatches.find(b => b.id === analysis.blend_batch_id)?.name || '';
-                return (
-                  blendName.toLowerCase().includes(query) ||
-                  analysis.notes?.toLowerCase().includes(query) ||
-                  analysis.colour?.toLowerCase().includes(query) ||
-                  analysis.palate?.toLowerCase().includes(query) ||
-                  analysis.taste?.toLowerCase().includes(query)
-                );
-              }).length === 0 ? (
-                <Card className="col-span-full p-12 text-center border-dashed">
-                  <Award className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    {tastingSearchQuery ? "No Results Found" : "No Tastings Yet"}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {tastingSearchQuery 
-                      ? "Try adjusting your search to find tasting analyses." 
-                      : "Start documenting your tasting notes with detailed sensory analysis."
-                    }
-                  </p>
-                  {!tastingSearchQuery && (
-                    <Button onClick={handleNewTasting}>
-                      <Award className="h-4 w-4 mr-2" />
-                      Create First Tasting
-                    </Button>
-                  )}
-                </Card>
-              ) : (
-                tastingAnalyses.filter((analysis) => {
-                  if (!tastingSearchQuery) return true;
-                  const query = tastingSearchQuery.toLowerCase();
-                  const blendName = blendBatches.find(b => b.id === analysis.blend_batch_id)?.name || '';
-                  return (
-                    blendName.toLowerCase().includes(query) ||
-                    analysis.notes?.toLowerCase().includes(query) ||
-                    analysis.colour?.toLowerCase().includes(query) ||
-                    analysis.palate?.toLowerCase().includes(query) ||
-                    analysis.taste?.toLowerCase().includes(query)
-                  );
-                }).map((analysis) => (
-                  <TastingAnalysisCard
-                    key={analysis.id}
-                    analysis={analysis}
-                    onDelete={handleDeleteTasting}
-                    onEdit={handleEditTasting}
-                  />
-                ))
-              )}
-            </div>
-          </TabsContent>
+          <TastingTab blendBatches={blendBatches} />
+        </TabsContent>
         </Tabs>
       </main>
 
