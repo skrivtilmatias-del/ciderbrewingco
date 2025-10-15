@@ -117,88 +117,47 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Apple className="h-5 w-5 text-primary" />
-          Batch Inventory & Usage
+          Available for Blending ({batchUsageInfo.filter(b => b.isAvailable).length} batches)
         </h3>
         
-        {/* Available Batches */}
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">
-              Available for Blending ({batchUsageInfo.filter(b => b.isAvailable).length} batches)
-            </h4>
-            <div className="space-y-3">
-              {batchUsageInfo
-                .filter(b => b.isAvailable)
-                .slice(0, 5)
-                .map((batch) => (
-                  <div key={batch.id} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{batch.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {batch.variety}
-                        </Badge>
-                      </div>
-                      <span className="text-muted-foreground font-mono">
-                        {batch.volumeRemaining.toFixed(1)}L remaining of {batch.volume.toFixed(1)}L
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress value={batch.usagePercentage} className="h-2 flex-1" />
-                      <span className="text-xs text-muted-foreground min-w-[40px] text-right">
-                        {batch.usagePercentage.toFixed(0)}%
-                      </span>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {batchUsageInfo
+            .filter(b => b.isAvailable)
+            .slice(0, 10)
+            .map((batch) => (
+              <div key={batch.id} className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="font-medium truncate">{batch.name}</span>
+                    <Badge variant="outline" className="text-xs shrink-0">
+                      {batch.variety}
+                    </Badge>
                   </div>
-                ))}
-              {batchUsageInfo.filter(b => b.isAvailable).length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No batches available for blending
-                </p>
-              )}
-              {batchUsageInfo.filter(b => b.isAvailable).length > 5 && (
-                <p className="text-xs text-muted-foreground text-center pt-2">
-                  + {batchUsageInfo.filter(b => b.isAvailable).length - 5} more batches available
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Fully Used Batches */}
-          {batchUsageInfo.filter(b => !b.isAvailable).length > 0 && (
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                Fully Used ({batchUsageInfo.filter(b => !b.isAvailable).length} batches)
-              </h4>
-              <div className="space-y-2">
-                {batchUsageInfo
-                  .filter(b => !b.isAvailable)
-                  .slice(0, 3)
-                  .map((batch) => (
-                    <div key={batch.id} className="flex items-center justify-between text-sm opacity-60">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{batch.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {batch.variety}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          Fully Used
-                        </Badge>
-                      </div>
-                      <span className="text-muted-foreground font-mono text-xs">
-                        {batch.volumeUsed.toFixed(1)}L used
-                      </span>
-                    </div>
-                  ))}
-                {batchUsageInfo.filter(b => !b.isAvailable).length > 3 && (
-                  <p className="text-xs text-muted-foreground text-center pt-2">
-                    + {batchUsageInfo.filter(b => !b.isAvailable).length - 3} more fully used
-                  </p>
-                )}
+                  <span className="text-xs text-muted-foreground font-mono ml-2 shrink-0">
+                    {batch.volumeRemaining.toFixed(1)}L / {batch.volume.toFixed(1)}L
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Progress value={batch.usagePercentage} className="h-1.5 flex-1" />
+                  <span className="text-xs text-muted-foreground min-w-[35px] text-right">
+                    {batch.usagePercentage.toFixed(0)}%
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            ))}
         </div>
+        
+        {batchUsageInfo.filter(b => b.isAvailable).length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No batches available for blending
+          </p>
+        )}
+        
+        {batchUsageInfo.filter(b => b.isAvailable).length > 10 && (
+          <p className="text-xs text-muted-foreground text-center pt-3">
+            + {batchUsageInfo.filter(b => b.isAvailable).length - 10} more batches available
+          </p>
+        )}
       </Card>
 
       {/* Blends Grid */}
