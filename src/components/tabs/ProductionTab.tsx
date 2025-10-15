@@ -16,7 +16,7 @@ interface ProductionTabProps {
   selectedBatch: Batch | null;
   onSelectBatch: (batch: Batch) => void;
   onUpdateStage: (batchId: string, newStage: string) => void;
-  onAddLog: (title?: string, role?: string) => void;
+  onAddLog?: (title?: string, role?: string) => void;
 }
 
 export const ProductionTab = ({ 
@@ -24,10 +24,22 @@ export const ProductionTab = ({
   selectedBatch, 
   onSelectBatch,
   onUpdateStage,
-  onAddLog
+  onAddLog: onAddLogProp
 }: ProductionTabProps) => {
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
-  const { logs } = useBatchLogs(selectedBatch?.id || null);
+  const { logs, addLog, deleteLog, updateLog, isAdding } = useBatchLogs(selectedBatch?.id || null);
+
+  // Handle adding a log - use hook's addLog or fallback to prop
+  const handleAddLog = (title: string = '', role: string = 'General') => {
+    if (selectedBatch) {
+      addLog({
+        batchId: selectedBatch.id,
+        title,
+        role,
+        stage: selectedBatch.currentStage,
+      });
+    }
+  };
 
   if (!selectedBatch) {
     return (
@@ -137,22 +149,28 @@ export const ProductionTab = ({
 
       {/* Quick Actions Panel */}
       <QuickActionsPanel
-        onAddMeasurement={() => onAddLog('', 'Lab')}
-        onAddObservation={() => onAddLog('', 'Observation')}
-        onScheduleTask={() => onAddLog('', 'Task')}
-        onAddGeneral={() => onAddLog('', 'General')}
+        onAddMeasurement={() => handleAddLog('Measurement', 'Lab')}
+        onAddObservation={() => handleAddLog('Observation', 'Observation')}
+        onScheduleTask={() => handleAddLog('Task', 'Task')}
+        onAddGeneral={() => handleAddLog('Note', 'General')}
       />
 
       {/* Organized Logs List */}
-      <OrganizedLogsList
-        logs={logs}
-        onDeleteLog={(logId) => {
-          // Delete log handled by BatchLogCard internally
-        }}
-        onUpdateLog={(log) => {
-          // Update log handled by BatchLogCard internally
-        }}
-      />
+      {logs.length === 0 ? (
+        <Card className="p-12 text-center border-dashed">
+          <p className="text-muted-foreground">
+            No notes yet. Click "Add Note" above to get started.
+          </p>
+        </Card>
+      ) : (
+        <OrganizedLogsList
+          logs={logs}
+          onDeleteLog={deleteLog}
+          onUpdateLog={() => {
+            // Update is handled by BatchLogCard internally via useBatchLogs
+          }}
+        />
+      )}
     </div>
   );
 };
