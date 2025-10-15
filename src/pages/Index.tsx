@@ -42,7 +42,7 @@ const Index = () => {
   const { toolView } = useParams();
   const { user, userRole, userProfile, loading: authLoading } = useAuth();
   
-  // Use state from useAppStore for modals and selection
+  // Use state from useAppStore for modals, selection, and search
   const {
     selectedBatch,
     setSelectedBatch,
@@ -52,16 +52,18 @@ const Index = () => {
     setSelectedBlend,
     blendDetailsOpen,
     setBlendDetailsOpen,
+    batchSearchQuery,
+    setBatchSearchQuery,
+    blendSearchQuery,
+    setBlendSearchQuery,
+    batchSortOrder,
+    setBatchSortOrder,
   } = useAppStore();
   
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [batchSearchQuery, setBatchSearchQuery] = useState("");
-  const [blendSearchQuery, setBlendSearchQuery] = useState("");
-  const [tastingSearchQuery, setTastingSearchQuery] = useState("");
-  const [batchSortOrder, setBatchSortOrder] = useState("newest");
   const [stageFilter, setStageFilter] = useState("All");
   
   // Determine active tab from route
@@ -120,7 +122,6 @@ const Index = () => {
   
   // Debounce search query to prevent excessive filtering
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const debouncedBlendSearchQuery = useDebounce(blendSearchQuery, 300);
 
   // Auth is now handled by useAuth hook
   // Redirect is handled in useAuth
@@ -931,43 +932,6 @@ const Index = () => {
                 )}
               </TabsList>
             </div>
-            
-        {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
-          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
-            <div className="relative w-full sm:w-[300px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={
-                      activeTab === "batches" 
-                        ? "Search batches..." 
-                        : activeTab === "production"
-                        ? "Search batches by name, variety, or stage..."
-                        : "Search blends..."
-                    }
-                    value={activeTab === "blending" ? blendSearchQuery : batchSearchQuery}
-                    onChange={(e) => activeTab === "blending" ? setBlendSearchQuery(e.target.value) : setBatchSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                {activeTab === "batches" && (
-                  <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <SelectValue placeholder="Sort by..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
-                      <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
-                      <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
-                      <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
           </div>
 
           {userRole === "production" && (

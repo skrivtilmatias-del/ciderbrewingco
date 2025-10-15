@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Wine, Apple } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Wine, Apple, Search } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBlends } from '@/hooks/useBlends';
 import { BlendBatchCard } from '@/components/BlendBatchCard';
@@ -16,7 +17,8 @@ interface BlendingTabProps {
 
 export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   const { 
-    blendSearchQuery, 
+    blendSearchQuery,
+    setBlendSearchQuery, 
     setSelectedBlend,
     setBlendDetailsOpen 
   } = useAppStore();
@@ -129,17 +131,31 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
 
       {/* Blends Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Wine className="h-5 w-5 text-primary" />
-            Blend Batches
-          </h3>
-          <NewBlendDialog 
-            availableBatches={availableBatchesForBlending}
-            onBlendCreated={() => {
-              // Refresh handled by React Query
-            }}
-          />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 flex-1">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Wine className="h-5 w-5 text-primary" />
+              Blend Batches
+            </h3>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search blends..."
+                value={blendSearchQuery}
+                onChange={(e) => setBlendSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <NewBlendDialog 
+              availableBatches={availableBatchesForBlending}
+              onBlendCreated={() => {
+                // Refresh handled by React Query
+              }}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
