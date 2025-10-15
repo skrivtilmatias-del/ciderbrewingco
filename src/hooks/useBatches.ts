@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Batch, CreateBatchInput, UpdateBatchInput } from '@/types/batch.types';
 import { toast } from 'sonner';
+import { getUserFriendlyError } from '@/lib/errorHandler';
+import type { Batch } from '@/components/BatchCard';
 
 export const useBatches = () => {
   const queryClient = useQueryClient();
@@ -16,63 +17,74 @@ export const useBatches = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Batch[];
+
+      // Map database response to Batch type
+      const formattedBatches: Batch[] = data.map((batch) => ({
+        id: batch.id,
+        name: batch.name,
+        variety: batch.variety,
+        apple_origin: batch.apple_origin || undefined,
+        volume: parseFloat(batch.volume.toString()),
+        startDate: batch.started_at,
+        currentStage: batch.current_stage as Batch['currentStage'],
+        progress: batch.progress,
+        notes: batch.notes || undefined,
+        attachments: batch.attachments || undefined,
+        yeast_type: batch.yeast_type || undefined,
+        target_og: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
+        target_fg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
+        target_ph: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
+        target_end_ph: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
+      }));
+
+      return formattedBatches;
     },
   });
 
   // Create batch mutation
-  const createMutation = useMutation({
-    mutationFn: async (input: CreateBatchInput) => {
+  const createBatchMutation = useMutation({
+    mutationFn: async (batchData: {
+      name: string;
+      variety: string;
+      volume: number;
+      current_stage: string;
+      apple_origin?: string;
+      yeast_type?: string;
+      style?: string;
+      notes?: string;
+      target_og?: number;
+      target_fg?: number;
+      target_ph?: number;
+      target_end_ph?: number;
+    }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('batches')
-        .insert([{ ...input, user_id: user.id }])
+        .insert([{ ...batchData, user_id: user.id }])
         .select()
         .single();
 
       if (error) throw error;
-      return data as Batch;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
       toast.success('Batch created successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to create batch: ${error.message}`);
-    },
-  });
-
-  // Update batch mutation
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: UpdateBatchInput }) => {
-      const { data, error } = await supabase
-        .from('batches')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Batch;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['batches'] });
-      toast.success('Batch updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update batch: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
   // Delete batch mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const deleteBatchMutation = useMutation({
+    mutationFn: async (batchId: string) => {
       const { error } = await supabase
         .from('batches')
         .delete()
-        .eq('id', id);
+        .eq('id', batchId);
 
       if (error) throw error;
     },
@@ -80,8 +92,30 @@ export const useBatches = () => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
       toast.success('Batch deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete batch: ${error.message}`);
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
+    },
+  });
+
+  // Update stage mutation
+  const updateStageMutation = useMutation({
+    mutationFn: async ({ batchId, newStage }: { batchId: string; newStage: string }) => {
+      const { data, error } = await supabase
+        .from('batches')
+        .update({ current_stage: newStage })
+        .eq('id', batchId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+      toast.success('Stage updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(getUserFriendlyError(error));
     },
   });
 
@@ -89,11 +123,11 @@ export const useBatches = () => {
     batches,
     isLoading,
     error,
-    createBatch: createMutation.mutate,
-    updateBatch: updateMutation.mutate,
-    deleteBatch: deleteMutation.mutate,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
+    createBatch: createBatchMutation.mutate,
+    deleteBatch: deleteBatchMutation.mutate,
+    updateStage: updateStageMutation.mutate,
+    isCreating: createBatchMutation.isPending,
+    isDeleting: deleteBatchMutation.isPending,
+    isUpdating: updateStageMutation.isPending,
   };
 };
