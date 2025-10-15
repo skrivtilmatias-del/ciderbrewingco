@@ -15,7 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getUserFriendlyError } from "@/lib/errorHandler";
 
-const getStageIcon = (stage: string) => {
+const getStageIcon = (stage?: string) => {
+  if (!stage) return Beaker;
   if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
   if (stage.includes('Fermentation') || stage.includes('Pitching')) return Droplets;
   if (stage.includes('Aging') || stage.includes('Conditioning')) return Clock;
@@ -25,7 +26,8 @@ const getStageIcon = (stage: string) => {
   return Beaker;
 };
 
-const getStageColor = (stage: string) => {
+const getStageColor = (stage?: string) => {
+  if (!stage) return 'bg-primary';
   if (stage === 'Complete') return 'bg-muted';
   if (stage.includes('Harvest')) return 'bg-success';
   if (stage.includes('Fermentation') || stage.includes('Pitching')) return 'bg-info';
@@ -34,7 +36,8 @@ const getStageColor = (stage: string) => {
   return 'bg-primary';
 };
 
-const getDisplayStageName = (stage: string) => {
+const getDisplayStageName = (stage?: string) => {
+  if (!stage) return 'Unknown';
   // Map technical stage names to display names matching the production stage buttons
   const pressingStages = ['Harvest', 'Sorting', 'Washing', 'Milling', 'Pressing', 'Settling'];
   const fermentationStages = ['Enzymes', 'Pitching', 'Fermentation', 'Cold Crash'];
@@ -61,6 +64,9 @@ interface BatchDetailsProps {
 }
 
 export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated, onGoToProduction }: BatchDetailsProps) => {
+  // Add null guard at the top
+  if (!batch) return null;
+
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(batch?.notes || "");
   const [attachments, setAttachments] = useState<string[]>(batch?.attachments || []);
@@ -70,7 +76,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [batchName, setBatchName] = useState(batch?.name || "");
   const [variety, setVariety] = useState(batch?.variety || "");
   const [appleOrigin, setAppleOrigin] = useState(batch?.apple_origin || "");
-  const [volume, setVolume] = useState(batch?.volume.toString() || "");
+  const [volume, setVolume] = useState(batch?.volume?.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
   const [yeastType, setYeastType] = useState(batch?.yeast_type || "");
   const [targetOG, setTargetOG] = useState(batch?.target_og?.toString() || "");
@@ -80,11 +86,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
   useEffect(() => {
     if (batch) {
-      setBatchName(batch.name);
-      setVariety(batch.variety);
+      setBatchName(batch.name || "");
+      setVariety(batch.variety || "");
       setAppleOrigin(batch.apple_origin || "");
-      setVolume(batch.volume.toString());
-      setStartDate(batch.startDate);
+      setVolume(batch.volume?.toString() || "");
+      setStartDate(batch.startDate || "");
       setYeastType(batch.yeast_type || "");
       setTargetOG(batch.target_og?.toString() || "");
       setTargetFG(batch.target_fg?.toString() || "");
@@ -95,11 +101,9 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     }
   }, [batch]);
 
-  if (!batch) return null;
-
-  const currentStageIndex = allStages.indexOf(batch.currentStage);
-  const StageIcon = getStageIcon(batch.currentStage);
-  const stageColor = getStageColor(batch.currentStage);
+  const currentStageIndex = allStages.indexOf(batch?.currentStage || '');
+  const StageIcon = getStageIcon(batch?.currentStage);
+  const stageColor = getStageColor(batch?.currentStage);
 
   const handleAdvanceStage = () => {
     if (currentStageIndex < allStages.length - 1) {
@@ -119,7 +123,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
         .from("batches")
         .update({ 
           notes: notes.trim() || null,
-          attachments: attachments.length > 0 ? attachments : null
+          attachments: attachments?.length > 0 ? attachments : null
         })
         .eq("id", batch.id);
 
@@ -309,15 +313,15 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setBatchName(batch.name);
-                    setVariety(batch.variety);
-                    setVolume(batch.volume.toString());
-                    setStartDate(batch.startDate);
-                    setYeastType(batch.yeast_type || "");
-                    setTargetOG(batch.target_og?.toString() || "");
-                    setTargetFG(batch.target_fg?.toString() || "");
-                    setTargetPH(batch.target_ph?.toString() || "");
-                    setTargetEndPH(batch.target_end_ph?.toString() || "");
+                    setBatchName(batch?.name || "");
+                    setVariety(batch?.variety || "");
+                    setVolume(batch?.volume?.toString() || "");
+                    setStartDate(batch?.startDate || "");
+                    setYeastType(batch?.yeast_type || "");
+                    setTargetOG(batch?.target_og?.toString() || "");
+                    setTargetFG(batch?.target_fg?.toString() || "");
+                    setTargetPH(batch?.target_ph?.toString() || "");
+                    setTargetEndPH(batch?.target_end_ph?.toString() || "");
                     setIsEditingDetails(false);
                   }}
                 >
