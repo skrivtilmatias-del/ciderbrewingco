@@ -647,6 +647,8 @@ const Index = () => {
         const { error } = await supabase
           .from("tasting_analysis")
           .update({
+            blend_batch_id: data.blend_batch_id || null,
+            competitor_brand: data.competitor_brand || null,
             taste: data.taste || null,
             colour: data.colour || null,
             palate: data.palate || null,
@@ -664,7 +666,8 @@ const Index = () => {
           .from("tasting_analysis")
           .insert([{
             user_id: user.id,
-            blend_batch_id: data.blend_batch_id,
+            blend_batch_id: data.blend_batch_id || null,
+            competitor_brand: data.competitor_brand || null,
             taste: data.taste || null,
             colour: data.colour || null,
             palate: data.palate || null,
