@@ -173,20 +173,24 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-10">
-          <DialogTitle className="text-xl sm:text-2xl">{batch.name}</DialogTitle>
-          {!isEditingDetails && (
+        <DialogHeader>
+          <div className="flex items-center justify-between pr-10">
+            <DialogTitle className="text-xl sm:text-2xl">{batch.name}</DialogTitle>
+          </div>
+        </DialogHeader>
+        
+        {!isEditingDetails && (
+          <div className="-mt-2 mb-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsEditingDetails(true)}
-              className="shrink-0"
             >
               <Pencil className="h-4 w-4 mr-1" />
               Edit Details
             </Button>
-          )}
-        </DialogHeader>
+          </div>
+        )}
 
         <div className="space-y-6">
           {isEditingDetails ? (
