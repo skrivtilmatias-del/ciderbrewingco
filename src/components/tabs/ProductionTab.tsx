@@ -19,6 +19,7 @@ import { OrganizedLogsList } from '@/components/OrganizedLogsList';
 import { BatchTimeline } from '@/components/production/BatchTimeline';
 import { GroupedBatchView } from '@/components/production/GroupedBatchView';
 import { BatchActivityFeed } from '@/components/production/BatchActivityFeed';
+import { ProductionMetricsWidget } from '@/components/production/ProductionMetricsWidget';
 import type { Batch } from '@/components/BatchCard';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
@@ -126,6 +127,9 @@ export const ProductionTab = ({
   // ========== RENDER: Main Content ==========
   return (
     <div className="space-y-4">
+      {/* Production Metrics Widget */}
+      <ProductionMetricsWidget batches={batches} />
+
       {/* ========== Search Results Dropdown ========== */}
       {batchSearchQuery && (
         <Card className="p-2 max-h-[200px] overflow-y-auto">

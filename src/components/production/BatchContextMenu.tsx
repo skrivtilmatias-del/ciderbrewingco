@@ -124,19 +124,16 @@ export const BatchContextMenu = ({
   };
 
   const handleAddNote = () => {
-    if (!noteText.trim()) {
-      toast.error("Please enter a note");
-      return;
+    if (noteText.trim()) {
+      onAddNote?.(batch.id, noteText);
+      setNoteText("");
+      setShowNoteDialog(false);
+      toast.success("Note added to batch");
     }
-    onAddNote?.(batch.id, noteText);
-    setNoteText("");
-    setShowNoteDialog(false);
-    toast.success("Note added successfully");
   };
 
   const handleStageUpdate = (newStage: string) => {
     onUpdateStage?.(batch.id, newStage);
-    toast.success(`Stage updated to ${newStage}`);
   };
 
   const handleArchive = () => {
@@ -152,9 +149,6 @@ export const BatchContextMenu = ({
 
   const handleExport = () => {
     onExport?.(batch);
-  };
-    onExport?.(batch);
-    toast.success("Batch data exported");
   };
 
   const handlePrint = () => {
@@ -176,157 +170,140 @@ export const BatchContextMenu = ({
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64 bg-background/95 backdrop-blur-sm border shadow-lg">
           {/* Quick Actions */}
+          <ContextMenuItem onClick={() => onViewDetails?.(batch)}>
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+            <span className="ml-auto text-xs text-muted-foreground">Enter</span>
+          </ContextMenuItem>
+
+          <ContextMenuItem onClick={() => setShowNoteDialog(true)}>
+            <FileText className="mr-2 h-4 w-4" />
+            Add Note
+            <span className="ml-auto text-xs text-muted-foreground">N</span>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {/* Stage Updates */}
           <ContextMenuSub>
-            <ContextMenuSubTrigger className="gap-2">
-              <ListChecks className="w-4 h-4" />
-              <span>Update Stage</span>
-              <kbd className="ml-auto text-xs text-muted-foreground">U</kbd>
+            <ContextMenuSubTrigger>
+              <ListChecks className="mr-2 h-4 w-4" />
+              Update Stage
             </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48 bg-background/95 backdrop-blur-sm">
+            <ContextMenuSubContent className="w-48">
               {STAGES.map((stage) => (
                 <ContextMenuItem
                   key={stage}
                   onClick={() => handleStageUpdate(stage)}
-                  disabled={isArchived}
-                  className={batch.currentStage === stage ? "bg-primary/10" : ""}
+                  disabled={batch.currentStage === stage}
                 >
                   {stage}
                   {batch.currentStage === stage && (
-                    <span className="ml-auto text-xs text-primary">Current</span>
+                    <span className="ml-auto text-xs">Current</span>
                   )}
                 </ContextMenuItem>
               ))}
             </ContextMenuSubContent>
           </ContextMenuSub>
 
-          <ContextMenuItem
-            onClick={() => setShowNoteDialog(true)}
-            disabled={isArchived}
-            className="gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Add Note</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">N</kbd>
+          <ContextMenuSeparator />
+
+          {/* QR & Print */}
+          <ContextMenuItem onClick={() => setShowQRDialog(true)}>
+            <QrCode className="mr-2 h-4 w-4" />
+            View QR Code
+            <span className="ml-auto text-xs text-muted-foreground">Q</span>
           </ContextMenuItem>
 
-          <ContextMenuItem
-            onClick={() => onViewDetails?.(batch)}
-            className="gap-2"
-          >
-            <Eye className="w-4 h-4" />
-            <span>View Details</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Enter</kbd>
+          <ContextMenuItem onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" />
+            Print Label
+            <span className="ml-auto text-xs text-muted-foreground">⌘P</span>
           </ContextMenuItem>
 
-          <ContextMenuItem
-            onClick={() => setShowQRDialog(true)}
-            className="gap-2"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>View QR Code</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Q</kbd>
+          <ContextMenuItem onClick={handleDownloadQR}>
+            <Download className="mr-2 h-4 w-4" />
+            Download QR
           </ContextMenuItem>
 
           <ContextMenuSeparator />
 
-          {/* Label Actions */}
-          <ContextMenuItem onClick={handlePrint} className="gap-2">
-            <Printer className="w-4 h-4" />
-            <span>Print Label</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+P</kbd>
+          {/* Copy Actions */}
+          <ContextMenuItem onClick={handleCopyBatchId}>
+            <Copy className="mr-2 h-4 w-4" />
+            Copy Batch ID
+            <span className="ml-auto text-xs text-muted-foreground">⌘C</span>
           </ContextMenuItem>
 
-          <ContextMenuItem onClick={handleDownloadQR} className="gap-2">
-            <Download className="w-4 h-4" />
-            <span>Download QR Code</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+D</kbd>
-          </ContextMenuItem>
-
-          <ContextMenuItem onClick={handleCopyBatchId} className="gap-2">
-            <Copy className="w-4 h-4" />
-            <span>Copy Batch ID</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+C</kbd>
-          </ContextMenuItem>
-
-          <ContextMenuItem onClick={handleCopyBatchUrl} className="gap-2">
-            <Copy className="w-4 h-4" />
-            <span>Copy Batch URL</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+Shift+C</kbd>
+          <ContextMenuItem onClick={handleCopyBatchUrl}>
+            <FileText className="mr-2 h-4 w-4" />
+            Copy Batch URL
+            <span className="ml-auto text-xs text-muted-foreground">⌘⇧C</span>
           </ContextMenuItem>
 
           <ContextMenuSeparator />
 
-          {/* Management */}
-          <ContextMenuItem onClick={handleClone} className="gap-2">
-            <FileStack className="w-4 h-4" />
-            <span>Clone Batch</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+Shift+D</kbd>
+          {/* Advanced Actions */}
+          <ContextMenuItem onClick={handleClone}>
+            <FileStack className="mr-2 h-4 w-4" />
+            Clone Batch
+            <span className="ml-auto text-xs text-muted-foreground">C</span>
           </ContextMenuItem>
 
-          <ContextMenuItem
-            onClick={() => setShowArchiveDialog(true)}
-            disabled={isArchived}
-            className="gap-2"
-          >
-            <Archive className="w-4 h-4" />
-            <span>Archive Batch</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Del</kbd>
-          </ContextMenuItem>
-
-          <ContextMenuItem onClick={handleExport} className="gap-2">
-            <FileDown className="w-4 h-4" />
-            <span>Export Data</span>
-            <kbd className="ml-auto text-xs text-muted-foreground">Ctrl+E</kbd>
-          </ContextMenuItem>
+          {!isArchived && (
+            <ContextMenuItem
+              onClick={() => setShowArchiveDialog(true)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              Archive Batch
+              <span className="ml-auto text-xs text-muted-foreground">Del</span>
+            </ContextMenuItem>
+          )}
 
           <ContextMenuSeparator />
 
           {/* Navigation */}
-          <ContextMenuItem
-            onClick={() => {
-              window.location.hash = "#blending";
-              toast.info("Navigate to Blending tab");
-            }}
-            className="gap-2"
-          >
-            <Wine className="w-4 h-4" />
-            <span>Go to Blending</span>
-          </ContextMenuItem>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <MoreVertical className="mr-2 h-4 w-4" />
+              More Actions
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-48">
+              <ContextMenuItem>
+                <Wine className="mr-2 h-4 w-4" />
+                Use in Blend
+              </ContextMenuItem>
+              <ContextMenuItem>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                View Analytics
+              </ContextMenuItem>
+              <ContextMenuItem>
+                <History className="mr-2 h-4 w-4" />
+                View History
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
 
-          <ContextMenuItem
-            onClick={() => {
-              window.location.hash = "#analytics";
-              toast.info("View batch analytics");
-            }}
-            className="gap-2"
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>View Analytics</span>
-          </ContextMenuItem>
-
-          <ContextMenuItem
-            onClick={() => {
-              toast.info("View batch history");
-            }}
-            className="gap-2"
-          >
-            <History className="w-4 h-4" />
-            <span>View History</span>
+          <ContextMenuItem onClick={handleExport}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Export Data
+            <span className="ml-auto text-xs text-muted-foreground">⌘E</span>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
 
       {/* QR Code Dialog */}
       <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Batch QR Code</DialogTitle>
             <DialogDescription>
-              Scan this QR code to view batch details
+              Scan to view batch details or share this QR code
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
-            <div className="bg-white p-4 rounded-lg">
+            <div className="p-4 bg-white rounded-lg">
               <QRCode
                 id={`qr-${batch.id}`}
                 value={batchUrl}
@@ -334,17 +311,16 @@ export const BatchContextMenu = ({
                 level="H"
               />
             </div>
-            <div className="text-center">
-              <p className="font-semibold">{batch.name}</p>
-              <p className="text-sm text-muted-foreground">{batch.variety}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleDownloadQR} variant="outline" className="gap-2">
-                <Download className="w-4 h-4" />
+            <p className="text-sm text-muted-foreground text-center">
+              {batch.name}
+            </p>
+            <div className="flex gap-2 w-full">
+              <Button onClick={handleDownloadQR} variant="outline" className="flex-1">
+                <Download className="mr-2 h-4 w-4" />
                 Download
               </Button>
-              <Button onClick={handlePrint} variant="outline" className="gap-2">
-                <Printer className="w-4 h-4" />
+              <Button onClick={handlePrint} variant="default" className="flex-1">
+                <Printer className="mr-2 h-4 w-4" />
                 Print
               </Button>
             </div>
@@ -356,21 +332,20 @@ export const BatchContextMenu = ({
       <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Quick Note</DialogTitle>
+            <DialogTitle>Add Note to {batch.name}</DialogTitle>
             <DialogDescription>
-              Add a note to {batch.name}
+              Add observations or notes about this batch
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
               <Label htmlFor="note">Note</Label>
               <Textarea
                 id="note"
-                placeholder="Enter your note here..."
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
+                placeholder="Enter your note here..."
                 rows={4}
-                autoFocus
               />
             </div>
           </div>
@@ -378,7 +353,9 @@ export const BatchContextMenu = ({
             <Button variant="outline" onClick={() => setShowNoteDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddNote}>Add Note</Button>
+            <Button onClick={handleAddNote} disabled={!noteText.trim()}>
+              Add Note
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -387,15 +364,17 @@ export const BatchContextMenu = ({
       <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Batch?</AlertDialogTitle>
+            <AlertDialogTitle>Archive this batch?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive "{batch.name}"? Archived batches cannot be
-              modified but can still be viewed.
+              This will mark the batch as complete and move it to the archive.
+              You can still view it later.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+            <AlertDialogAction onClick={handleArchive}>
+              Archive Batch
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
