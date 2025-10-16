@@ -11,10 +11,22 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
-  Star
+  Star,
+  Trash2
 } from "lucide-react";
 import { Supplier } from "@/types/supplier.types";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface SupplierCardProps {
   supplier: Supplier;
@@ -25,6 +37,7 @@ interface SupplierCardProps {
   onEdit: () => void;
   onNewDelivery: () => void;
   onNewContract: () => void;
+  onDelete: () => void;
 }
 
 const getQualityBadgeColor = (score: number | null) => {
@@ -49,9 +62,13 @@ export const SupplierCard = ({
   onEdit,
   onNewDelivery,
   onNewContract,
+  onDelete,
 }: SupplierCardProps) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
+    <>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
       <CardContent className="p-6">
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
@@ -145,18 +162,57 @@ export const SupplierCard = ({
         )}
 
         {/* Actions */}
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button variant="outline" size="sm" onClick={onEdit} className="flex-1">
-            Edit
-          </Button>
-          <Button variant="outline" size="sm" onClick={onNewDelivery} className="flex-1">
-            New Delivery
-          </Button>
-          <Button variant="outline" size="sm" onClick={onNewContract} className="flex-1">
-            New Contract
+        <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onEdit} className="flex-1">
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" onClick={onNewDelivery} className="flex-1">
+              New Delivery
+            </Button>
+            <Button variant="outline" size="sm" onClick={onNewContract} className="flex-1">
+              New Contract
+            </Button>
+          </div>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteDialogOpen(true);
+            }}
+            className="w-full"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Supplier
           </Button>
         </div>
       </CardContent>
     </Card>
+
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Supplier</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{supplier.name}"? This will also delete all associated contracts, deliveries, and press results. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+              setDeleteDialogOpen(false);
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };

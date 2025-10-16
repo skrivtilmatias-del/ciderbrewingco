@@ -19,8 +19,10 @@ import { DeliveryDialog } from "./DeliveryDialog";
 import { ContractDialog } from "./ContractDialog";
 import { Supplier } from "@/types/supplier.types";
 import { startOfMonth } from "date-fns";
+import { useSuppliers } from "@/hooks/useSuppliers";
 
 export const RedesignedSuppliersTab = () => {
+  const { deleteSupplier } = useSuppliers();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
@@ -177,6 +179,10 @@ export const RedesignedSuppliersTab = () => {
     setContractDialogOpen(true);
   };
 
+  const handleDeleteSupplier = (supplierId: string) => {
+    deleteSupplier(supplierId);
+  };
+
   return (
     <div className="space-y-6">
       {/* Metrics Dashboard */}
@@ -252,6 +258,7 @@ export const RedesignedSuppliersTab = () => {
                 onEdit={() => handleEditSupplier(supplier)}
                 onNewDelivery={() => handleNewDelivery(supplier)}
                 onNewContract={() => handleNewContract(supplier)}
+                onDelete={() => handleDeleteSupplier(supplier.id)}
               />
             );
           })}
