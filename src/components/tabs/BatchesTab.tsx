@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Batch } from '@/components/BatchCard';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
 import { paths } from '@/routes/paths';
 import { VirtualBatchList } from '@/components/VirtualBatchList';
+import { BatchFilters, BatchFilters as BatchFiltersType } from '@/components/BatchFilters';
+import { useBatchFilters, getUniqueVarieties } from '@/hooks/useBatchFilters';
 
 interface BatchesTabProps {
   batches: Batch[];
@@ -23,6 +26,16 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   } = useAppStore();
   const { deleteBatch, isDeleting } = useBatches();
 
+  // Initialize filter state with default values
+  const [filters, setFilters] = useState<BatchFiltersType>({
+    stages: [],
+    dateRange: {},
+    volumeRange: [0, 10000],
+    status: 'all',
+    variety: '',
+    alcoholRange: [0, 12],
+  });
+
   const handleDeleteBatch = async (batchId: string) => {
     if (!confirm("Delete this batch and all its logs?")) return;
     deleteBatch(batchId);
@@ -38,47 +51,58 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     navigate(paths.production());
   };
 
-  const filteredAndSortedBatches = batches
-    .filter((batch) => {
-      const query = batchSearchQuery.toLowerCase();
-      return (
-        batch.name.toLowerCase().includes(query) ||
-        batch.variety.toLowerCase().includes(query) ||
-        batch.currentStage.toLowerCase().includes(query)
-      );
-    })
-    .sort((a, b) => {
-      switch (batchSortOrder) {
-        case "newest":
-          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-        case "oldest":
-          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-        case "name-asc":
-          return a.name.localeCompare(b.name);
-        case "name-desc":
-          return b.name.localeCompare(a.name);
-        case "volume-high":
-          return (b.volume || 0) - (a.volume || 0);
-        case "volume-low":
-          return (a.volume || 0) - (b.volume || 0);
-        case "progress-high":
-          return (b.progress || 0) - (a.progress || 0);
-        case "progress-low":
-          return (a.progress || 0) - (b.progress || 0);
-        default:
-          return 0;
-      }
-    });
+  // Apply filters using custom hook
+  const filteredBatches = useBatchFilters(batches, filters, batchSearchQuery);
+
+  // Then apply sorting
+  const filteredAndSortedBatches = filteredBatches.sort((a, b) => {
+    switch (batchSortOrder) {
+      case "newest":
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+      case "oldest":
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+      case "name-asc":
+        return a.name.localeCompare(b.name);
+      case "name-desc":
+        return b.name.localeCompare(a.name);
+      case "volume-high":
+        return (b.volume || 0) - (a.volume || 0);
+      case "volume-low":
+        return (a.volume || 0) - (b.volume || 0);
+      case "progress-high":
+        return (b.progress || 0) - (a.progress || 0);
+      case "progress-low":
+        return (a.progress || 0) - (b.progress || 0);
+      default:
+        return 0;
+    }
+  });
+
+  // Extract unique varieties for filter dropdown
+  const varieties = getUniqueVarieties(batches);
+
 
   return (
-    <VirtualBatchList
-      batches={filteredAndSortedBatches}
-      onBatchClick={handleBatchClick}
-      onDeleteBatch={handleDeleteBatch}
-      onUpdateStage={onUpdateStage}
-      searchQuery={batchSearchQuery}
-      layout="grid"
-    />
+    <div className="space-y-4">
+      {/* Comprehensive Filter Panel */}
+      <BatchFilters
+        filters={filters}
+        onChange={setFilters}
+        totalCount={batches.length}
+        filteredCount={filteredBatches.length}
+        varieties={varieties}
+      />
+
+      {/* Virtual Batch List */}
+      <VirtualBatchList
+        batches={filteredAndSortedBatches}
+        onBatchClick={handleBatchClick}
+        onDeleteBatch={handleDeleteBatch}
+        onUpdateStage={onUpdateStage}
+        searchQuery={batchSearchQuery}
+        layout="grid"
+      />
+    </div>
   );
 };
 
