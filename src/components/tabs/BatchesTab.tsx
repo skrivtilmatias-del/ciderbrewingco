@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Batch } from '@/components/BatchCard';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
-import { useBatchLogs } from '@/hooks/useBatchLogs';
+// import { useBatchLogs } from '@/hooks/useBatchLogs'; // Avoid calling hooks in loops
 import { paths } from '@/routes/paths';
 import { VirtualBatchList } from '@/components/VirtualBatchList';
 import { BatchFilters, BatchFilters as BatchFiltersType } from '@/components/BatchFilters';
@@ -12,6 +12,7 @@ import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuG
 import { BatchComparison } from '@/components/production/BatchComparison';
 import { CompareSelectedButton } from '@/components/production/CompareSelectedButton';
 import { useBatchComparisonStore } from '@/stores/batchComparisonStore';
+import { Button } from '@/components/ui/button';
 
 interface BatchesTabProps {
   batches: Batch[];
@@ -20,6 +21,7 @@ interface BatchesTabProps {
 }
 
 export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabProps) => {
+  console.log('BatchesTab received batches:', batches?.length, batches);
   // Safety check: Loading state
   if (!batches) {
     return (
@@ -52,23 +54,20 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   const { deleteBatch, isDeleting } = useBatches();
   const { selectedBatchIds } = useBatchComparisonStore();
   const [comparisonOpen, setComparisonOpen] = useState(false);
-
-  // Initialize filter state with default values
-  const [filters, setFilters] = useState<BatchFiltersType>({
+  const DEFAULT_FILTERS: BatchFiltersType = {
     stages: [],
     dateRange: {},
     volumeRange: [0, 10000],
     status: 'all',
     variety: '',
     alcoholRange: [0, 12],
-  });
+  };
 
-  // Fetch logs for all selected batches
+  // Initialize filter state with default values
+  const [filters, setFilters] = useState<BatchFiltersType>(DEFAULT_FILTERS);
+
+  // Prepare batch logs for comparison lazily (avoid hooks-in-loop)
   const batchLogsMap: Record<string, any[]> = {};
-  selectedBatchIds.forEach(batchId => {
-    const { logs } = useBatchLogs(batchId);
-    batchLogsMap[batchId] = logs || [];
-  });
 
   const handleDeleteBatch = async (batchId: string) => {
     if (!confirm("Delete this batch and all its logs?")) return;
@@ -86,7 +85,9 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   // Apply filters using custom hook
-  const filteredBatches = useBatchFilters(batches, filters, batchSearchQuery);
+  const normalizedQuery = (batchSearchQuery || '').trim();
+  const filteredBatches = useBatchFilters(batches, filters, normalizedQuery);
+  console.log('After filtering:', filteredBatches.length, 'search query:', normalizedQuery, 'filters:', filters);
 
   // Then apply sorting
   const filteredAndSortedBatches = filteredBatches.sort((a, b) => {
@@ -115,9 +116,23 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   // Extract unique varieties for filter dropdown
   const varieties = getUniqueVarieties(batches);
 
+  const handleClearAll = () => {
+    setBatchSearchQuery('');
+    setFilters(DEFAULT_FILTERS);
+  };
 
   return (
     <div className="space-y-4">
+      {/* Debug Info */}
+      <div className="text-xs text-muted-foreground">
+        Total: {batches.length} | Filtered: {filteredBatches.length} | Search: "{normalizedQuery}" 
+        {filteredBatches.length === 0 && batches.length > 0 && (
+          <Button onClick={handleClearAll} size="sm" variant="outline" className="ml-2">
+            Clear All Filters
+          </Button>
+        )}
+      </div>
+
       {/* Help Guide */}
       <div className="flex justify-end">
         <BatchContextMenuGuide />
@@ -142,6 +157,9 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <div className="text-muted-foreground">No batches match your filters</div>
           <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+          <Button onClick={handleClearAll} variant="outline">
+            Clear All Filters
+          </Button>
         </div>
       ) : (
         /* Virtual Batch List */
@@ -150,7 +168,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
           onBatchClick={handleBatchClick}
           onDeleteBatch={handleDeleteBatch}
           onUpdateStage={onUpdateStage}
-          searchQuery={batchSearchQuery}
+          searchQuery={normalizedQuery}
           layout="grid"
         />
       )}
