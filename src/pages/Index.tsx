@@ -19,7 +19,8 @@ import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { BlendBatchDetailsTabbed } from "@/components/BlendBatchDetailsTabbed";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
-import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw, Search } from "lucide-react";
+import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw } from "lucide-react";
+import { BatchSearch } from "@/components/BatchSearch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -460,15 +461,22 @@ const Index = () => {
               {/* Search and Sort Controls - Show on batches, production, and blending tabs */}
               {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
                 <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
-                  <div className="relative w-full sm:w-[220px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search batches..."
-                      value={batchSearchQuery}
-                      onChange={(e) => setBatchSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+                  <BatchSearch
+                    value={batchSearchQuery}
+                    onChange={setBatchSearchQuery}
+                    totalCount={batches.length}
+                    resultCount={
+                      batches.filter((batch) => {
+                        const query = batchSearchQuery.toLowerCase();
+                        return (
+                          batch.name.toLowerCase().includes(query) ||
+                          batch.variety.toLowerCase().includes(query) ||
+                          batch.currentStage.toLowerCase().includes(query)
+                        );
+                      }).length
+                    }
+                    className="w-full sm:w-[300px]"
+                  />
                   <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
                     <SelectTrigger className="w-full sm:w-[180px] bg-background z-50">
                       <SelectValue placeholder="Sort by..." />

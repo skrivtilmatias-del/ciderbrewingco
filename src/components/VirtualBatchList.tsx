@@ -185,6 +185,7 @@ export const VirtualBatchList = ({
                           ? (newStage) => onUpdateStage(batch.id, newStage)
                           : undefined
                       }
+                      searchQuery={searchQuery}
                     />
                   </div>
                 );

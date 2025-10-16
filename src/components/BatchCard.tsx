@@ -53,9 +53,36 @@ interface BatchCardProps {
   onDelete?: () => void;
   onAdvanceStage?: (newStage: CiderStage | 'Complete') => void;
   onPreviousStage?: (newStage: CiderStage) => void;
+  /** Search query to highlight matching text in results */
+  searchQuery?: string;
 }
 
-export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPreviousStage }: BatchCardProps) => {
+/**
+ * Highlight matching text in a string based on search query
+ */
+const highlightText = (text: string, query: string) => {
+  if (!query || query.trim().length === 0) {
+    return text;
+  }
+
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  
+  return (
+    <>
+      {parts.map((part, index) => 
+        part.toLowerCase() === query.toLowerCase() ? (
+          <mark key={index} className="bg-warning/30 text-foreground rounded-sm px-0.5">
+            {part}
+          </mark>
+        ) : (
+          <span key={index}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
+export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPreviousStage, searchQuery = '' }: BatchCardProps) => {
   const queryClient = useQueryClient();
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
@@ -115,15 +142,17 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
 
       <div className="flex items-start justify-between mb-4 pr-8">
         <div className="min-w-0 flex-1">
-          <h3 className="text-xl font-semibold text-foreground mb-1">{batch.name}</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-1">
+            {highlightText(batch.name, searchQuery)}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            {batch.variety}
+            {highlightText(batch.variety, searchQuery)}
             {batch.apple_origin && <> from {batch.apple_origin}</>}
           </p>
         </div>
         <Badge className={`${stageColor} text-white flex-shrink-0 ml-2`}>
           <StageIcon className="w-3 h-3 mr-1" />
-          {batch.currentStage}
+          {highlightText(batch.currentStage, searchQuery)}
         </Badge>
       </div>
 
