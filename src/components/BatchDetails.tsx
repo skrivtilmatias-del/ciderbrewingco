@@ -335,20 +335,20 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
             </div>
           ) : (
             <>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full sm:w-auto">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                    <p className="text-sm text-muted-foreground">Apple Variety</p>
-                    <p className="text-base sm:text-lg font-medium">{batch.variety}</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-auto">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground font-medium">Apple Variety</p>
+                    <p className="text-lg font-semibold">{batch.variety}</p>
                   </div>
                   {batch.apple_origin && (
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                      <p className="text-sm text-muted-foreground">Apple Origin</p>
-                      <p className="text-base sm:text-lg font-medium">{batch.apple_origin}</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground font-medium">Apple Origin</p>
+                      <p className="text-lg font-semibold">{batch.apple_origin}</p>
                     </div>
                   )}
                 </div>
-                <Badge className={`${stageColor} text-white self-start sm:self-auto`}>
+                <Badge className={`${stageColor} text-white self-start sm:self-auto shrink-0`}>
                   <StageIcon className="w-4 h-4 mr-1" />
                   {getDisplayStageName(batch.currentStage)}
                 </Badge>
