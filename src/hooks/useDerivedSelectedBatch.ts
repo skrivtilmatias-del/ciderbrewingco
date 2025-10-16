@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/appStore';
 import type { Batch } from '@/components/BatchCard';
 
@@ -18,11 +18,10 @@ import type { Batch } from '@/components/BatchCard';
  */
 export const useDerivedSelectedBatch = () => {
   const selectedBatchId = useAppStore((state) => state.selectedBatchId);
+  const queryClient = useQueryClient();
   
-  // Derive selected batch directly from React Query cache
-  const { data: batches } = useQuery<Batch[]>({
-    queryKey: ['batches'],
-  });
+  // Get batches directly from React Query cache
+  const batches = queryClient.getQueryData<Batch[]>(['batches']);
   
   // Memoize the selected batch lookup
   const selectedBatch = useMemo(() => {

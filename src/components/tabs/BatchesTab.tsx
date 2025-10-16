@@ -43,6 +43,9 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     alcoholRange: [0, 12],
   });
 
+  // Add null check for batches
+  const safeBatches = batches || [];
+
   // Fetch logs for all selected batches
   const batchLogsMap: Record<string, any[]> = {};
   selectedBatchIds.forEach(batchId => {
@@ -66,7 +69,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   // Apply filters using custom hook
-  const filteredBatches = useBatchFilters(batches, filters, batchSearchQuery);
+  const filteredBatches = useBatchFilters(safeBatches, filters, batchSearchQuery);
 
   // Then apply sorting
   const filteredAndSortedBatches = filteredBatches.sort((a, b) => {
@@ -93,7 +96,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   });
 
   // Extract unique varieties for filter dropdown
-  const varieties = getUniqueVarieties(batches);
+  const varieties = getUniqueVarieties(safeBatches);
 
 
   return (
@@ -107,7 +110,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
       <BatchFilters
         filters={filters}
         onChange={setFilters}
-        totalCount={batches.length}
+        totalCount={safeBatches.length}
         filteredCount={filteredBatches.length}
         varieties={varieties}
       />
@@ -127,7 +130,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
       {/* Batch Comparison Dialog */}
       <BatchComparison
-        batches={batches}
+        batches={safeBatches}
         batchLogs={batchLogsMap}
         open={comparisonOpen}
         onOpenChange={setComparisonOpen}

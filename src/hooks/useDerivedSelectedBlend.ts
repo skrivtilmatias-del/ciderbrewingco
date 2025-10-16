@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/appStore';
 
 /**
@@ -11,11 +11,10 @@ import { useAppStore } from '@/stores/appStore';
  */
 export const useDerivedSelectedBlend = () => {
   const selectedBlendId = useAppStore((state) => state.selectedBlendId);
+  const queryClient = useQueryClient();
   
-  // Derive selected blend directly from React Query cache
-  const { data: blends } = useQuery<any[]>({
-    queryKey: ['blend-batches'],
-  });
+  // Get blends directly from React Query cache
+  const blends = queryClient.getQueryData<any[]>(['blend-batches']);
   
   // Memoize the selected blend lookup
   const selectedBlend = useMemo(() => {
