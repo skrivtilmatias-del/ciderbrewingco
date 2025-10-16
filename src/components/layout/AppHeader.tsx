@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { NewBatchDialog } from '@/components/NewBatchDialog';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
+import { useBatches } from '@/hooks/useBatches';
 
 interface AppHeaderProps {
   user: any;
@@ -27,6 +28,7 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const navigate = useNavigate();
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
+  const { createBatch } = useBatches();
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -42,6 +44,27 @@ export const AppHeader = ({
       await onTastingSaved(data, analysisId);
     }
     setTastingDialogOpen(false);
+  };
+
+  const handleBatchCreated = async (batchData: any) => {
+    createBatch({
+      name: batchData.name,
+      variety: batchData.variety,
+      apple_origin: batchData.apple_origin,
+      volume: batchData.volume,
+      current_stage: batchData.currentStage,
+      yeast_type: batchData.yeast_type,
+      notes: batchData.notes,
+      target_og: batchData.target_og,
+      target_fg: batchData.target_fg,
+      target_ph: batchData.target_ph,
+      target_end_ph: batchData.target_end_ph,
+      temperature: batchData.temperature,
+    });
+    
+    if (onBatchCreated) {
+      onBatchCreated();
+    }
   };
 
   return (
@@ -74,8 +97,8 @@ export const AppHeader = ({
               <TooltipContent>Create a new tasting analysis</TooltipContent>
             </Tooltip>
             
-            {userRole !== "taster" && onBatchCreated && (
-              <NewBatchDialog onBatchCreated={onBatchCreated} />
+            {userRole !== "taster" && (
+              <NewBatchDialog onBatchCreated={handleBatchCreated} />
             )}
             
             <Tooltip>

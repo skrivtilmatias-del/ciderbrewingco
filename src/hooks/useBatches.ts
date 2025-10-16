@@ -56,21 +56,64 @@ export const useBatches = () => {
       target_fg?: number;
       target_ph?: number;
       target_end_ph?: number;
+      temperature?: number;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      // Create the batch
+      const { data: newBatch, error: batchError } = await supabase
         .from('batches')
-        .insert([{ ...batchData, user_id: user.id }])
+        .insert([{ 
+          name: batchData.name,
+          variety: batchData.variety,
+          volume: batchData.volume,
+          current_stage: batchData.current_stage,
+          apple_origin: batchData.apple_origin,
+          yeast_type: batchData.yeast_type,
+          style: batchData.style,
+          notes: batchData.notes,
+          target_og: batchData.target_og,
+          target_fg: batchData.target_fg,
+          target_ph: batchData.target_ph,
+          target_end_ph: batchData.target_end_ph,
+          user_id: user.id 
+        }])
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (batchError) throw batchError;
+
+      // Create initial batch log entry with measurements
+      const hasInitialData = batchData.target_og || batchData.target_ph || batchData.temperature;
+      
+      if (hasInitialData) {
+        const { error: logError } = await supabase
+          .from('batch_logs')
+          .insert([{
+            batch_id: newBatch.id,
+            user_id: user.id,
+            stage: batchData.current_stage,
+            role: 'Lab',
+            title: 'Initial Batch Setup',
+            content: batchData.notes || null,
+            og: batchData.target_og || null,
+            ph: batchData.target_ph || null,
+            temp_c: batchData.temperature || null,
+            created_at: new Date().toISOString(),
+          }]);
+
+        if (logError) {
+          console.error('Error creating initial log:', logError);
+          // Don't throw - we still want the batch creation to succeed
+        }
+      }
+
+      return newBatch;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
       toast.success('Batch created successfully');
     },
     onError: (error: any) => {

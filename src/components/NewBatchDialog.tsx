@@ -24,6 +24,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     endOG: "",
     startPH: "",
     endPH: "",
+    temperature: "",
     notes: "",
   });
 
@@ -63,12 +64,13 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       currentStage: "Harvest" as const,
       progress: 0,
       notes: validation.data.notes,
+      temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
     };
 
     onBatchCreated(newBatch as any);
     toast.success("Batch created successfully!");
     setOpen(false);
-    setFormData({ name: "", variety: "", appleOrigin: "", volume: "", yeastType: "", startOG: "", endOG: "", startPH: "", endPH: "", notes: "" });
+    setFormData({ name: "", variety: "", appleOrigin: "", volume: "", yeastType: "", startOG: "", endOG: "", startPH: "", endPH: "", temperature: "", notes: "" });
   };
 
   return (
@@ -129,14 +131,28 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="yeastType">Yeast Type (Optional)</Label>
-            <Input
-              id="yeastType"
-              placeholder="e.g., EC-1118, SafCider"
-              value={formData.yeastType}
-              onChange={(e) => setFormData({ ...formData, yeastType: e.target.value })}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="yeastType">Yeast Type (Optional)</Label>
+              <Input
+                id="yeastType"
+                placeholder="e.g., EC-1118"
+                value={formData.yeastType}
+                onChange={(e) => setFormData({ ...formData, yeastType: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="temperature">Temperature (°C) (Optional)</Label>
+              <Input
+                id="temperature"
+                type="number"
+                step="0.1"
+                placeholder="e.g., 18"
+                value={formData.temperature}
+                onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
