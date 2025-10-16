@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from '@tanstack/react-query';
 import { prefetchBatchDetails, prefetchBatchLogs } from '@/lib/prefetchUtils';
+import { BatchContextMenu } from "@/components/production/BatchContextMenu";
 
 export interface Batch {
   id: string;
@@ -53,6 +55,11 @@ interface BatchCardProps {
   onDelete?: () => void;
   onAdvanceStage?: (newStage: CiderStage | 'Complete') => void;
   onPreviousStage?: (newStage: CiderStage) => void;
+  onUpdateStage?: (batchId: string, newStage: string) => void;
+  onAddNote?: (batchId: string, note: string) => void;
+  onClone?: (batch: Batch) => void;
+  onArchive?: (batchId: string) => void;
+  onExport?: (batch: Batch) => void;
   /** Search query to highlight matching text in results */
   searchQuery?: string;
 }
@@ -82,13 +89,30 @@ const highlightText = (text: string, query: string) => {
   );
 };
 
-export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPreviousStage, searchQuery = '' }: BatchCardProps) => {
+export const BatchCard = ({ 
+  batch, 
+  onClick, 
+  onDelete, 
+  onAdvanceStage, 
+  onPreviousStage, 
+  onUpdateStage,
+  onAddNote,
+  onClone,
+  onArchive,
+  onExport,
+  searchQuery = '' 
+}: BatchCardProps) => {
   const queryClient = useQueryClient();
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
   const isComplete = batch.currentStage === 'Complete';
   const currentIndex = STAGES.indexOf(batch.currentStage as CiderStage);
   const canGoPrevious = !isComplete && currentIndex > 0;
+
+  // Mobile long-press support
+  const [isLongPress, setIsLongPress] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -118,26 +142,83 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
     });
   };
 
+  // Mobile long-press handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    setIsLongPress(false);
+    
+    longPressTimer.current = setTimeout(() => {
+      setIsLongPress(true);
+      // Trigger haptic feedback if available
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+    }, 200); // 200ms for long press
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos.current) return;
+    
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+    
+    // If finger moved more than 10px, cancel long press
+    if (deltaX > 10 || deltaY > 10) {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+      touchStartPos.current = null;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+    if (!isLongPress && onClick) {
+      onClick();
+    }
+    touchStartPos.current = null;
+    setIsLongPress(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
+
   return (
-    <Card 
-      className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border relative"
-      onClick={onClick}
-      onMouseEnter={handleMouseEnter}
+    <BatchContextMenu
+      batch={batch}
+      onUpdateStage={onUpdateStage}
+      onAddNote={onAddNote}
+      onViewDetails={onClick}
+      onClone={onClone}
+      onArchive={onArchive}
+      onExport={onExport}
     >
-      <div className="absolute top-4 right-4" onClick={handleMenuClick}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="z-50">
-            <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Batch
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <Card 
+        className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border relative"
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+      <div className="absolute top-4 right-4 flex gap-1" onClick={handleMenuClick}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8"
+          title="Right-click for more options"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex items-start justify-between mb-4 pr-8">
@@ -205,5 +286,6 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
         )}
       </div>
     </Card>
+    </BatchContextMenu>
   );
 };

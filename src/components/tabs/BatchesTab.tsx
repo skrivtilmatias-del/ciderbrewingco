@@ -7,6 +7,7 @@ import { paths } from '@/routes/paths';
 import { VirtualBatchList } from '@/components/VirtualBatchList';
 import { BatchFilters, BatchFilters as BatchFiltersType } from '@/components/BatchFilters';
 import { useBatchFilters, getUniqueVarieties } from '@/hooks/useBatchFilters';
+import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuGuide';
 
 interface BatchesTabProps {
   batches: Batch[];
@@ -84,6 +85,11 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
   return (
     <div className="space-y-4">
+      {/* Help Guide */}
+      <div className="flex justify-end">
+        <BatchContextMenuGuide />
+      </div>
+
       {/* Comprehensive Filter Panel */}
       <BatchFilters
         filters={filters}

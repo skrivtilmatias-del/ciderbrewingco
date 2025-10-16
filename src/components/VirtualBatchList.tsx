@@ -175,6 +175,11 @@ export const VirtualBatchList = ({
                       batch={batch}
                       onClick={() => onBatchClick(batch)}
                       onDelete={() => onDeleteBatch(batch.id)}
+                      onUpdateStage={onUpdateStage}
+                      onAddNote={(batchId, note) => console.log('Add note:', note)}
+                      onClone={(batch) => console.log('Clone batch:', batch)}
+                      onArchive={(batchId) => onDeleteBatch(batchId)}
+                      onExport={(batch) => console.log('Export batch:', batch)}
                       onAdvanceStage={
                         onUpdateStage
                           ? (newStage) => onUpdateStage(batch.id, newStage)
