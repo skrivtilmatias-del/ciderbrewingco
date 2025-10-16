@@ -1,10 +1,14 @@
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FlaskConical, Loader2, LayoutGrid, Clock, Layers } from 'lucide-react';
+import { FlaskConical, LayoutGrid, Clock, Layers } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
+import { useBatchSearch } from '@/hooks/production/useBatchSearch';
+import { prefetchAdjacentBatches } from '@/lib/prefetchUtils';
 import { BatchProductionHeader } from '@/components/BatchProductionHeader';
 import { StageProgressionUI } from '@/components/StageProgressionUI';
 import { SmartInsights } from '@/components/SmartInsights';
@@ -16,42 +20,81 @@ import { GroupedBatchView } from '@/components/production/GroupedBatchView';
 import type { Batch } from '@/components/BatchCard';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
-import { useQueryClient } from '@tanstack/react-query';
-import { prefetchAdjacentBatches } from '@/lib/prefetchUtils';
-import { useState } from 'react';
 
+/**
+ * ProductionTab Props
+ */
 interface ProductionTabProps {
+  /** Array of all batches */
   batches: Batch[];
+  /** Currently selected batch */
   selectedBatch: Batch | null;
+  /** Callback when batch is selected */
   onSelectBatch: (batch: Batch) => void;
+  /** Callback when batch stage is updated */
   onUpdateStage: (batchId: string, newStage: string) => void;
-  onAddLog?: (title?: string, role?: string) => void;
 }
 
+/**
+ * ProductionTab - Displays detailed production view for selected batch
+ * 
+ * Features:
+ * - Batch search with debouncing
+ * - Multiple view modes (grid, timeline, grouped)
+ * - Stage progression tracking
+ * - Smart insights and trends
+ * - Quick actions panel
+ * - Organized logs list
+ * 
+ * Business logic is extracted to custom hooks for better testability and reusability.
+ */
 export const ProductionTab = ({ 
   batches, 
   selectedBatch, 
   onSelectBatch,
   onUpdateStage,
-  onAddLog: onAddLogProp
 }: ProductionTabProps) => {
-  const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
-  const { logs, addLog, deleteLog, updateLog, isLoading, isAdding, isDeleting } = useBatchLogs(selectedBatch?.id || null);
   const queryClient = useQueryClient();
+  const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
+  
+  // Hooks - Business logic extracted
+  const { logs, addLog, deleteLog, isLoading, isAdding } = useBatchLogs(selectedBatch?.id || null);
+  const { results: searchResults } = useBatchSearch(batches, batchSearchQuery);
+  
+  // Local UI state
   const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped'>('grid');
 
-  // Handle adding a log - use hook's addLog or fallback to prop
+  /**
+   * Handle adding a new log entry
+   */
   const handleAddLog = (title: string = '', role: string = 'General') => {
-    if (selectedBatch) {
-      addLog({
-        batchId: selectedBatch.id,
-        title,
-        role,
-        stage: selectedBatch.currentStage,
+    if (!selectedBatch) return;
+    
+    addLog({
+      batchId: selectedBatch.id,
+      title,
+      role,
+      stage: selectedBatch.currentStage,
+    });
+  };
+
+  /**
+   * Handle batch selection from search results
+   */
+  const handleSelectBatch = (batch: Batch) => {
+    onSelectBatch(batch);
+    setBatchSearchQuery('');
+    
+    // Prefetch adjacent batches for smooth navigation
+    const currentIndex = batches.findIndex(b => b.id === batch.id);
+    if (currentIndex >= 0) {
+      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+        // Silently fail - prefetch is optional optimization
       });
     }
   };
 
+  // ========== RENDER: Empty State ==========
   if (!selectedBatch) {
     return (
       <Card className="p-12 text-center border-dashed">
@@ -62,7 +105,7 @@ export const ProductionTab = ({
     );
   }
 
-  // Show loading skeleton while logs are loading
+  // ========== RENDER: Loading State ==========
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -78,38 +121,17 @@ export const ProductionTab = ({
     );
   }
 
+  // ========== RENDER: Main Content ==========
   return (
     <div className="space-y-4">
-      {/* Search Results */}
+      {/* ========== Search Results Dropdown ========== */}
       {batchSearchQuery && (
         <Card className="p-2 max-h-[200px] overflow-y-auto">
-          {batches
-            .filter((batch) => {
-              const query = batchSearchQuery.toLowerCase();
-              return (
-                batch.name.toLowerCase().includes(query) ||
-                batch.variety.toLowerCase().includes(query) ||
-                batch.currentStage.toLowerCase().includes(query)
-              );
-            })
-            .map((batch) => (
+          {searchResults.length > 0 ? (
+            searchResults.map(({ batch }) => (
               <button
                 key={batch.id}
-                onClick={() => {
-                  onSelectBatch(batch);
-                  setBatchSearchQuery('');
-                  
-                  /**
-                   * Prefetch adjacent batches when switching batches in production
-                   * Anticipate user might navigate to nearby batches
-                   */
-                  const currentIndex = batches.findIndex(b => b.id === batch.id);
-                  if (currentIndex >= 0) {
-                    prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
-                      // Silently fail - prefetch is optional
-                    });
-                  }
-                }}
+                onClick={() => handleSelectBatch(batch)}
                 className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <FlaskConical className="h-4 w-4 text-primary flex-shrink-0" />
@@ -119,26 +141,19 @@ export const ProductionTab = ({
                   {batch.currentStage}
                 </Badge>
               </button>
-            ))}
-          {batches.filter((batch) => {
-            const query = batchSearchQuery.toLowerCase();
-            return (
-              batch.name.toLowerCase().includes(query) ||
-              batch.variety.toLowerCase().includes(query) ||
-              batch.currentStage.toLowerCase().includes(query)
-            );
-          }).length === 0 && (
+            ))
+          ) : (
             <p className="text-center text-sm text-muted-foreground py-4">
-              No batches found
+              No batches found matching "{batchSearchQuery}"
             </p>
           )}
         </Card>
       )}
 
-      {/* Batch Production Header */}
+      {/* ========== Batch Header ========== */}
       <BatchProductionHeader batch={selectedBatch} />
 
-      {/* View Mode Toggle */}
+      {/* ========== View Mode Toggle ========== */}
       <div className="flex items-center gap-2">
         <Button
           variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -169,18 +184,19 @@ export const ProductionTab = ({
         </Button>
       </div>
 
-      {/* Grouped View */}
+      {/* ========== Content: View Mode Dependent ========== */}
       {viewMode === 'grouped' ? (
+        // Grouped view shows all batches organized by category
         <GroupedBatchView
           batches={batches}
           onSelectBatch={onSelectBatch}
           onDeleteBatch={(batchId: string) => {
-            // Handle delete through parent component
             console.log('Delete batch:', batchId);
           }}
           onUpdateStage={onUpdateStage}
         />
       ) : viewMode === 'timeline' ? (
+        // Timeline view shows chronological batch history
         <BatchTimeline
           batch={{
             ...selectedBatch,
@@ -198,13 +214,13 @@ export const ProductionTab = ({
           } as BatchLog))}
           variant="detailed"
           onStageClick={(stage) => {
-            // Could add functionality to jump to stage or show stage details
             console.log('Stage clicked:', stage);
           }}
         />
       ) : (
+        // Grid view (default) shows detailed production metrics
         <>
-          {/* Stage Progression */}
+          {/* Stage Progression UI */}
           <StageProgressionUI
             currentStage={selectedBatch.currentStage}
             batchId={selectedBatch.id}
@@ -212,13 +228,13 @@ export const ProductionTab = ({
             onAdvanceStage={onUpdateStage}
           />
 
-          {/* Smart Insights */}
+          {/* AI-Powered Smart Insights */}
           <SmartInsights
             batch={selectedBatch}
             logs={logs}
           />
 
-          {/* Parameter Trend Charts */}
+          {/* Parameter Trend Charts - pH, OG, Temperature */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ParameterTrendChart
               title="OG"
@@ -261,14 +277,8 @@ export const ProductionTab = ({
         </>
       )}
 
-      {/* Organized Logs List */}
-      {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      ) : logs.length === 0 ? (
+      {/* ========== Organized Logs List ========== */}
+      {logs.length === 0 ? (
         <Card className="p-12 text-center border-dashed">
           <p className="text-muted-foreground">
             No notes yet. Click "Add Note" above to get started.
@@ -279,8 +289,7 @@ export const ProductionTab = ({
           logs={logs}
           onDeleteLog={deleteLog}
           onUpdateLog={() => {
-            console.log('Log updated, invalidating batch-logs query for batch:', selectedBatch?.id);
-            // Invalidate the batch-logs query to refresh the data
+            // Refresh logs after update
             queryClient.invalidateQueries({ queryKey: ['batch-logs', selectedBatch?.id] });
           }}
         />
