@@ -1,5 +1,5 @@
-import { SupplierOverview } from '@/components/SupplierOverview';
+import { RedesignedSuppliersTab } from '@/components/suppliers/RedesignedSuppliersTab';
 
 export const SuppliersTab = () => {
-  return <SupplierOverview />;
+  return <RedesignedSuppliersTab />;
 };

@@ -9,6 +9,25 @@ export interface Supplier {
   contact: string | null;
   terms: string | null;
   notes: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  website: string | null;
+  primary_contact_name: string | null;
+  tax_id: string | null;
+  payment_net_days: number | null;
+  category: string | null;
+  rating: number | null;
+  status: string;
+  is_preferred: boolean;
+  quality_score: number | null;
+  defect_rate: number | null;
+  reliability_rating: number | null;
+  total_spend_ytd: number;
+  on_time_delivery_rate: number | null;
+  avg_lead_time_days: number | null;
+  organic_certified: boolean;
+  food_safety_certified: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +37,22 @@ export interface CreateSupplierInput {
   contact?: string;
   terms?: string;
   notes?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  website?: string;
+  primary_contact_name?: string;
+  tax_id?: string;
+  payment_net_days?: number;
+  category?: string;
+  rating?: number;
+  status?: string;
+  is_preferred?: boolean;
+  quality_score?: number;
+  defect_rate?: number;
+  reliability_rating?: number;
+  organic_certified?: boolean;
+  food_safety_certified?: boolean;
 }
 
 export interface UpdateSupplierInput {
@@ -25,6 +60,24 @@ export interface UpdateSupplierInput {
   contact?: string | null;
   terms?: string | null;
   notes?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  website?: string | null;
+  primary_contact_name?: string | null;
+  tax_id?: string | null;
+  payment_net_days?: number | null;
+  category?: string | null;
+  rating?: number | null;
+  status?: string;
+  is_preferred?: boolean;
+  quality_score?: number | null;
+  defect_rate?: number | null;
+  reliability_rating?: number | null;
+  on_time_delivery_rate?: number | null;
+  avg_lead_time_days?: number | null;
+  organic_certified?: boolean;
+  food_safety_certified?: boolean;
 }
 
 export interface Contract {

@@ -772,57 +772,87 @@ export type Database = {
       suppliers: {
         Row: {
           address: string | null
+          avg_lead_time_days: number | null
           category: string | null
           contact: string | null
           created_at: string
+          defect_rate: number | null
           email: string | null
+          food_safety_certified: boolean | null
           id: string
+          is_preferred: boolean | null
           name: string
           notes: string | null
+          on_time_delivery_rate: number | null
+          organic_certified: boolean | null
           payment_net_days: number | null
           phone: string | null
           primary_contact_name: string | null
+          quality_score: number | null
           rating: number | null
+          reliability_rating: number | null
+          status: string | null
           tax_id: string | null
           terms: string | null
+          total_spend_ytd: number | null
           updated_at: string
           user_id: string
           website: string | null
         }
         Insert: {
           address?: string | null
+          avg_lead_time_days?: number | null
           category?: string | null
           contact?: string | null
           created_at?: string
+          defect_rate?: number | null
           email?: string | null
+          food_safety_certified?: boolean | null
           id?: string
+          is_preferred?: boolean | null
           name: string
           notes?: string | null
+          on_time_delivery_rate?: number | null
+          organic_certified?: boolean | null
           payment_net_days?: number | null
           phone?: string | null
           primary_contact_name?: string | null
+          quality_score?: number | null
           rating?: number | null
+          reliability_rating?: number | null
+          status?: string | null
           tax_id?: string | null
           terms?: string | null
+          total_spend_ytd?: number | null
           updated_at?: string
           user_id: string
           website?: string | null
         }
         Update: {
           address?: string | null
+          avg_lead_time_days?: number | null
           category?: string | null
           contact?: string | null
           created_at?: string
+          defect_rate?: number | null
           email?: string | null
+          food_safety_certified?: boolean | null
           id?: string
+          is_preferred?: boolean | null
           name?: string
           notes?: string | null
+          on_time_delivery_rate?: number | null
+          organic_certified?: boolean | null
           payment_net_days?: number | null
           phone?: string | null
           primary_contact_name?: string | null
+          quality_score?: number | null
           rating?: number | null
+          reliability_rating?: number | null
+          status?: string | null
           tax_id?: string | null
           terms?: string | null
+          total_spend_ytd?: number | null
           updated_at?: string
           user_id?: string
           website?: string | null
