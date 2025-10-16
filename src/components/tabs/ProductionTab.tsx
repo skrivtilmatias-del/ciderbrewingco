@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FlaskConical, Loader2, LayoutGrid, Clock } from 'lucide-react';
+import { FlaskConical, Loader2, LayoutGrid, Clock, Layers } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { BatchProductionHeader } from '@/components/BatchProductionHeader';
@@ -12,6 +12,7 @@ import { ParameterTrendChart } from '@/components/ParameterTrendChart';
 import { QuickActionsPanel } from '@/components/QuickActionsPanel';
 import { OrganizedLogsList } from '@/components/OrganizedLogsList';
 import { BatchTimeline } from '@/components/production/BatchTimeline';
+import { GroupedBatchView } from '@/components/production/GroupedBatchView';
 import type { Batch } from '@/components/BatchCard';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
@@ -37,7 +38,7 @@ export const ProductionTab = ({
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
   const { logs, addLog, deleteLog, updateLog, isLoading, isAdding, isDeleting } = useBatchLogs(selectedBatch?.id || null);
   const queryClient = useQueryClient();
-  const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped'>('grid');
 
   // Handle adding a log - use hook's addLog or fallback to prop
   const handleAddLog = (title: string = '', role: string = 'General') => {
@@ -157,10 +158,29 @@ export const ProductionTab = ({
           <Clock className="w-4 h-4" />
           Timeline
         </Button>
+        <Button
+          variant={viewMode === 'grouped' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('grouped')}
+          className="gap-2"
+        >
+          <Layers className="w-4 h-4" />
+          Grouped
+        </Button>
       </div>
 
-      {/* Timeline View */}
-      {viewMode === 'timeline' ? (
+      {/* Grouped View */}
+      {viewMode === 'grouped' ? (
+        <GroupedBatchView
+          batches={batches}
+          onSelectBatch={onSelectBatch}
+          onDeleteBatch={(batchId: string) => {
+            // Handle delete through parent component
+            console.log('Delete batch:', batchId);
+          }}
+          onUpdateStage={onUpdateStage}
+        />
+      ) : viewMode === 'timeline' ? (
         <BatchTimeline
           batch={{
             ...selectedBatch,
