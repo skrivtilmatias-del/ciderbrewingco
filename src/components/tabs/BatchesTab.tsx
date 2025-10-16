@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Batch } from '@/components/BatchCard';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
+import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { paths } from '@/routes/paths';
 import { VirtualBatchList } from '@/components/VirtualBatchList';
 import { BatchFilters, BatchFilters as BatchFiltersType } from '@/components/BatchFilters';
 import { useBatchFilters, getUniqueVarieties } from '@/hooks/useBatchFilters';
 import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuGuide';
+import { BatchComparison } from '@/components/production/BatchComparison';
+import { CompareSelectedButton } from '@/components/production/CompareSelectedButton';
+import { useBatchComparisonStore } from '@/stores/batchComparisonStore';
 
 interface BatchesTabProps {
   batches: Batch[];
@@ -26,6 +30,8 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     setDetailsOpen
   } = useAppStore();
   const { deleteBatch, isDeleting } = useBatches();
+  const { selectedBatchIds } = useBatchComparisonStore();
+  const [comparisonOpen, setComparisonOpen] = useState(false);
 
   // Initialize filter state with default values
   const [filters, setFilters] = useState<BatchFiltersType>({
@@ -35,6 +41,13 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     status: 'all',
     variety: '',
     alcoholRange: [0, 12],
+  });
+
+  // Fetch logs for all selected batches
+  const batchLogsMap: Record<string, any[]> = {};
+  selectedBatchIds.forEach(batchId => {
+    const { logs } = useBatchLogs(batchId);
+    batchLogsMap[batchId] = logs || [];
   });
 
   const handleDeleteBatch = async (batchId: string) => {
@@ -107,6 +120,17 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
         onUpdateStage={onUpdateStage}
         searchQuery={batchSearchQuery}
         layout="grid"
+      />
+
+      {/* Compare Selected Button */}
+      <CompareSelectedButton onCompare={() => setComparisonOpen(true)} />
+
+      {/* Batch Comparison Dialog */}
+      <BatchComparison
+        batches={batches}
+        batchLogs={batchLogsMap}
+        open={comparisonOpen}
+        onOpenChange={setComparisonOpen}
       />
     </div>
   );

@@ -18,6 +18,8 @@ interface VirtualBatchListProps {
   searchQuery?: string;
   /** Layout mode - grid is default, list for compact view */
   layout?: 'grid' | 'list';
+  /** Show selection checkboxes for comparison */
+  showSelection?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export const VirtualBatchList = ({
   onUpdateStage,
   searchQuery = '',
   layout = 'grid',
+  showSelection = true,
 }: VirtualBatchListProps) => {
   // Ref to the scrollable container element
   const parentRef = useRef<HTMLDivElement>(null);
@@ -180,6 +183,7 @@ export const VirtualBatchList = ({
                       onClone={(batch) => console.log('Clone batch:', batch)}
                       onArchive={(batchId) => onDeleteBatch(batchId)}
                       onExport={(batch) => console.log('Export batch:', batch)}
+                      showSelection={showSelection}
                       onAdvanceStage={
                         onUpdateStage
                           ? (newStage) => onUpdateStage(batch.id, newStage)

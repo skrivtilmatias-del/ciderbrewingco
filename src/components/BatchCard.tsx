@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
@@ -10,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from '@tanstack/react-query';
 import { prefetchBatchDetails, prefetchBatchLogs } from '@/lib/prefetchUtils';
 import { BatchContextMenu } from "@/components/production/BatchContextMenu";
+import { useBatchComparisonStore } from "@/stores/batchComparisonStore";
+import { cn } from "@/lib/utils";
 
 export interface Batch {
   id: string;
@@ -62,6 +65,8 @@ interface BatchCardProps {
   onExport?: (batch: Batch) => void;
   /** Search query to highlight matching text in results */
   searchQuery?: string;
+  /** Show selection checkbox for comparison */
+  showSelection?: boolean;
 }
 
 /**
@@ -100,9 +105,12 @@ export const BatchCard = ({
   onClone,
   onArchive,
   onExport,
-  searchQuery = '' 
+  searchQuery = '',
+  showSelection = false,
 }: BatchCardProps) => {
   const queryClient = useQueryClient();
+  const { selectedBatchIds, toggleBatchSelection } = useBatchComparisonStore();
+  const isSelected = selectedBatchIds.includes(batch.id);
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
   const isComplete = batch.currentStage === 'Complete';
@@ -192,6 +200,10 @@ export const BatchCard = ({
     };
   }, []);
 
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <BatchContextMenu
       batch={batch}
@@ -203,13 +215,29 @@ export const BatchCard = ({
       onExport={onExport}
     >
       <Card 
-        className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border relative"
+        className={cn(
+          "p-6 hover:shadow-lg transition-all cursor-pointer border-border relative",
+          isSelected && "ring-2 ring-primary border-primary"
+        )}
         onClick={onClick}
         onMouseEnter={handleMouseEnter}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+      {/* Selection Checkbox */}
+      {showSelection && (
+        <div 
+          className="absolute top-4 left-4 z-20" 
+          onClick={handleCheckboxClick}
+        >
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => toggleBatchSelection(batch.id)}
+            className="h-5 w-5"
+          />
+        </div>
+      )}
       <div className="absolute top-4 right-4 flex gap-1" onClick={handleMenuClick}>
         <Button 
           variant="ghost" 
