@@ -6,6 +6,8 @@ import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from '@tanstack/react-query';
+import { prefetchBatchDetails, prefetchBatchLogs } from '@/lib/prefetchUtils';
 
 export interface Batch {
   id: string;
@@ -54,6 +56,7 @@ interface BatchCardProps {
 }
 
 export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPreviousStage }: BatchCardProps) => {
+  const queryClient = useQueryClient();
   const StageIcon = getStageIcon(batch.currentStage);
   const stageColor = getStageColor(batch.currentStage);
   const isComplete = batch.currentStage === 'Complete';
@@ -71,11 +74,28 @@ export const BatchCard = ({ batch, onClick, onDelete, onAdvanceStage, onPrevious
     }
   };
 
+  /**
+   * Smart Prefetching on Hover
+   * Strategy: When user hovers, prefetch batch details and logs
+   * This makes clicking feel instant as data is already loaded
+   * React Query automatically deduplicates if data is already fresh
+   */
+  const handleMouseEnter = () => {
+    // Prefetch in parallel - both requests fire simultaneously
+    Promise.all([
+      prefetchBatchDetails(queryClient, batch.id),
+      prefetchBatchLogs(queryClient, batch.id),
+    ]).catch(() => {
+      // Silently fail - prefetch is optional optimization
+      // If it fails, data will load normally on click
+    });
+  };
 
   return (
     <Card 
       className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-border relative"
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
     >
       <div className="absolute top-4 right-4" onClick={handleMenuClick}>
         <DropdownMenu>

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useQueryClient } from "@tanstack/react-query";
+import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BatchesTab } from "@/components/tabs/BatchesTab";
@@ -127,6 +128,18 @@ const Index = () => {
   const handleBatchClick = (batch: Batch) => {
     setSelectedBatch(batch);
     setDetailsOpen(true);
+    
+    /**
+     * Smart Prefetching: Prefetch adjacent batches
+     * When user clicks a batch, anticipate they might view the next ones
+     * Prefetch the next 3 batches for smooth scrolling experience
+     */
+    const currentIndex = batches.findIndex(b => b.id === batch.id);
+    if (currentIndex >= 0) {
+      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+        // Silently fail - prefetch is optional optimization
+      });
+    }
   };
 
   const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
@@ -138,6 +151,40 @@ const Index = () => {
     setSelectedBatch(batch);
     setDetailsOpen(false);
     navigate("/production");
+    
+    /**
+     * Prefetch adjacent batches when entering production view
+     * User is likely to navigate between batches in production
+     */
+    const currentIndex = batches.findIndex(b => b.id === batch.id);
+    if (currentIndex >= 0) {
+      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+        // Silently fail
+      });
+    }
+  };
+
+  /**
+   * Tab Hover Prefetching Handlers
+   * Strategy: Prefetch data when user hovers over tab
+   * Makes tab navigation feel instant
+   */
+  const handleBlendingTabHover = () => {
+    prefetchBlendData(queryClient).catch(() => {
+      // Silently fail - prefetch is optional
+    });
+  };
+
+  const handleAnalyticsTabHover = () => {
+    prefetchAnalyticsData(queryClient).catch(() => {
+      // Silently fail
+    });
+  };
+
+  const handleSuppliersTabHover = () => {
+    prefetchSupplierData(queryClient).catch(() => {
+      // Silently fail
+    });
   };
 
   const handleSaveTasting = async (data: any, analysisId?: string) => {
@@ -318,7 +365,11 @@ const Index = () => {
                         </button>
                       </TabsTrigger>
                       <TabsTrigger value="blending" asChild>
-                        <button onClick={() => navigate(paths.blending())} className="py-1.5 px-3">
+                        <button 
+                          onClick={() => navigate(paths.blending())} 
+                          onMouseEnter={handleBlendingTabHover}
+                          className="py-1.5 px-3"
+                        >
                           <Wine className="h-4 w-4 sm:mr-2" />
                           <span className="hidden sm:inline">Blending</span>
                         </button>
@@ -330,7 +381,11 @@ const Index = () => {
                         </button>
                       </TabsTrigger>
                       <TabsTrigger value="suppliers" asChild>
-                        <button onClick={() => navigate(paths.suppliers())} className="py-1.5 px-3">
+                        <button 
+                          onClick={() => navigate(paths.suppliers())} 
+                          onMouseEnter={handleSuppliersTabHover}
+                          className="py-1.5 px-3"
+                        >
                           <TrendingUp className="h-4 w-4 sm:mr-2" />
                           <span className="hidden sm:inline">Suppliers</span>
                         </button>
@@ -344,7 +399,11 @@ const Index = () => {
                     </button>
                   </TabsTrigger>
                   <TabsTrigger value="analytics" asChild>
-                    <button onClick={() => navigate(paths.analytics())} className="py-1.5 px-3">
+                    <button 
+                      onClick={() => navigate(paths.analytics())} 
+                      onMouseEnter={handleAnalyticsTabHover}
+                      className="py-1.5 px-3"
+                    >
                       <TrendingUp className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Analytics</span>
                     </button>

@@ -12,6 +12,7 @@ import { QuickActionsPanel } from '@/components/QuickActionsPanel';
 import { OrganizedLogsList } from '@/components/OrganizedLogsList';
 import type { Batch } from '@/components/BatchCard';
 import { useQueryClient } from '@tanstack/react-query';
+import { prefetchAdjacentBatches } from '@/lib/prefetchUtils';
 
 interface ProductionTabProps {
   batches: Batch[];
@@ -90,6 +91,17 @@ export const ProductionTab = ({
                 onClick={() => {
                   onSelectBatch(batch);
                   setBatchSearchQuery('');
+                  
+                  /**
+                   * Prefetch adjacent batches when switching batches in production
+                   * Anticipate user might navigate to nearby batches
+                   */
+                  const currentIndex = batches.findIndex(b => b.id === batch.id);
+                  if (currentIndex >= 0) {
+                    prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+                      // Silently fail - prefetch is optional
+                    });
+                  }
                 }}
                 className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2"
               >
