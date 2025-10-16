@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -317,3 +317,34 @@ export const BatchCard = ({
     </BatchContextMenu>
   );
 };
+
+/**
+ * Custom comparison function for React.memo
+ * Prevents unnecessary re-renders by comparing actual batch data
+ * Ignores function reference changes (callbacks)
+ */
+const batchCardPropsAreEqual = (prevProps: BatchCardProps, nextProps: BatchCardProps) => {
+  // Compare batch object (deep comparison of relevant fields)
+  const batchEqual =
+    prevProps.batch.id === nextProps.batch.id &&
+    prevProps.batch.name === nextProps.batch.name &&
+    prevProps.batch.variety === nextProps.batch.variety &&
+    prevProps.batch.volume === nextProps.batch.volume &&
+    prevProps.batch.currentStage === nextProps.batch.currentStage &&
+    prevProps.batch.progress === nextProps.batch.progress &&
+    prevProps.batch.startDate === nextProps.batch.startDate;
+
+  // Compare search query
+  const searchEqual = prevProps.searchQuery === nextProps.searchQuery;
+
+  // Compare selection state
+  const selectionEqual = prevProps.showSelection === nextProps.showSelection;
+
+  // Functions are always different references, but that's okay - we ignore them
+  // The actual functionality won't change, only the reference
+
+  return batchEqual && searchEqual && selectionEqual;
+};
+
+// Export memoized component
+export const MemoizedBatchCard = memo(BatchCard, batchCardPropsAreEqual);

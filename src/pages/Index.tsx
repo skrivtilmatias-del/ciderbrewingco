@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
+import { useOptimizedBatches } from "@/hooks/useOptimizedBatches";
+import { useRenderTracking } from "@/hooks/useRenderTracking";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
@@ -36,6 +38,9 @@ import { getUserFriendlyError } from "@/lib/errorHandler";
 import type { Batch } from "@/components/BatchCard";
 
 const Index = () => {
+  // Track renders for performance monitoring
+  useRenderTracking('Index');
+
   const navigate = useNavigate();
   const location = useLocation();
   const { toolView } = useParams();
@@ -80,8 +85,8 @@ const Index = () => {
   const [editingTasting, setEditingTasting] = useState<any>(null);
   const [selectedBlendIdForTasting, setSelectedBlendIdForTasting] = useState<string | null>(null);
   
-  // Determine active tab from route
-  const getActiveTabFromPath = (): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
+  // Memoize active tab computation
+  const activeTab = useMemo((): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
     const path = location.pathname;
     if (path === '/batches' || path === '/') return 'batches';
     if (path === '/production') return 'production';
@@ -92,9 +97,25 @@ const Index = () => {
     if (path === '/suppliers') return 'suppliers';
     if (path.startsWith('/tools')) return 'tools';
     return 'batches';
-  };
-  
-  const activeTab = getActiveTabFromPath();
+  }, [location.pathname]);
+
+  // Use optimized batches hook with proper memoization
+  const batchFilters = useMemo(() => ({
+    stages: [],
+    dateRange: {},
+    volumeRange: [0, 10000] as [number, number],
+    status: 'all' as const,
+    variety: '',
+    alcoholRange: [0, 12] as [number, number],
+  }), []);
+
+  // This hook memoizes all expensive computations
+  const { sorted: optimizedBatches, groupedByStage } = useOptimizedBatches({
+    batches,
+    searchQuery: batchSearchQuery,
+    filters: batchFilters,
+    sortOrder: batchSortOrder as any,
+  });
 
   // Handle batch selection from QR redirect via URL params
   useEffect(() => {
@@ -127,7 +148,8 @@ const Index = () => {
     }
   }, [batches, selectedBatch?.id, setSelectedBatch]);
 
-  const handleBatchClick = (batch: Batch) => {
+  // Memoize event handlers with useCallback to prevent unnecessary re-renders
+  const handleBatchClick = useCallback((batch: Batch) => {
     setSelectedBatch(batch);
     setDetailsOpen(true);
     
@@ -142,14 +164,15 @@ const Index = () => {
         // Silently fail - prefetch is optional optimization
       });
     }
-  };
+  }, [batches, queryClient, setSelectedBatch, setDetailsOpen]);
 
-  const handleUpdateStage = async (batchId: string, newStage: Batch["currentStage"]) => {
+  const handleUpdateStage = useCallback(async (batchId: string, newStage: Batch["currentStage"]) => {
     // Use the mutation from useBatches hook
     updateStage({ batchId, newStage });
-  };
+  }, [updateStage]);
 
-  const handleGoToProduction = (batch: Batch) => {
+
+  const handleGoToProduction = useCallback((batch: Batch) => {
     setSelectedBatch(batch);
     setDetailsOpen(false);
     navigate("/production");
@@ -164,30 +187,30 @@ const Index = () => {
         // Silently fail
       });
     }
-  };
+  }, [batches, navigate, queryClient, setSelectedBatch, setDetailsOpen]);
 
   /**
    * Tab Hover Prefetching Handlers
    * Strategy: Prefetch data when user hovers over tab
    * Makes tab navigation feel instant
    */
-  const handleBlendingTabHover = () => {
+  const handleBlendingTabHover = useCallback(() => {
     prefetchBlendData(queryClient).catch(() => {
       // Silently fail - prefetch is optional
     });
-  };
+  }, [queryClient]);
 
-  const handleAnalyticsTabHover = () => {
+  const handleAnalyticsTabHover = useCallback(() => {
     prefetchAnalyticsData(queryClient).catch(() => {
       // Silently fail
     });
-  };
+  }, [queryClient]);
 
-  const handleSuppliersTabHover = () => {
+  const handleSuppliersTabHover = useCallback(() => {
     prefetchSupplierData(queryClient).catch(() => {
       // Silently fail
     });
-  };
+  }, [queryClient]);
 
   const handleSaveTasting = async (data: any, analysisId?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -466,16 +489,7 @@ const Index = () => {
                     value={batchSearchQuery}
                     onChange={setBatchSearchQuery}
                     totalCount={batches.length}
-                    resultCount={
-                      batches.filter((batch) => {
-                        const query = batchSearchQuery.toLowerCase();
-                        return (
-                          batch.name.toLowerCase().includes(query) ||
-                          batch.variety.toLowerCase().includes(query) ||
-                          batch.currentStage.toLowerCase().includes(query)
-                        );
-                      }).length
-                    }
+                    resultCount={optimizedBatches.length}
                     className="w-full sm:w-[300px]"
                   />
                   <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
@@ -501,7 +515,7 @@ const Index = () => {
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
               <BatchesTab 
-                batches={batches}
+                batches={optimizedBatches}
                 onBatchClick={handleBatchClick}
                 onUpdateStage={handleUpdateStage}
               />
@@ -511,7 +525,7 @@ const Index = () => {
           {userRole === "production" && (
             <TabsContent value="production" className="mt-4 sm:mt-6">
               <ProductionTab 
-                batches={batches}
+                batches={optimizedBatches}
                 selectedBatch={selectedBatch}
                 onSelectBatch={setSelectedBatch}
                 onUpdateStage={handleUpdateStage}

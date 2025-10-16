@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { BatchCard, Batch } from '@/components/BatchCard';
+import { MemoizedBatchCard as BatchCard, Batch } from '@/components/BatchCard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
+import { useRenderTracking } from '@/hooks/useRenderTracking';
 
 interface VirtualBatchListProps {
   /** Array of batches to render - can handle 1000+ items efficiently */
@@ -46,6 +47,9 @@ export const VirtualBatchList = ({
   layout = 'grid',
   showSelection = true,
 }: VirtualBatchListProps) => {
+  // Track renders for performance monitoring
+  useRenderTracking('VirtualBatchList', { batchCount: batches.length });
+
   // Ref to the scrollable container element
   const parentRef = useRef<HTMLDivElement>(null);
   
