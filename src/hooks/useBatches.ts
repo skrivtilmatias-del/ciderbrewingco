@@ -87,26 +87,43 @@ export const useBatches = () => {
       // Create initial batch log entry with measurements
       const hasInitialData = batchData.target_og || batchData.target_ph || batchData.temperature;
       
+      console.log('Creating batch - Initial data check:', { 
+        hasInitialData, 
+        target_og: batchData.target_og, 
+        target_ph: batchData.target_ph, 
+        temperature: batchData.temperature 
+      });
+      
       if (hasInitialData) {
-        const { error: logError } = await supabase
+        const logData = {
+          batch_id: newBatch.id,
+          user_id: user.id,
+          stage: batchData.current_stage,
+          role: 'Lab',
+          title: 'Initial Batch Setup',
+          content: batchData.notes || null,
+          og: batchData.target_og || null,
+          ph: batchData.target_ph || null,
+          temp_c: batchData.temperature || null,
+          created_at: new Date().toISOString(),
+        };
+        
+        console.log('Inserting initial batch log:', logData);
+        
+        const { data: createdLog, error: logError } = await supabase
           .from('batch_logs')
-          .insert([{
-            batch_id: newBatch.id,
-            user_id: user.id,
-            stage: batchData.current_stage,
-            role: 'Lab',
-            title: 'Initial Batch Setup',
-            content: batchData.notes || null,
-            og: batchData.target_og || null,
-            ph: batchData.target_ph || null,
-            temp_c: batchData.temperature || null,
-            created_at: new Date().toISOString(),
-          }]);
+          .insert([logData])
+          .select()
+          .single();
 
         if (logError) {
           console.error('Error creating initial log:', logError);
-          // Don't throw - we still want the batch creation to succeed
+          toast.error('Failed to create initial log entry: ' + logError.message);
+        } else {
+          console.log('Initial batch log created successfully:', createdLog);
         }
+      } else {
+        console.log('No initial measurements provided - skipping log creation');
       }
 
       return newBatch;
