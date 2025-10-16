@@ -153,7 +153,7 @@ export const ProductionTab = ({
       )}
 
       {/* ========== Batch Header ========== */}
-      <BatchProductionHeader batch={selectedBatch} />
+      <BatchProductionHeader batch={selectedBatch} allBatches={batches} />
 
       {/* ========== View Mode Toggle ========== */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>

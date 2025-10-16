@@ -152,6 +152,8 @@ export const BatchContextMenu = ({
 
   const handleExport = () => {
     onExport?.(batch);
+  };
+    onExport?.(batch);
     toast.success("Batch data exported");
   };
 
