@@ -583,7 +583,6 @@ const Index = () => {
               {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
                 <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
                   <BatchSearch
-                    ref={searchInputRef}
                     value={batchSearchQuery}
                     onChange={setBatchSearchQuery}
                     totalCount={batches.length}

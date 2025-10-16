@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, forwardRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ const MAX_RECENT_SEARCHES = 5;
  * - Parent component receives debounced value only
  * - Prevents re-rendering entire batch list on every keystroke
  */
-export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
+export const BatchSearch = ({
   value,
   onChange,
   totalCount,
@@ -59,7 +59,7 @@ export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
   isSearching = false,
   placeholder = 'Search batches by name, variety, or stage...',
   className,
-}, ref) => {
+}: BatchSearchProps) => {
   // Local input state for instant visual feedback
   const [localValue, setLocalValue] = useState(value);
   
@@ -70,7 +70,7 @@ export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  // Internal ref for input element
+  // Ref for input element
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load recent searches from localStorage on mount
@@ -184,15 +184,7 @@ export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
             
             {/* Search input */}
             <Input
-              ref={(node) => {
-                // Set both refs
-                if (typeof ref === 'function') {
-                  ref(node);
-                } else if (ref) {
-                  ref.current = node;
-                }
-                (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
-              }}
+              ref={inputRef}
               type="text"
               value={localValue}
               onChange={handleInputChange}
@@ -275,6 +267,4 @@ export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
       )}
     </div>
   );
-});
-
-BatchSearch.displayName = 'BatchSearch';
+};
