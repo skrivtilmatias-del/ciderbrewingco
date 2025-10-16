@@ -137,39 +137,30 @@ export const ProductionTab = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ParameterTrendChart
           title="OG"
-          data={logs.map(l => {
-            console.log('OG log data:', { date: l.created_at, og: l.og });
-            return {
-              date: l.created_at,
-              value: l.og || null
-            };
-          })}
+          data={logs.map(l => ({
+            date: l.created_at,
+            value: l.og || null
+          }))}
           color="hsl(var(--info))"
           unit="SG"
-          targetValue={selectedBatch.target_og}
+          targetValue={selectedBatch.target_og ? selectedBatch.target_og / 1000 : undefined}
         />
         <ParameterTrendChart
           title="pH"
-          data={logs.map(l => {
-            console.log('pH log data:', { date: l.created_at, ph: l.ph });
-            return {
-              date: l.created_at,
-              value: l.ph || null
-            };
-          })}
+          data={logs.map(l => ({
+            date: l.created_at,
+            value: l.ph || null
+          }))}
           color="hsl(var(--warning))"
           unit=""
           targetValue={selectedBatch.target_ph}
         />
         <ParameterTrendChart
           title="Temperature"
-          data={logs.map(l => {
-            console.log('Temp log data:', { date: l.created_at, temp_c: l.temp_c });
-            return {
-              date: l.created_at,
-              value: l.temp_c || null
-            };
-          })}
+          data={logs.map(l => ({
+            date: l.created_at,
+            value: l.temp_c || null
+          }))}
           color="hsl(var(--destructive))"
           unit="°C"
         />
