@@ -22,6 +22,8 @@ export const ParameterTrendChart = ({
   unit,
   targetValue 
 }: ParameterTrendChartProps) => {
+  console.log(`${title} Chart - Raw data received:`, data);
+  
   const chartData = data
     .filter(d => d.value !== null)
     .map(d => ({
@@ -30,7 +32,9 @@ export const ParameterTrendChart = ({
       target: targetValue
     }));
 
+  console.log(`${title} Chart - Processed chartData:`, chartData);
   const hasData = chartData.length > 0;
+  console.log(`${title} Chart - hasData:`, hasData);
 
   return (
     <Card className="p-4">

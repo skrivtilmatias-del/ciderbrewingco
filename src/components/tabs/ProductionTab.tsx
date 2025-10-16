@@ -11,6 +11,7 @@ import { ParameterTrendChart } from '@/components/ParameterTrendChart';
 import { QuickActionsPanel } from '@/components/QuickActionsPanel';
 import { OrganizedLogsList } from '@/components/OrganizedLogsList';
 import type { Batch } from '@/components/BatchCard';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductionTabProps {
   batches: Batch[];
@@ -29,6 +30,7 @@ export const ProductionTab = ({
 }: ProductionTabProps) => {
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
   const { logs, addLog, deleteLog, updateLog, isLoading, isAdding, isDeleting } = useBatchLogs(selectedBatch?.id || null);
+  const queryClient = useQueryClient();
 
   // Handle adding a log - use hook's addLog or fallback to prop
   const handleAddLog = (title: string = '', role: string = 'General') => {
@@ -135,30 +137,39 @@ export const ProductionTab = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ParameterTrendChart
           title="OG"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.og || null
-          }))}
+          data={logs.map(l => {
+            console.log('OG log data:', { date: l.created_at, og: l.og });
+            return {
+              date: l.created_at,
+              value: l.og || null
+            };
+          })}
           color="hsl(var(--info))"
           unit="SG"
           targetValue={selectedBatch.target_og}
         />
         <ParameterTrendChart
           title="pH"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.ph || null
-          }))}
+          data={logs.map(l => {
+            console.log('pH log data:', { date: l.created_at, ph: l.ph });
+            return {
+              date: l.created_at,
+              value: l.ph || null
+            };
+          })}
           color="hsl(var(--warning))"
           unit=""
           targetValue={selectedBatch.target_ph}
         />
         <ParameterTrendChart
           title="Temperature"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.temp_c || null
-          }))}
+          data={logs.map(l => {
+            console.log('Temp log data:', { date: l.created_at, temp_c: l.temp_c });
+            return {
+              date: l.created_at,
+              value: l.temp_c || null
+            };
+          })}
           color="hsl(var(--destructive))"
           unit="°C"
         />
@@ -190,7 +201,9 @@ export const ProductionTab = ({
           logs={logs}
           onDeleteLog={deleteLog}
           onUpdateLog={() => {
-            // Update is handled by BatchLogCard internally via useBatchLogs
+            console.log('Log updated, invalidating batch-logs query for batch:', selectedBatch?.id);
+            // Invalidate the batch-logs query to refresh the data
+            queryClient.invalidateQueries({ queryKey: ['batch-logs', selectedBatch?.id] });
           }}
         />
       )}
