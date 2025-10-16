@@ -20,6 +20,35 @@ interface BatchesTabProps {
 }
 
 export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabProps) => {
+  // Safety check: Loading state
+  if (!batches) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-muted-foreground">Loading batches...</div>
+      </div>
+    );
+  }
+
+  // Safety check: Validate array type
+  if (!Array.isArray(batches)) {
+    console.error('BatchesTab: batches is not an array:', batches);
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-destructive">Invalid data format</div>
+      </div>
+    );
+  }
+
+  // Safety check: Empty state
+  if (batches.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="text-muted-foreground">No batches yet</div>
+        <p className="text-sm text-muted-foreground">Create your first batch to get started</p>
+      </div>
+    );
+  }
+
   const navigate = useNavigate();
   const { 
     batchSearchQuery, 
@@ -42,9 +71,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     variety: '',
     alcoholRange: [0, 12],
   });
-
-  // Add null check for batches
-  const safeBatches = batches || [];
 
   // Fetch logs for all selected batches
   const batchLogsMap: Record<string, any[]> = {};
@@ -69,7 +95,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   // Apply filters using custom hook
-  const filteredBatches = useBatchFilters(safeBatches, filters, batchSearchQuery);
+  const filteredBatches = useBatchFilters(batches, filters, batchSearchQuery);
 
   // Then apply sorting
   const filteredAndSortedBatches = filteredBatches.sort((a, b) => {
@@ -96,7 +122,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   });
 
   // Extract unique varieties for filter dropdown
-  const varieties = getUniqueVarieties(safeBatches);
+  const varieties = getUniqueVarieties(batches);
 
 
   return (
@@ -110,7 +136,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
       <BatchFilters
         filters={filters}
         onChange={setFilters}
-        totalCount={safeBatches.length}
+        totalCount={batches.length}
         filteredCount={filteredBatches.length}
         varieties={varieties}
       />
@@ -130,7 +156,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
       {/* Batch Comparison Dialog */}
       <BatchComparison
-        batches={safeBatches}
+        batches={batches}
         batchLogs={batchLogsMap}
         open={comparisonOpen}
         onOpenChange={setComparisonOpen}
