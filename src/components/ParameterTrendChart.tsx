@@ -26,6 +26,7 @@ export const ParameterTrendChart = ({
   
   const chartData = data
     .filter(d => d.value !== null)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map(d => ({
       date: format(new Date(d.date), "MMM dd"),
       value: d.value,
