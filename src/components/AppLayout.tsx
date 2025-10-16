@@ -52,10 +52,6 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Tools</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Analytics
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                       <FlaskConical className="h-4 w-4 mr-2" />
                       Calculators
@@ -117,10 +113,6 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Tools</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Analytics
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                     <FlaskConical className="h-4 w-4 mr-2" />
                     Calculators

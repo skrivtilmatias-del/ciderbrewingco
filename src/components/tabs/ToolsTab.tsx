@@ -18,13 +18,8 @@ interface ToolsTabProps {
 }
 
 export const ToolsTab = ({ batches, blendBatches, toolView }: ToolsTabProps) => {
-  // Show analytics by default
-  if (!toolView || toolView === 'analytics') {
-    return <ProductionAnalytics batches={batches} />;
-  }
-
-  // Show calculators
-  if (toolView === 'calculators') {
+  // Show calculators by default or when explicitly requested
+  if (!toolView || toolView === 'calculators') {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

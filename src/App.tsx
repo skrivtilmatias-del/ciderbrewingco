@@ -42,6 +42,7 @@ const App = () => (
             <Route path={paths.blending()} element={<Index />} />
             <Route path={paths.cellar()} element={<Index />} />
             <Route path={paths.tasting()} element={<Index />} />
+            <Route path={paths.analytics()} element={<Index />} />
             <Route path={paths.suppliers()} element={<Index />} />
             <Route path="/tools/:toolView?" element={<Index />} />
             <Route path="/auth" element={<Auth />} />

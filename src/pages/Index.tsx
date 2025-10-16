@@ -14,6 +14,7 @@ import { CellarTab } from "@/components/tabs/CellarTab";
 import { SuppliersTab } from "@/components/tabs/SuppliersTab";
 import { TastingTab } from "@/components/tabs/TastingTab";
 import { ToolsTab } from "@/components/tabs/ToolsTab";
+import { ProductionAnalytics } from "@/components/ProductionAnalytics";
 import { BlendBatchDetailsTabbed } from "@/components/BlendBatchDetailsTabbed";
 import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
@@ -63,15 +64,16 @@ const Index = () => {
   const [selectedBlendIdForTasting, setSelectedBlendIdForTasting] = useState<string | null>(null);
   
   // Determine active tab from route
-  const getActiveTabFromPath = (): "batches" | "production" | "blending" | "cellar" | "tasting" | "tools" | "suppliers" => {
+  const getActiveTabFromPath = (): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
     const path = location.pathname;
     if (path === '/batches' || path === '/') return 'batches';
     if (path === '/production') return 'production';
     if (path === '/blending') return 'blending';
     if (path === '/cellar') return 'cellar';
     if (path === '/tasting') return 'tasting';
-    if (path.startsWith('/tools')) return 'tools';
+    if (path === '/analytics') return 'analytics';
     if (path === '/suppliers') return 'suppliers';
+    if (path.startsWith('/tools')) return 'tools';
     return 'batches';
   };
   
@@ -306,6 +308,12 @@ const Index = () => {
                       <span className="hidden sm:inline">Tasting</span>
                     </button>
                   </TabsTrigger>
+                  <TabsTrigger value="analytics" asChild>
+                    <button onClick={() => navigate(paths.analytics())} className="py-1.5 px-3">
+                      <TrendingUp className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Analytics</span>
+                    </button>
+                  </TabsTrigger>
                   {userRole === "production" && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -321,10 +329,6 @@ const Index = () => {
                       <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
                         <DropdownMenuLabel>Tools</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.analytics())}>
-                          <TrendingUp className="h-4 w-4 mr-2" />
-                          Analytics
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                           <FlaskConical className="h-4 w-4 mr-2" />
                           Calculators
@@ -446,6 +450,12 @@ const Index = () => {
           <TabsContent value="tasting" className="mt-4 sm:mt-6">
             <TastingTab blendBatches={blends || []} />
           </TabsContent>
+
+          {userRole === "production" && (
+            <TabsContent value="analytics" className="mt-4 sm:mt-6">
+              <ProductionAnalytics batches={batches} />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 

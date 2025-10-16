@@ -13,6 +13,7 @@ export const paths = {
   blending: () => '/blending',
   cellar: () => '/cellar',
   tasting: () => '/tasting',
+  analytics: () => '/analytics',
   suppliers: () => '/suppliers',
   
   // Auth
@@ -20,7 +21,6 @@ export const paths = {
   
   // Tools
   tools: {
-    analytics: () => '/tools/analytics',
     calculators: () => '/tools/calculators',
     printLabels: () => '/tools/print-labels',
     floorPlan: () => '/tools/floor-plan',
@@ -65,8 +65,8 @@ export const getPathName = (pathname: string): string => {
     '/blending': 'Blending',
     '/cellar': 'Cellar',
     '/tasting': 'Tasting',
+    '/analytics': 'Analytics',
     '/suppliers': 'Suppliers',
-    '/tools/analytics': 'Analytics',
     '/tools/calculators': 'Calculators',
     '/tools/print-labels': 'Print Labels',
     '/tools/floor-plan': 'Floor Plan',

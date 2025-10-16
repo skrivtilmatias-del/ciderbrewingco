@@ -42,9 +42,9 @@ describe('Route Smoke Tests', () => {
     expect(paths.blending()).toMatch(/^\//);
     expect(paths.cellar()).toMatch(/^\//);
     expect(paths.tasting()).toMatch(/^\//);
+    expect(paths.analytics()).toMatch(/^\//);
     expect(paths.suppliers()).toMatch(/^\//);
     expect(paths.auth()).toMatch(/^\//);
-    expect(paths.tools.analytics()).toMatch(/^\//);
     expect(paths.tools.calculators()).toMatch(/^\//);
     expect(paths.tools.planning()).toMatch(/^\//);
     expect(paths.tools.webhooks()).toMatch(/^\//);
@@ -78,8 +78,8 @@ describe('Path Helper Consistency', () => {
       paths.blending(),
       paths.cellar(),
       paths.tasting(),
+      paths.analytics(),
       paths.suppliers(),
-      paths.tools.analytics(),
       paths.tools.calculators(),
       paths.tools.printLabels(),
       paths.tools.floorPlan(),
