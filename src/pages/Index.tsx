@@ -149,7 +149,10 @@ const Index = () => {
   });
 
   // Handle batch selection from QR redirect via URL params
+  const qrRedirectHandled = useRef(false);
   useEffect(() => {
+    if (qrRedirectHandled.current) return;
+    
     const params = new URLSearchParams(location.search);
     const batchId = params.get("batch");
 
@@ -157,20 +160,28 @@ const Index = () => {
       const batch = batches.find((b) => b.id === batchId);
       if (batch) {
         setSelectedBatchId(batch.id);
-        navigate("/production");
+        setTimeout(() => {
+          navigate("/production", { replace: true });
+          qrRedirectHandled.current = true;
+        }, 100);
+      } else {
+        toast.error(`Batch ${batchId} not found`);
+        navigate("/batches", { replace: true });
       }
     }
-  }, [location.search, batches, navigate, setSelectedBatchId]);
+  }, [location.search, batches.length, navigate, setSelectedBatchId]);
 
   // Auto-select first batch when batches are loaded
   useEffect(() => {
     if (!selectedBatchId && batches.length > 0) {
       setSelectedBatchId(batches[0].id);
     }
-  }, [batches, selectedBatchId, setSelectedBatchId]);
+  }, [batches.length, selectedBatchId, setSelectedBatchId]);
 
   // Memoize event handlers with useCallback to prevent unnecessary re-renders
-  const handleBatchClick = useCallback((batch: Batch) => {
+  const handleBatchClick = useCallback((batch: Batch | null | undefined) => {
+    if (!batch) return;
+    
     setSelectedBatchId(batch.id);
     setDetailsOpen(true);
     
@@ -572,6 +583,7 @@ const Index = () => {
               {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
                 <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
                   <BatchSearch
+                    ref={searchInputRef}
                     value={batchSearchQuery}
                     onChange={setBatchSearchQuery}
                     totalCount={batches.length}
