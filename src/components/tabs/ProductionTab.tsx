@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FlaskConical, LayoutGrid, Clock, Layers } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FlaskConical, LayoutGrid, Clock, Layers, Activity } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { useBatchSearch } from '@/hooks/production/useBatchSearch';
@@ -17,6 +18,7 @@ import { QuickActionsPanel } from '@/components/QuickActionsPanel';
 import { OrganizedLogsList } from '@/components/OrganizedLogsList';
 import { BatchTimeline } from '@/components/production/BatchTimeline';
 import { GroupedBatchView } from '@/components/production/GroupedBatchView';
+import { BatchActivityFeed } from '@/components/production/BatchActivityFeed';
 import type { Batch } from '@/components/BatchCard';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
@@ -62,7 +64,7 @@ export const ProductionTab = ({
   const { results: searchResults } = useBatchSearch(batches, batchSearchQuery);
   
   // Local UI state
-  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped' | 'activity'>('grid');
 
   /**
    * Handle adding a new log entry
@@ -154,72 +156,67 @@ export const ProductionTab = ({
       <BatchProductionHeader batch={selectedBatch} />
 
       {/* ========== View Mode Toggle ========== */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={viewMode === 'grid' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('grid')}
-          className="gap-2"
-        >
-          <LayoutGrid className="w-4 h-4" />
-          Grid
-        </Button>
-        <Button
-          variant={viewMode === 'timeline' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('timeline')}
-          className="gap-2"
-        >
-          <Clock className="w-4 h-4" />
-          Timeline
-        </Button>
-        <Button
-          variant={viewMode === 'grouped' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('grouped')}
-          className="gap-2"
-        >
-          <Layers className="w-4 h-4" />
-          Grouped
-        </Button>
-      </div>
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+        <TabsList>
+          <TabsTrigger value="grid" className="gap-2">
+            <LayoutGrid className="w-4 h-4" />
+            Grid
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-2">
+            <Clock className="w-4 h-4" />
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger value="grouped" className="gap-2">
+            <Layers className="w-4 h-4" />
+            Grouped
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="gap-2">
+            <Activity className="w-4 h-4" />
+            Activity
+          </TabsTrigger>
+        </TabsList>
 
-      {/* ========== Content: View Mode Dependent ========== */}
-      {viewMode === 'grouped' ? (
-        // Grouped view shows all batches organized by category
-        <GroupedBatchView
-          batches={batches}
-          onSelectBatch={onSelectBatch}
-          onDeleteBatch={(batchId: string) => {
-            console.log('Delete batch:', batchId);
-          }}
-          onUpdateStage={onUpdateStage}
-        />
-      ) : viewMode === 'timeline' ? (
-        // Timeline view shows chronological batch history
-        <BatchTimeline
-          batch={{
-            ...selectedBatch,
-            user_id: '',
-            current_stage: selectedBatch.currentStage,
-            started_at: selectedBatch.startDate,
-            completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
-            created_at: selectedBatch.startDate,
-            updated_at: new Date().toISOString(),
-          } as BatchType}
-          logs={logs.map(log => ({
-            ...log,
-            user_id: '',
-            updated_at: log.created_at,
-          } as BatchLog))}
-          variant="detailed"
-          onStageClick={(stage) => {
-            console.log('Stage clicked:', stage);
-          }}
-        />
-      ) : (
-        // Grid view (default) shows detailed production metrics
-        <>
+        {/* ========== Content: View Mode Dependent ========== */}
+        <TabsContent value="grouped" className="mt-4">
+          <GroupedBatchView
+            batches={batches}
+            onSelectBatch={onSelectBatch}
+            onDeleteBatch={(batchId: string) => {
+              console.log('Delete batch:', batchId);
+            }}
+            onUpdateStage={onUpdateStage}
+          />
+        </TabsContent>
+
+        <TabsContent value="timeline" className="mt-4">;
+          <BatchTimeline
+            batch={{
+              ...selectedBatch,
+              user_id: '',
+              current_stage: selectedBatch.currentStage,
+              started_at: selectedBatch.startDate,
+              completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
+              created_at: selectedBatch.startDate,
+              updated_at: new Date().toISOString(),
+            } as BatchType}
+            logs={logs.map(log => ({
+              ...log,
+              user_id: '',
+              updated_at: log.created_at,
+            } as BatchLog))}
+            variant="detailed"
+            onStageClick={(stage) => {
+              console.log('Stage clicked:', stage);
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-4">
+          <BatchActivityFeed batchId={selectedBatch.id} compact={false} />
+        </TabsContent>
+
+        <TabsContent value="grid" className="mt-4 space-y-4">;
+
           {/* Stage Progression UI */}
           <StageProgressionUI
             currentStage={selectedBatch.currentStage}
@@ -274,8 +271,8 @@ export const ProductionTab = ({
             onScheduleTask={() => handleAddLog('Task', 'Task')}
             onAddGeneral={() => handleAddLog('Note', 'General')}
           />
-        </>
-      )}
+        </TabsContent>
+      </Tabs>
 
       {/* ========== Organized Logs List ========== */}
       {logs.length === 0 ? (

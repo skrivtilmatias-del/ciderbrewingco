@@ -7,6 +7,7 @@
  * - CRUD operations
  * - Search functionality
  * - Grouping and organization
+ * - Activity feed
  * 
  * @module hooks/production
  */
@@ -23,3 +24,6 @@ export type { SearchResult } from './useBatchSearch';
 
 export { useBatchGrouping } from './useBatchGrouping';
 export type { BatchGroup, GroupByOption } from './useBatchGrouping';
+
+export { useBatchActivityFeed, getUniqueUsers } from './useBatchActivityFeed';
+export type { ActivityItem, ActivityFilters, ActivityType } from './useBatchActivityFeed';
