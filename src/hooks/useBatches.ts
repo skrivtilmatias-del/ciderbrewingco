@@ -225,33 +225,46 @@ export const useBatches = () => {
       return data;
     },
     onMutate: async (variables) => {
-      // Cancel outgoing refetches
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ['batches'] });
       
-      // Snapshot the previous value
-      const previousBatches = queryClient.getQueryData(['batches']);
+      // Snapshot the previous value for rollback
+      const previousBatches = queryClient.getQueryData<Batch[]>(['batches']);
       
-      // Optimistically update to the new value
-      queryClient.setQueryData(['batches'], (old: any) => 
-        old?.map((b: any) => b.id === variables.batchId 
-          ? { ...b, currentStage: variables.newStage, progress: calculateProgress(variables.newStage) } 
-          : b
-        )
-      );
+      // Optimistically update the cache immediately
+      queryClient.setQueryData<Batch[]>(['batches'], (old) => {
+        if (!old) return old;
+        
+        return old.map((batch) => {
+          if (batch.id === variables.batchId) {
+            const progress = calculateProgress(variables.newStage);
+            return {
+              ...batch,
+              currentStage: variables.newStage as Batch['currentStage'],
+              progress,
+            };
+          }
+          return batch;
+        });
+      });
       
+      // Return context with previous state for potential rollback
       return { previousBatches };
     },
-    onError: (err, variables, context) => {
-      // Rollback to the previous value on error
+    onError: (error, variables, context) => {
+      // Rollback to the previous cached state
       if (context?.previousBatches) {
         queryClient.setQueryData(['batches'], context.previousBatches);
       }
-      toast.error(getUserFriendlyError(err));
+      
+      toast.error(`Failed to update stage: ${getUserFriendlyError(error)}`);
     },
-    onSuccess: () => {
-      // Refetch to ensure we have the latest data
+    onSuccess: (data, variables) => {
+      toast.success(`Stage updated to ${variables.newStage}`);
+    },
+    onSettled: () => {
+      // Always refetch after mutation completes to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ['batches'] });
-      toast.success('Batch stage updated');
     },
   });
 
