@@ -21,6 +21,7 @@ import { TastingAnalysisDialog } from "@/components/TastingAnalysisDialog";
 import { BatchDetails } from "@/components/BatchDetails";
 import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw } from "lucide-react";
 import { BatchSearch } from "@/components/BatchSearch";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -348,8 +349,8 @@ const Index = () => {
           <div className="flex flex-col gap-3 sm:gap-4 mb-4">
             {/* Row 1: Tabs on left, Search/Sort on right (desktop) */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-              {/* Tabs */}
-              <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
+              {/* Tabs - Hidden on Mobile (bottom nav used instead) */}
+              <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0 hidden md:block">
                 <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
                   {userRole === "production" && (
                     <>
@@ -598,6 +599,12 @@ const Index = () => {
         existingAnalysis={editingTasting}
         onSave={handleSaveTasting}
         preSelectedBlendId={selectedBlendIdForTasting}
+      />
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav
+        batchBadgeCount={batches.filter(b => b.progress < 100).length}
+        userRole={userRole}
       />
     </div>
   );
