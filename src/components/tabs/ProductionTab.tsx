@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { useBatchSearch } from '@/hooks/production/useBatchSearch';
 import { prefetchAdjacentBatches } from '@/lib/prefetchUtils';
+import { QueryErrorBoundary } from '@/components/errors';
 import { BatchProductionHeader } from '@/components/BatchProductionHeader';
 import { StageProgressionUI } from '@/components/StageProgressionUI';
 import { SmartInsights } from '@/components/SmartInsights';
@@ -126,9 +127,10 @@ export const ProductionTab = ({
 
   // ========== RENDER: Main Content ==========
   return (
-    <div className="space-y-4">
-      {/* Production Metrics Widget */}
-      <ProductionMetricsWidget batches={batches} />
+    <QueryErrorBoundary>
+      <div className="space-y-4">
+        {/* Production Metrics Widget */}
+        <ProductionMetricsWidget batches={batches} />
 
       {/* ========== Search Results Dropdown ========== */}
       {batchSearchQuery && (
@@ -295,6 +297,7 @@ export const ProductionTab = ({
           }}
         />
       )}
-    </div>
+      </div>
+    </QueryErrorBoundary>
   );
 };

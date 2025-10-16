@@ -16,6 +16,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { TabLoadingFallback } from "@/components/ui/TabLoadingFallback";
 import { preloadComponent } from "@/lib/lazyPreload";
+import { BaseErrorBoundary, TabErrorBoundary } from "@/components/errors";
 
 // ============= Code-Split Tab Components =============
 // Lazy load all tabs to reduce initial bundle size from ~800KB to ~300KB
@@ -418,24 +419,25 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-dvh bg-background overflow-x-hidden">
-      <KeyboardShortcutsDialog 
-        open={showShortcuts} 
-        onOpenChange={setShowShortcuts} 
-      />
-      
-      <AppHeader 
-        user={user}
-        userProfile={userProfile}
-        userRole={userRole}
-        onBatchCreated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
-        onTastingSaved={handleSaveTasting}
-        blendBatches={blends}
-        onShowShortcuts={() => setShowShortcuts(true)}
-      />
+    <BaseErrorBoundary level="root">
+      <div className="min-h-dvh bg-background overflow-x-hidden">
+        <KeyboardShortcutsDialog 
+          open={showShortcuts} 
+          onOpenChange={setShowShortcuts} 
+        />
+        
+        <AppHeader 
+          user={user}
+          userProfile={userProfile}
+          userRole={userRole}
+          onBatchCreated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
+          onTastingSaved={handleSaveTasting}
+          blendBatches={blends}
+          onShowShortcuts={() => setShowShortcuts(true)}
+        />
 
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Tabs value={activeTab} className="mb-6 sm:mb-8">
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <Tabs value={activeTab} className="mb-6 sm:mb-8">{/* ... keep existing code */}
           {/* Tabs and Search/Sort Controls */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-4">
             {/* Row 1: Tabs on left, Search/Sort on right (desktop) */}
@@ -598,79 +600,95 @@ const Index = () => {
 
           {userRole === "production" && (
             <TabsContent value="batches" className="mt-4 sm:mt-6">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <BatchesTab 
-                  batches={optimizedBatches}
-                  onBatchClick={handleBatchClick}
-                  onUpdateStage={handleUpdateStage}
-                />
-              </Suspense>
+              <TabErrorBoundary tabName="All Batches">
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <BatchesTab 
+                    batches={optimizedBatches}
+                    onBatchClick={handleBatchClick}
+                    onUpdateStage={handleUpdateStage}
+                  />
+                </Suspense>
+              </TabErrorBoundary>
             </TabsContent>
           )}
 
           {userRole === "production" && (
             <TabsContent value="production" className="mt-4 sm:mt-6">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <ProductionTab 
-                  batches={optimizedBatches}
-                  selectedBatch={selectedBatch}
-                  onSelectBatch={(batch) => setSelectedBatchId(batch.id)}
-                  onUpdateStage={handleUpdateStage}
-                />
-              </Suspense>
+              <TabErrorBoundary tabName="Production">
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <ProductionTab 
+                    batches={optimizedBatches}
+                    selectedBatch={selectedBatch}
+                    onSelectBatch={(batch) => setSelectedBatchId(batch.id)}
+                    onUpdateStage={handleUpdateStage}
+                  />
+                </Suspense>
+              </TabErrorBoundary>
             </TabsContent>
           )}
 
           {userRole === "production" && (
             <TabsContent value="tools" className="mt-4 sm:mt-6">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <ToolsTab 
-                  batches={batches}
-                  blendBatches={blends || []}
-                  toolView={toolView}
-                />
-              </Suspense>
+              <TabErrorBoundary tabName="Tools">
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <ToolsTab 
+                    batches={batches}
+                    blendBatches={blends || []}
+                    toolView={toolView}
+                  />
+                </Suspense>
+              </TabErrorBoundary>
             </TabsContent>
           )}
 
           {userRole === "production" && (
             <>
               <TabsContent value="blending" className="mt-4 sm:mt-6">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <BlendingTab 
-                    batches={batches}
-                    blendBatches={blends || []}
-                  />
-                </Suspense>
+                <TabErrorBoundary tabName="Blending">
+                  <Suspense fallback={<TabLoadingFallback />}>
+                    <BlendingTab 
+                      batches={batches}
+                      blendBatches={blends || []}
+                    />
+                  </Suspense>
+                </TabErrorBoundary>
               </TabsContent>
 
               <TabsContent value="cellar" className="mt-4 sm:mt-6">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <CellarTab blendBatches={blends || []} />
-                </Suspense>
+                <TabErrorBoundary tabName="Cellar">
+                  <Suspense fallback={<TabLoadingFallback />}>
+                    <CellarTab blendBatches={blends || []} />
+                  </Suspense>
+                </TabErrorBoundary>
               </TabsContent>
             </>
           )}
 
           {userRole === "production" && (
             <TabsContent value="suppliers" className="mt-4 sm:mt-6">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <SuppliersTab />
-              </Suspense>
+              <TabErrorBoundary tabName="Suppliers">
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <SuppliersTab />
+                </Suspense>
+              </TabErrorBoundary>
             </TabsContent>
           )}
 
           <TabsContent value="tasting" className="mt-4 sm:mt-6">
-            <Suspense fallback={<TabLoadingFallback />}>
-              <TastingTab blendBatches={blends || []} />
-            </Suspense>
+            <TabErrorBoundary tabName="Tasting">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <TastingTab blendBatches={blends || []} />
+              </Suspense>
+            </TabErrorBoundary>
           </TabsContent>
 
           {userRole === "production" && (
             <TabsContent value="analytics" className="mt-4 sm:mt-6">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <ProductionAnalytics batches={batches} />
-              </Suspense>
+              <TabErrorBoundary tabName="Analytics">
+                <Suspense fallback={<TabLoadingFallback />}>
+                  <ProductionAnalytics batches={batches} />
+                </Suspense>
+              </TabErrorBoundary>
             </TabsContent>
           )}
         </Tabs>
@@ -727,7 +745,8 @@ const Index = () => {
         batchBadgeCount={batches.filter(b => b.progress < 100).length}
         userRole={userRole}
       />
-    </div>
+      </div>
+    </BaseErrorBoundary>
   );
 };
 

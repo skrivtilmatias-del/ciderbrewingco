@@ -1,3 +1,12 @@
+/**
+ * Legacy ErrorBoundary component
+ * 
+ * This is the original error boundary. Consider using the new error boundaries
+ * from @/components/errors for more features and better error handling.
+ * 
+ * @deprecated Use BaseErrorBoundary, TabErrorBoundary, QueryErrorBoundary, or FormErrorBoundary instead
+ */
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
