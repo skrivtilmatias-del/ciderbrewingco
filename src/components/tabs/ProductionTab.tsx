@@ -1,7 +1,8 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FlaskConical, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FlaskConical, Loader2, LayoutGrid, Clock } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useBatchLogs } from '@/hooks/useBatchLogs';
 import { BatchProductionHeader } from '@/components/BatchProductionHeader';
@@ -10,9 +11,13 @@ import { SmartInsights } from '@/components/SmartInsights';
 import { ParameterTrendChart } from '@/components/ParameterTrendChart';
 import { QuickActionsPanel } from '@/components/QuickActionsPanel';
 import { OrganizedLogsList } from '@/components/OrganizedLogsList';
+import { BatchTimeline } from '@/components/production/BatchTimeline';
 import type { Batch } from '@/components/BatchCard';
+import type { Batch as BatchType } from '@/types/batch.types';
+import type { BatchLog } from '@/types/batchLog.types';
 import { useQueryClient } from '@tanstack/react-query';
 import { prefetchAdjacentBatches } from '@/lib/prefetchUtils';
+import { useState } from 'react';
 
 interface ProductionTabProps {
   batches: Batch[];
@@ -32,6 +37,7 @@ export const ProductionTab = ({
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
   const { logs, addLog, deleteLog, updateLog, isLoading, isAdding, isDeleting } = useBatchLogs(selectedBatch?.id || null);
   const queryClient = useQueryClient();
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
 
   // Handle adding a log - use hook's addLog or fallback to prop
   const handleAddLog = (title: string = '', role: string = 'General') => {
@@ -131,60 +137,109 @@ export const ProductionTab = ({
       {/* Batch Production Header */}
       <BatchProductionHeader batch={selectedBatch} />
 
-      {/* Stage Progression */}
-      <StageProgressionUI
-        currentStage={selectedBatch.currentStage}
-        batchId={selectedBatch.id}
-        batchName={selectedBatch.name}
-        onAdvanceStage={onUpdateStage}
-      />
-
-      {/* Smart Insights */}
-      <SmartInsights
-        batch={selectedBatch}
-        logs={logs}
-      />
-
-      {/* Parameter Trend Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ParameterTrendChart
-          title="OG"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.og || null
-          }))}
-          color="hsl(var(--info))"
-          unit="SG"
-          targetValue={selectedBatch.target_og ? selectedBatch.target_og / 1000 : undefined}
-        />
-        <ParameterTrendChart
-          title="pH"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.ph || null
-          }))}
-          color="hsl(var(--warning))"
-          unit=""
-          targetValue={selectedBatch.target_ph}
-        />
-        <ParameterTrendChart
-          title="Temperature"
-          data={logs.map(l => ({
-            date: l.created_at,
-            value: l.temp_c || null
-          }))}
-          color="hsl(var(--destructive))"
-          unit="°C"
-        />
+      {/* View Mode Toggle */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant={viewMode === 'grid' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('grid')}
+          className="gap-2"
+        >
+          <LayoutGrid className="w-4 h-4" />
+          Grid
+        </Button>
+        <Button
+          variant={viewMode === 'timeline' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('timeline')}
+          className="gap-2"
+        >
+          <Clock className="w-4 h-4" />
+          Timeline
+        </Button>
       </div>
 
-      {/* Quick Actions Panel */}
-      <QuickActionsPanel
-        onAddMeasurement={() => handleAddLog('Measurement', 'Lab')}
-        onAddObservation={() => handleAddLog('Observation', 'Observation')}
-        onScheduleTask={() => handleAddLog('Task', 'Task')}
-        onAddGeneral={() => handleAddLog('Note', 'General')}
-      />
+      {/* Timeline View */}
+      {viewMode === 'timeline' ? (
+        <BatchTimeline
+          batch={{
+            ...selectedBatch,
+            user_id: '',
+            current_stage: selectedBatch.currentStage,
+            started_at: selectedBatch.startDate,
+            completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
+            created_at: selectedBatch.startDate,
+            updated_at: new Date().toISOString(),
+          } as BatchType}
+          logs={logs.map(log => ({
+            ...log,
+            user_id: '',
+            updated_at: log.created_at,
+          } as BatchLog))}
+          variant="detailed"
+          onStageClick={(stage) => {
+            // Could add functionality to jump to stage or show stage details
+            console.log('Stage clicked:', stage);
+          }}
+        />
+      ) : (
+        <>
+          {/* Stage Progression */}
+          <StageProgressionUI
+            currentStage={selectedBatch.currentStage}
+            batchId={selectedBatch.id}
+            batchName={selectedBatch.name}
+            onAdvanceStage={onUpdateStage}
+          />
+
+          {/* Smart Insights */}
+          <SmartInsights
+            batch={selectedBatch}
+            logs={logs}
+          />
+
+          {/* Parameter Trend Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ParameterTrendChart
+              title="OG"
+              data={logs.map(l => ({
+                date: l.created_at,
+                value: l.og || null
+              }))}
+              color="hsl(var(--info))"
+              unit="SG"
+              targetValue={selectedBatch.target_og ? selectedBatch.target_og / 1000 : undefined}
+            />
+            <ParameterTrendChart
+              title="pH"
+              data={logs.map(l => ({
+                date: l.created_at,
+                value: l.ph || null
+              }))}
+              color="hsl(var(--warning))"
+              unit=""
+              targetValue={selectedBatch.target_ph}
+            />
+            <ParameterTrendChart
+              title="Temperature"
+              data={logs.map(l => ({
+                date: l.created_at,
+                value: l.temp_c || null
+              }))}
+              color="hsl(var(--destructive))"
+              unit="°C"
+            />
+          </div>
+
+          {/* Quick Actions Panel */}
+          <QuickActionsPanel
+            onAddMeasurement={() => handleAddLog('Measurement', 'Lab')}
+            onAddObservation={() => handleAddLog('Observation', 'Observation')}
+            onScheduleTask={() => handleAddLog('Task', 'Task')}
+            onAddGeneral={() => handleAddLog('Note', 'General')}
+          />
+        </>
+      )}
 
       {/* Organized Logs List */}
       {isLoading ? (
