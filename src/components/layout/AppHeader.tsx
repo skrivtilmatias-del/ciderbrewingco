@@ -59,7 +59,7 @@ export const AppHeader = ({
       target_fg: batchData.target_fg,
       target_ph: batchData.target_ph,
       target_end_ph: batchData.target_end_ph,
-      temperature: batchData.temperature,
+      initial_temp_c: batchData.initial_temp_c,
     });
     
     if (onBatchCreated) {
