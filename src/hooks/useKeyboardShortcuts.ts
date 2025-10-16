@@ -50,8 +50,8 @@ export const useKeyboardShortcuts = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { 
-    selectedBatch, 
-    setSelectedBatch, 
+    selectedBatchId, 
+    setSelectedBatchId, 
     clearSelection,
     setBatchSearchQuery 
   } = useAppStore();
@@ -173,7 +173,7 @@ export const useKeyboardShortcuts = ({
 
       // ========== BATCH ACTIONS (only when batch is selected) ==========
       
-      if (!selectedBatch) return;
+      if (!selectedBatchId) return;
 
       // E: Edit batch
       if (key === 'e' && !isCtrl && !isShift) {
@@ -195,7 +195,7 @@ export const useKeyboardShortcuts = ({
       if (key === 'p' && !isCtrl && !isShift) {
         e.preventDefault();
         showFeedback('Print label');
-        navigate(`/print-labels?batch=${selectedBatch.id}`);
+        navigate(`/print-labels?batch=${selectedBatchId}`);
         return;
       }
 
@@ -230,7 +230,7 @@ export const useKeyboardShortcuts = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     enabled,
-    selectedBatch,
+    selectedBatchId,
     navigate,
     location,
     onShowShortcuts,

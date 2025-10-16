@@ -22,7 +22,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   const { 
     blendSearchQuery,
     setBlendSearchQuery, 
-    setSelectedBlend,
+    setSelectedBlendId,
     setBlendDetailsOpen 
   } = useAppStore();
   const { deleteBlend, isLoading, isDeleting } = useBlends();
@@ -87,7 +87,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   });
 
   const handleBlendClick = (blend: any) => {
-    setSelectedBlend(blend);
+    setSelectedBlendId(blend.id);
     setBlendDetailsOpen(true);
   };
 

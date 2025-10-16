@@ -6,6 +6,8 @@ import { useBatches } from "@/hooks/useBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useOptimizedBatches } from "@/hooks/useOptimizedBatches";
 import { useRenderTracking } from "@/hooks/useRenderTracking";
+import { useDerivedSelectedBatch } from "@/hooks/useDerivedSelectedBatch";
+import { useDerivedSelectedBlend } from "@/hooks/useDerivedSelectedBlend";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
@@ -76,12 +78,12 @@ const Index = () => {
   
   // Use state from useAppStore
   const {
-    selectedBatch,
-    setSelectedBatch,
+    selectedBatchId,
+    setSelectedBatchId,
     detailsOpen,
     setDetailsOpen,
-    selectedBlend,
-    setSelectedBlend,
+    selectedBlendId,
+    setSelectedBlendId,
     blendDetailsOpen,
     setBlendDetailsOpen,
     batchSearchQuery,
@@ -89,6 +91,10 @@ const Index = () => {
     batchSortOrder,
     setBatchSortOrder,
   } = useAppStore();
+  
+  // Derive selected batch and blend from React Query cache (single source of truth)
+  const selectedBatch = useDerivedSelectedBatch();
+  const selectedBlend = useDerivedSelectedBlend();
   
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const [editingTasting, setEditingTasting] = useState<any>(null);
@@ -149,32 +155,22 @@ const Index = () => {
     if (batchId && batches.length > 0) {
       const batch = batches.find((b) => b.id === batchId);
       if (batch) {
-        setSelectedBatch(batch);
+        setSelectedBatchId(batch.id);
         navigate("/production");
       }
     }
-  }, [location.search, batches, navigate, setSelectedBatch]);
+  }, [location.search, batches, navigate, setSelectedBatchId]);
 
   // Auto-select first batch when batches are loaded
   useEffect(() => {
-    if (!selectedBatch && batches.length > 0) {
-      setSelectedBatch(batches[0]);
+    if (!selectedBatchId && batches.length > 0) {
+      setSelectedBatchId(batches[0].id);
     }
-  }, [batches, selectedBatch, setSelectedBatch]);
-
-  // Automatically sync selectedBatch when batches data updates
-  useEffect(() => {
-    if (selectedBatch) {
-      const updatedBatch = batches.find(b => b.id === selectedBatch.id);
-      if (updatedBatch && JSON.stringify(updatedBatch) !== JSON.stringify(selectedBatch)) {
-        setSelectedBatch(updatedBatch);
-      }
-    }
-  }, [batches, selectedBatch?.id, setSelectedBatch]);
+  }, [batches, selectedBatchId, setSelectedBatchId]);
 
   // Memoize event handlers with useCallback to prevent unnecessary re-renders
   const handleBatchClick = useCallback((batch: Batch) => {
-    setSelectedBatch(batch);
+    setSelectedBatchId(batch.id);
     setDetailsOpen(true);
     
     /**
@@ -188,7 +184,7 @@ const Index = () => {
         // Silently fail - prefetch is optional optimization
       });
     }
-  }, [batches, queryClient, setSelectedBatch, setDetailsOpen]);
+  }, [batches, queryClient, setSelectedBatchId, setDetailsOpen]);
 
   const handleUpdateStage = useCallback(async (batchId: string, newStage: Batch["currentStage"]) => {
     // Use the mutation from useBatches hook
@@ -197,7 +193,7 @@ const Index = () => {
 
 
   const handleGoToProduction = useCallback((batch: Batch) => {
-    setSelectedBatch(batch);
+    setSelectedBatchId(batch.id);
     setDetailsOpen(false);
     navigate("/production");
     
@@ -211,7 +207,7 @@ const Index = () => {
         // Silently fail
       });
     }
-  }, [batches, navigate, queryClient, setSelectedBatch, setDetailsOpen]);
+  }, [batches, navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
 
   /**
    * Tab Hover Prefetching Handlers
@@ -618,7 +614,7 @@ const Index = () => {
                 <ProductionTab 
                   batches={optimizedBatches}
                   selectedBatch={selectedBatch}
-                  onSelectBatch={setSelectedBatch}
+                  onSelectBatch={(batch) => setSelectedBatchId(batch.id)}
                   onUpdateStage={handleUpdateStage}
                 />
               </Suspense>

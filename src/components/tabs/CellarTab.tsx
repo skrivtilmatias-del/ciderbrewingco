@@ -8,11 +8,11 @@ interface CellarTabProps {
 }
 
 export const CellarTab = ({ blendBatches }: CellarTabProps) => {
-  const { setSelectedBlend, setBlendDetailsOpen } = useAppStore();
+  const { setSelectedBlendId, setBlendDetailsOpen } = useAppStore();
 
   const handleBlendClick = (blend: any) => {
-    // Set showInventoryControls flag for cellar view
-    setSelectedBlend({ ...blend, showInventoryControls: true });
+    // Set showInventoryControls flag for cellar view - store ID only
+    setSelectedBlendId(blend.id);
     setBlendDetailsOpen(true);
   };
 
