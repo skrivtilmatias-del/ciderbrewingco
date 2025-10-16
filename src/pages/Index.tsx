@@ -205,7 +205,22 @@ const Index = () => {
 
   // Memoize event handlers with useCallback to prevent unnecessary re-renders
   const handleBatchClick = useCallback((batch: Batch | null | undefined) => {
+    // Defensive: Early return for null/undefined batch
     if (!batch) return;
+    
+    // Defensive: Validate batch has required id property
+    if (!batch.id) {
+      console.error('handleBatchClick: Batch missing required id property', batch);
+      return;
+    }
+    
+    // Defensive: Verify batch exists in current batch list
+    const batchExists = batches.some(b => b.id === batch.id);
+    if (!batchExists) {
+      console.warn('handleBatchClick: Batch not found in current batch list', batch.id);
+      toast.error('This batch is no longer available');
+      return;
+    }
     
     setSelectedBatchId(batch.id);
     setDetailsOpen(true);
