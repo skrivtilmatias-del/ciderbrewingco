@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,9 @@ import { useRenderTracking } from "@/hooks/useRenderTracking";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { TabLoadingFallback } from "@/components/ui/TabLoadingFallback";
 import { preloadComponent } from "@/lib/lazyPreload";
 
@@ -91,6 +93,21 @@ const Index = () => {
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const [editingTasting, setEditingTasting] = useState<any>(null);
   const [selectedBlendIdForTasting, setSelectedBlendIdForTasting] = useState<string | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    onShowShortcuts: () => setShowShortcuts(true),
+    onNewBatch: () => {
+      // TODO: Open new batch dialog
+      console.log('Open new batch dialog');
+    },
+    onFocusSearch: () => {
+      // Focus search input if it exists
+      searchInputRef.current?.focus();
+    },
+  });
   
   // Memoize active tab computation
   const activeTab = useMemo((): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
@@ -406,6 +423,11 @@ const Index = () => {
 
   return (
     <div className="min-h-dvh bg-background overflow-x-hidden">
+      <KeyboardShortcutsDialog 
+        open={showShortcuts} 
+        onOpenChange={setShowShortcuts} 
+      />
+      
       <AppHeader 
         user={user}
         userProfile={userProfile}
@@ -413,6 +435,7 @@ const Index = () => {
         onBatchCreated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
         onTastingSaved={handleSaveTasting}
         blendBatches={blends}
+        onShowShortcuts={() => setShowShortcuts(true)}
       />
 
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">

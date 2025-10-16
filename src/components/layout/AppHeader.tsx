@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Apple, Award, LogOut } from 'lucide-react';
+import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NewBatchDialog } from '@/components/NewBatchDialog';
@@ -16,6 +16,7 @@ interface AppHeaderProps {
   onBatchCreated?: () => void;
   onTastingSaved?: (data: any, analysisId?: string) => void;
   blendBatches?: any[];
+  onShowShortcuts?: () => void;
 }
 
 export const AppHeader = ({ 
@@ -24,7 +25,8 @@ export const AppHeader = ({
   userRole,
   onBatchCreated,
   onTastingSaved,
-  blendBatches = []
+  blendBatches = [],
+  onShowShortcuts
 }: AppHeaderProps) => {
   const navigate = useNavigate();
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
@@ -100,6 +102,20 @@ export const AppHeader = ({
             {userRole !== "taster" && (
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
             )}
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
+                  onClick={onShowShortcuts}
+                >
+                  <Keyboard className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Keyboard Shortcuts (?)</TooltipContent>
+            </Tooltip>
             
             <Tooltip>
               <TooltipTrigger asChild>
