@@ -6,12 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Tag, Upload, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Trash2, Tag, Upload, X, CalendarIcon } from "lucide-react";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { batchLogSchema } from "@/lib/validationSchemas";
 import { getUserFriendlyError } from "@/lib/errorHandler";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export interface BatchLog {
   id: string;
@@ -54,11 +58,22 @@ export function BatchLogCard({ log, onUpdate, onDelete, onClose, allowedStages }
   const [attachments, setAttachments] = useState<string[]>(log.attachments || []);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Date and time state
+  const initialDate = new Date(log.created_at);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
+  const [timeHours, setTimeHours] = useState(initialDate.getHours().toString().padStart(2, '0'));
+  const [timeMinutes, setTimeMinutes] = useState(initialDate.getMinutes().toString().padStart(2, '0'));
 
   // Debounced update to prevent excessive API calls
   const handleUpdate = useCallback(async () => {
     if (isUpdating) return;
     setIsUpdating(true);
+    
+    // Combine date and time into a single timestamp
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setHours(parseInt(timeHours), parseInt(timeMinutes), 0, 0);
+    
     // Validate input using Zod
     const validation = batchLogSchema.safeParse({
       stage,
@@ -85,6 +100,7 @@ export function BatchLogCard({ log, onUpdate, onDelete, onClose, allowedStages }
         .from("batch_logs")
         .update({
           ...validation.data,
+          created_at: updatedDate.toISOString(),
           attachments: attachments.length > 0 ? attachments : null
         })
         .eq("id", log.id);
@@ -99,7 +115,7 @@ export function BatchLogCard({ log, onUpdate, onDelete, onClose, allowedStages }
     } finally {
       setIsUpdating(false);
     }
-  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, attachments, log.id, onUpdate, onClose, isUpdating]);
+  }, [stage, role, title, content, tags, og, fg, ph, ta, tempC, attachments, selectedDate, timeHours, timeMinutes, log.id, onUpdate, onClose, isUpdating]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this log entry?")) return;
@@ -221,9 +237,68 @@ export function BatchLogCard({ log, onUpdate, onDelete, onClose, allowedStages }
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground">
-              {new Date(log.created_at).toLocaleString()}
-            </span>
+            {/* Date and Time Picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-8 text-xs justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3 w-3" />
+                  {selectedDate ? (
+                    format(selectedDate, "MM/dd/yyyy")
+                  ) : (
+                    <span>Pick date</span>
+                  )}
+                  {" "}
+                  {timeHours}:{timeMinutes}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+                <div className="p-3 border-t">
+                  <Label className="text-xs mb-2 block">Time</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={timeHours}
+                      onChange={(e) => {
+                        const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0));
+                        setTimeHours(val.toString().padStart(2, '0'));
+                      }}
+                      className="w-16 h-8 text-xs text-center"
+                      placeholder="HH"
+                    />
+                    <span className="text-xs">:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={timeMinutes}
+                      onChange={(e) => {
+                        const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                        setTimeMinutes(val.toString().padStart(2, '0'));
+                      }}
+                      className="w-16 h-8 text-xs text-center"
+                      placeholder="MM"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            
             <Select value={stage} onValueChange={setStage}>
               <SelectTrigger className="w-[180px] h-8 text-xs">
                 <SelectValue />
