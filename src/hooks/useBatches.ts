@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import type { Batch } from '@/components/BatchCard';
-
+import { useEffect } from 'react';
 export const useBatches = () => {
   const queryClient = useQueryClient();
 
@@ -40,6 +40,52 @@ export const useBatches = () => {
       return formattedBatches;
     },
   });
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        if (!batches || batches.length === 0) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const batchIds = batches.map((b: any) => b.id);
+        const { data: existingLogs } = await supabase
+          .from('batch_logs')
+          .select('batch_id')
+          .in('batch_id', batchIds)
+          .eq('user_id', session.user.id);
+
+        const existingSet = new Set((existingLogs || []).map((l: any) => l.batch_id));
+
+        const inserts = (batches as Batch[])
+          .filter((b) => !existingSet.has(b.id))
+          .map((b) => ({
+            batch_id: b.id,
+            user_id: session.user.id,
+            stage: b.currentStage || 'Harvest',
+            role: 'Lab',
+            title: 'Initial Batch Setup (Backfill)',
+            content: b.notes || '',
+            og: (b as any).target_og ?? null,
+            ph: (b as any).target_ph ?? null,
+            temp_c: null,
+            tags: [] as string[],
+          }));
+
+        if (inserts.length) {
+          const { error: insertErr } = await supabase.from('batch_logs').insert(inserts);
+          if (insertErr) {
+            console.error('Backfill initial logs failed:', insertErr);
+          } else {
+            queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
+          }
+        }
+      } catch (e) {
+        console.error('Backfill error:', e);
+      }
+    };
+    run();
+  }, [batches]);
 
   // Create batch mutation
   const createBatchMutation = useMutation({
