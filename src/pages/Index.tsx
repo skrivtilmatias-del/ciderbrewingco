@@ -176,7 +176,7 @@ const Index = () => {
     if (!selectedBatchId && batches.length > 0) {
       setSelectedBatchId(batches[0].id);
     }
-  }, [batches.length, selectedBatchId, setSelectedBatchId]);
+  }, [batches.length, selectedBatchId]);
 
   // Memoize event handlers with useCallback to prevent unnecessary re-renders
   const handleBatchClick = useCallback((batch: Batch | null | undefined) => {
