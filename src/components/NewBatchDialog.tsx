@@ -64,7 +64,7 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
       currentStage: "Harvest" as const,
       progress: 0,
       notes: validation.data.notes,
-      temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
+      initial_temp_c: formData.temperature ? parseFloat(formData.temperature) : undefined,
     };
 
     onBatchCreated(newBatch as any);
@@ -141,18 +141,6 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
                 onChange={(e) => setFormData({ ...formData, yeastType: e.target.value })}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="temperature">Temperature (°C) (Optional)</Label>
-              <Input
-                id="temperature"
-                type="number"
-                step="0.1"
-                placeholder="e.g., 18"
-                value={formData.temperature}
-                onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
-              />
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -205,6 +193,18 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
                 onChange={(e) => setFormData({ ...formData, endPH: e.target.value })}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="temperature">Temperature (°C) (Optional)</Label>
+            <Input
+              id="temperature"
+              type="number"
+              step="0.1"
+              placeholder="e.g., 18"
+              value={formData.temperature}
+              onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+            />
           </div>
 
           <div className="space-y-2">
