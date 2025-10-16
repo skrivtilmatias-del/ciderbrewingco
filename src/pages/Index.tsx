@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
-import { useBlends } from "@/hooks/useBlends";
+import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from '@/stores/appStore';
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -39,9 +39,23 @@ const Index = () => {
   const { user, userRole, userProfile, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   
-  // Use hooks for data fetching
-  const { batches, isLoading: batchesLoading, error: batchesError, updateStage } = useBatches();
-  const { blends, isLoading: blendsLoading, error: blendsError } = useBlends();
+  // Use parallel data fetching hook for optimal performance
+  // This fetches batches, blends, and suppliers in parallel to eliminate request waterfalls
+  const { 
+    batches, 
+    blends, 
+    suppliers,
+    isLoading, 
+    hasError, 
+    errors,
+    retry: retryParallelData,
+    loadingStates 
+  } = useParallelProductionData();
+  
+  // Still use individual hooks for mutations and side effects
+  // Note: useBatches also fetches data but TanStack Query deduplicates it automatically
+  // since both use the same queryKey ['batches']. The hook's backfill logic still runs.
+  const { updateStage } = useBatches();
   
   // Use state from useAppStore
   const {
@@ -175,17 +189,20 @@ const Index = () => {
     }
   };
 
-  const loading = batchesLoading || blendsLoading;
-  const hasError = batchesError || blendsError;
-
-  // Retry function
+  // Retry function - uses the combined retry from parallel hook
   const handleRetry = () => {
-    queryClient.invalidateQueries({ queryKey: ['batches'] });
-    queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+    retryParallelData();
   };
 
-  // Show error state
-  if (hasError && !loading) {
+  // Show error state - handle partial failures gracefully
+  if (hasError && !isLoading) {
+    // Check which specific queries failed
+    const failedQueries = Object.entries(errors)
+      .filter(([_, error]) => error)
+      .map(([name]) => name);
+    
+    const hasAnyData = batches.length > 0 || blends.length > 0;
+    
     return (
       <div className="min-h-dvh bg-background">
         <header className="border-b border-border bg-card/95 backdrop-blur">
@@ -199,22 +216,40 @@ const Index = () => {
             <AlertTitle>Error Loading Data</AlertTitle>
             <AlertDescription className="space-y-4">
               <div>
-                {batchesError && <p>Failed to load batches: {batchesError.message}</p>}
-                {blendsError && <p>Failed to load blends: {blendsError.message}</p>}
+                {errors.batches && <p>Failed to load batches: {errors.batches.message}</p>}
+                {errors.blends && <p>Failed to load blends: {errors.blends.message}</p>}
+                {errors.suppliers && <p>Failed to load suppliers: {errors.suppliers.message}</p>}
               </div>
+              {hasAnyData && (
+                <p className="text-sm text-muted-foreground">
+                  Some data loaded successfully. You can continue using the app with limited functionality.
+                </p>
+              )}
               <Button onClick={handleRetry} variant="outline" className="gap-2">
                 <RefreshCw className="h-4 w-4" />
-                Retry
+                Retry Failed Requests
               </Button>
             </AlertDescription>
           </Alert>
+          
+          {/* Show available data even if some queries failed */}
+          {hasAnyData && (
+            <div className="mt-6">
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                Showing available data for: {[
+                  batches.length > 0 && 'Batches',
+                  blends.length > 0 && 'Blends'
+                ].filter(Boolean).join(', ')}
+              </p>
+            </div>
+          )}
         </main>
       </div>
     );
   }
 
-  // Show loading state
-  if (loading || !user) {
+  // Show loading state - only show skeleton if ALL queries are loading
+  if (isLoading || !user) {
     return (
       <div className="min-h-dvh bg-background">
         <header className="border-b border-border bg-card/95 backdrop-blur">
