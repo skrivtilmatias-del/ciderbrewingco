@@ -581,7 +581,7 @@ export const BatchFilters = ({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -593,14 +593,14 @@ export const BatchFilters = ({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Apple Variety</Label>
               <Select
-                value={filters.variety}
-                onValueChange={(value) => onChange({ ...filters, variety: value })}
+                value={filters.variety || "all-varieties"}
+                onValueChange={(value) => onChange({ ...filters, variety: value === "all-varieties" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All varieties" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All varieties</SelectItem>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all-varieties">All varieties</SelectItem>
                   {varieties.map((variety) => (
                     <SelectItem key={variety} value={variety}>
                       {variety}

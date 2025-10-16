@@ -83,7 +83,7 @@ export const useBatchFilters = (
       }
 
       // Variety filter
-      if (filters.variety && batch.variety !== filters.variety) {
+      if (filters.variety && filters.variety !== "all-varieties" && batch.variety !== filters.variety) {
         return false;
       }
 
