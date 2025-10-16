@@ -2,13 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TastingAnalysis, CreateTastingAnalysisInput, UpdateTastingAnalysisInput } from '@/types/tasting.types';
 import { toast } from 'sonner';
+import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 
 export const useTastingAnalysis = (blendBatchId?: string) => {
   const queryClient = useQueryClient();
 
-  // Fetch tasting analyses
+  // Fetch tasting analyses with optimized caching
   const { data: analyses = [], isLoading, error } = useQuery({
-    queryKey: ['tastingAnalyses', blendBatchId],
+    queryKey: blendBatchId ? queryKeys.tasting.byBlend(blendBatchId) : queryKeys.tasting.all(),
+    ...queryConfigs.tastingNotes,
     queryFn: async () => {
       let query = supabase
         .from('tasting_analysis')
@@ -41,7 +43,7 @@ export const useTastingAnalysis = (blendBatchId?: string) => {
       return data as TastingAnalysis;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tastingAnalyses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasting.all() });
       toast.success('Tasting analysis created successfully');
     },
     onError: (error: Error) => {
@@ -63,7 +65,7 @@ export const useTastingAnalysis = (blendBatchId?: string) => {
       return data as TastingAnalysis;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tastingAnalyses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasting.all() });
       toast.success('Analysis updated successfully');
     },
     onError: (error: Error) => {
@@ -82,7 +84,7 @@ export const useTastingAnalysis = (blendBatchId?: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tastingAnalyses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasting.all() });
       toast.success('Analysis deleted successfully');
     },
     onError: (error: Error) => {

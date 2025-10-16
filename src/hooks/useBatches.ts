@@ -2,14 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
+import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 import type { Batch } from '@/components/BatchCard';
 import { useEffect } from 'react';
 export const useBatches = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all batches
+  // Fetch all batches with optimized caching
   const { data: batches = [], isLoading, error } = useQuery({
-    queryKey: ['batches'],
+    queryKey: queryKeys.batches.all(),
+    ...queryConfigs.batches,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('batches')
@@ -77,7 +79,7 @@ export const useBatches = () => {
           if (insertErr) {
             console.error('Backfill initial logs failed:', insertErr);
           } else {
-            queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
           }
         }
       } catch (e) {
@@ -159,12 +161,12 @@ export const useBatches = () => {
            console.error('Failed to create initial log:', logError);
          }
        }
-       
-       // Invalidate queries
-       queryClient.invalidateQueries({ queryKey: ['batches'] });
-       queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
-       
-       toast.success('Batch created successfully');
+        
+        // Invalidate queries using centralized keys
+        queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
+        
+        toast.success('Batch created successfully');
      },
     onError: (error: any) => {
       toast.error(getUserFriendlyError(error));
@@ -182,7 +184,7 @@ export const useBatches = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
       toast.success('Batch deleted successfully');
     },
     onError: (error: any) => {
@@ -226,13 +228,13 @@ export const useBatches = () => {
     },
     onMutate: async (variables) => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
-      await queryClient.cancelQueries({ queryKey: ['batches'] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.batches.all() });
       
       // Snapshot the previous value for rollback
-      const previousBatches = queryClient.getQueryData<Batch[]>(['batches']);
+      const previousBatches = queryClient.getQueryData<Batch[]>(queryKeys.batches.all());
       
       // Optimistically update the cache immediately
-      queryClient.setQueryData<Batch[]>(['batches'], (old) => {
+      queryClient.setQueryData<Batch[]>(queryKeys.batches.all(), (old) => {
         if (!old) return old;
         
         return old.map((batch) => {
@@ -254,7 +256,7 @@ export const useBatches = () => {
     onError: (error, variables, context) => {
       // Rollback to the previous cached state
       if (context?.previousBatches) {
-        queryClient.setQueryData(['batches'], context.previousBatches);
+        queryClient.setQueryData(queryKeys.batches.all(), context.previousBatches);
       }
       
       toast.error(`Failed to update stage: ${getUserFriendlyError(error)}`);
@@ -264,7 +266,7 @@ export const useBatches = () => {
     },
     onSettled: () => {
       // Always refetch after mutation completes to ensure data consistency
-      queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
     },
   });
 

@@ -1,5 +1,6 @@
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 import type { Batch } from '@/components/BatchCard';
 import type { Supplier } from '@/types/supplier.types';
 
@@ -29,7 +30,8 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
     queries: [
       // Batches query
       {
-        queryKey: ['batches'],
+        queryKey: queryKeys.batches.all(),
+        ...queryConfigs.batches,
         queryFn: async () => {
           const { data, error } = await supabase
             .from('batches')
@@ -59,11 +61,11 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
 
           return formattedBatches;
         },
-        staleTime: 30000, // Cache for 30 seconds
       },
       // Blends query
       {
-        queryKey: ['blend-batches'],
+        queryKey: queryKeys.blends.all(),
+        ...queryConfigs.blends,
         queryFn: async () => {
           const { data: blendsData, error: blendsError } = await supabase
             .from('blend_batches')
@@ -134,11 +136,11 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
 
           return blendsWithData;
         },
-        staleTime: 30000, // Cache for 30 seconds
       },
       // Suppliers query
       {
-        queryKey: ['suppliers'],
+        queryKey: queryKeys.suppliers.all(),
+        ...queryConfigs.suppliers,
         queryFn: async () => {
           const { data, error } = await supabase
             .from('suppliers')
@@ -148,7 +150,6 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
           if (error) throw error;
           return data as Supplier[];
         },
-        staleTime: 60000, // Cache for 60 seconds
       },
     ],
   });
@@ -175,11 +176,11 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
     suppliers: suppliersQuery.isLoading,
   };
 
-  // Combined retry function
+  // Combined retry function using centralized query keys
   const retry = () => {
-    queryClient.invalidateQueries({ queryKey: ['batches'] });
-    queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
-    queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.blends.all() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all() });
   };
 
   return {

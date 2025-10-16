@@ -2,13 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
+import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 
 export const useBlends = () => {
   const queryClient = useQueryClient();
 
   // Fetch blend batches with components and tasting data
   const { data: blends = [], isLoading, error } = useQuery({
-    queryKey: ['blend-batches'],
+    queryKey: queryKeys.blends.all(),
+    ...queryConfigs.blends,
     queryFn: async () => {
       const { data: blendsData, error: blendsError } = await supabase
         .from('blend_batches')
@@ -143,7 +145,7 @@ export const useBlends = () => {
       return blendData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.blends.all() });
       toast.success('Blend batch created');
     },
     onError: (error: any) => {
@@ -162,7 +164,7 @@ export const useBlends = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blend-batches'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.blends.all() });
       toast.success('Blend batch deleted');
     },
     onError: (error: any) => {
