@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { BatchCard, Batch } from '@/components/BatchCard';
-import { Card } from '@/components/ui/card';
+import { Batch } from '@/components/BatchCard';
 import { useAppStore } from '@/stores/appStore';
 import { useBatches } from '@/hooks/useBatches';
 import { paths } from '@/routes/paths';
+import { VirtualBatchList } from '@/components/VirtualBatchList';
 
 interface BatchesTabProps {
   batches: Batch[];
@@ -71,29 +71,14 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     });
 
   return (
-    <div className="space-y-4">
-      {/* Batches Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        {filteredAndSortedBatches.length === 0 ? (
-          <Card className="col-span-full p-12 text-center border-dashed">
-            <p className="text-muted-foreground">
-              {batchSearchQuery ? "No batches match your search." : "No batches yet. Click 'New Batch' to get started."}
-            </p>
-          </Card>
-        ) : (
-          filteredAndSortedBatches.map((batch) => (
-            <BatchCard
-              key={batch.id}
-              batch={batch}
-              onClick={() => handleBatchClick(batch)}
-              onDelete={() => handleDeleteBatch(batch.id)}
-              onAdvanceStage={onUpdateStage ? (newStage) => onUpdateStage(batch.id, newStage) : undefined}
-              onPreviousStage={onUpdateStage ? (newStage) => onUpdateStage(batch.id, newStage) : undefined}
-            />
-          ))
-        )}
-      </div>
-    </div>
+    <VirtualBatchList
+      batches={filteredAndSortedBatches}
+      onBatchClick={handleBatchClick}
+      onDeleteBatch={handleDeleteBatch}
+      onUpdateStage={onUpdateStage}
+      searchQuery={batchSearchQuery}
+      layout="grid"
+    />
   );
 };
 
