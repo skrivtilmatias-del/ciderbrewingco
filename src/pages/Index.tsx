@@ -603,7 +603,7 @@ const Index = () => {
               <TabErrorBoundary tabName="All Batches">
                 <Suspense fallback={<TabLoadingFallback />}>
                   <BatchesTab 
-                    batches={optimizedBatches}
+                    batches={batches}
                     onBatchClick={handleBatchClick}
                     onUpdateStage={handleUpdateStage}
                   />

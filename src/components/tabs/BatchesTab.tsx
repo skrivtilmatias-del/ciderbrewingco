@@ -39,15 +39,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     );
   }
 
-  // Safety check: Empty state
-  if (batches.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="text-muted-foreground">No batches yet</div>
-        <p className="text-sm text-muted-foreground">Create your first batch to get started</p>
-      </div>
-    );
-  }
 
   const navigate = useNavigate();
   const { 
@@ -141,15 +132,28 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
         varieties={varieties}
       />
 
-      {/* Virtual Batch List */}
-      <VirtualBatchList
-        batches={filteredAndSortedBatches}
-        onBatchClick={handleBatchClick}
-        onDeleteBatch={handleDeleteBatch}
-        onUpdateStage={onUpdateStage}
-        searchQuery={batchSearchQuery}
-        layout="grid"
-      />
+      {/* Show empty state if no batches exist at all */}
+      {batches.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="text-muted-foreground">No batches yet</div>
+          <p className="text-sm text-muted-foreground">Create your first batch to get started</p>
+        </div>
+      ) : filteredAndSortedBatches.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="text-muted-foreground">No batches match your filters</div>
+          <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+        </div>
+      ) : (
+        /* Virtual Batch List */
+        <VirtualBatchList
+          batches={filteredAndSortedBatches}
+          onBatchClick={handleBatchClick}
+          onDeleteBatch={handleDeleteBatch}
+          onUpdateStage={onUpdateStage}
+          searchQuery={batchSearchQuery}
+          layout="grid"
+        />
+      )}
 
       {/* Compare Selected Button */}
       <CompareSelectedButton onCompare={() => setComparisonOpen(true)} />
