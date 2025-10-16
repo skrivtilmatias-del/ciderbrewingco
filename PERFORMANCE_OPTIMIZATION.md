@@ -1,5 +1,7 @@
 # Performance Optimization Summary
 
+> **Related:** See [CODE_SPLITTING.md](./CODE_SPLITTING.md) for bundle size optimization and lazy loading strategy.
+
 ## Optimizations Implemented
 
 ### 1. Custom Memoization Hook (`useOptimizedBatches`)
