@@ -271,9 +271,9 @@ export const BatchCard = ({
 
       <CardHeader className="pb-3 space-y-0">
         {/* Top Row: Batch Number and Actions */}
-        <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-xl font-bold truncate">
+            <CardTitle className="text-lg sm:text-xl font-bold truncate">
               {highlightText(batch.name, searchQuery)}
             </CardTitle>
           </div>
