@@ -1,242 +1,98 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Filter, 
-  Download, 
-  ChevronDown,
-  Activity,
-  FlaskConical,
-  StickyNote,
-  Wine,
-  QrCode,
-  FileDown,
-  UserPlus,
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useBatchActivities } from '@/hooks/useBatchActivities';
+import { useRealtimeActivities } from '@/hooks/useRealtimeActivities';
+import { useActivityComments } from '@/hooks/useActivityComments';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { format, formatDistanceToNow } from 'date-fns';
+import {
+  Filter,
+  Download,
+  Calendar,
+  MoreVertical,
+  MessageSquare,
+  Copy,
+  Loader2,
   ArrowRight,
-  Clock,
-  Loader2
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { useBatchActivityFeed, type ActivityItem, type ActivityFilters } from '@/hooks/production/useBatchActivityFeed';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import {
+  getActivityIcon,
+  getActivityColor,
+  getActivityTitle,
+  getActivityDescription,
+  copyActivityLink,
+  exportActivities,
+} from '@/lib/activityHelpers';
+import type { Activity, ActivityComment } from '@/types/activity.types';
 
-/**
- * Activity icon and color mapping
- */
-const activityConfig = {
-  stage_change: { icon: ArrowRight, color: 'text-blue-500 bg-blue-50', label: 'Stage Change' },
-  measurement: { icon: FlaskConical, color: 'text-purple-500 bg-purple-50', label: 'Measurement' },
-  note: { icon: StickyNote, color: 'text-amber-500 bg-amber-50', label: 'Note' },
-  blend_created: { icon: Wine, color: 'text-rose-500 bg-rose-50', label: 'Blend Created' },
-  label_printed: { icon: QrCode, color: 'text-green-500 bg-green-50', label: 'Label Printed' },
-  qr_scanned: { icon: QrCode, color: 'text-cyan-500 bg-cyan-50', label: 'QR Scanned' },
-  export: { icon: FileDown, color: 'text-indigo-500 bg-indigo-50', label: 'Export' },
-  user_assigned: { icon: UserPlus, color: 'text-teal-500 bg-teal-50', label: 'User Assigned' },
-  batch_created: { icon: Activity, color: 'text-green-500 bg-green-50', label: 'Batch Created' },
-  batch_updated: { icon: Activity, color: 'text-blue-500 bg-blue-50', label: 'Batch Updated' },
-};
-
-/**
- * Props for BatchActivityFeed
- */
 interface BatchActivityFeedProps {
-  /** Batch ID to show activities for (null = all batches) */
-  batchId: string | null;
-  /** Compact view for sidebars/panels */
+  batchId?: string;
+  className?: string;
   compact?: boolean;
-  /** Maximum height of feed */
-  maxHeight?: string;
 }
 
-/**
- * ActivityCard - Individual activity item display
- */
-const ActivityCard = ({ 
-  activity, 
-  compact = false 
-}: { 
-  activity: ActivityItem; 
-  compact?: boolean;
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  const config = activityConfig[activity.type];
-  const Icon = config.icon;
-  
-  // Get user initials
-  const initials = activity.userName
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+export const BatchActivityFeed = ({ batchId, className, compact = false }: BatchActivityFeedProps) => {
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>();
+  const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  return (
-    <Card className={`p-4 hover:shadow-md transition-shadow ${compact ? 'p-3' : ''}`}>
-      <div className="flex gap-3">
-        {/* Activity Icon */}
-        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${config.color}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-
-        {/* Activity Content */}
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Avatar className="w-6 h-6">
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-              </Avatar>
-              <span className="font-medium text-sm">{activity.userName}</span>
-              <Badge variant="outline" className="text-xs">
-                {config.label}
-              </Badge>
-            </div>
-            
-            <time className="text-xs text-muted-foreground whitespace-nowrap">
-              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
-            </time>
-          </div>
-
-          {/* Title */}
-          <h4 className="font-medium mt-2">{activity.title}</h4>
-
-          {/* Description */}
-          {activity.description && (
-            <p className={`text-sm text-muted-foreground mt-1 ${
-              !expanded && !compact ? 'line-clamp-2' : ''
-            }`}>
-              {activity.description}
-            </p>
-          )}
-
-          {/* Metadata */}
-          {!compact && activity.metadata && Object.keys(activity.metadata).length > 0 && (
-            <div className={`mt-2 space-y-1 ${!expanded ? 'hidden' : ''}`}>
-              {activity.metadata.stage && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Stage:</span>
-                  <Badge variant="secondary">{activity.metadata.stage}</Badge>
-                </div>
-              )}
-              
-              {(activity.metadata.og || activity.metadata.ph || activity.metadata.temp_c) && (
-                <div className="flex flex-wrap gap-3 text-sm mt-2">
-                  {activity.metadata.og && (
-                    <div>
-                      <span className="text-muted-foreground">OG:</span>
-                      <span className="ml-1 font-medium">{activity.metadata.og}</span>
-                    </div>
-                  )}
-                  {activity.metadata.ph && (
-                    <div>
-                      <span className="text-muted-foreground">pH:</span>
-                      <span className="ml-1 font-medium">{activity.metadata.ph}</span>
-                    </div>
-                  )}
-                  {activity.metadata.temp_c && (
-                    <div>
-                      <span className="text-muted-foreground">Temp:</span>
-                      <span className="ml-1 font-medium">{activity.metadata.temp_c}°C</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Attachments */}
-          {activity.attachments && activity.attachments.length > 0 && (
-            <div className="mt-2 flex gap-2">
-              {activity.attachments.slice(0, expanded ? undefined : 3).map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Attachment ${i + 1}`}
-                  className="w-16 h-16 object-cover rounded border"
-                />
-              ))}
-              {!expanded && activity.attachments.length > 3 && (
-                <div className="w-16 h-16 rounded border bg-muted flex items-center justify-center text-sm">
-                  +{activity.attachments.length - 3}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Expand/Collapse Toggle */}
-          {!compact && (activity.description.length > 100 || activity.attachments?.length || Object.keys(activity.metadata).length > 0) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpanded(!expanded)}
-              className="mt-2 h-6 text-xs"
-            >
-              {expanded ? 'Show Less' : 'Show More'}
-              <ChevronDown className={`ml-1 h-3 w-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            </Button>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-};
-
-/**
- * BatchActivityFeed - Main activity feed component
- * 
- * Displays a chronological feed of all batch activities with:
- * - Infinite scroll
- * - Real-time updates
- * - Advanced filtering
- * - Compact/full view modes
- */
-export const BatchActivityFeed = ({
-  batchId,
-  compact = false,
-  maxHeight = 'calc(100vh - 300px)',
-}: BatchActivityFeedProps) => {
-  const [filters, setFilters] = useState<ActivityFilters>({
-    types: [],
-    dateRange: {},
-    searchQuery: '',
-  });
-
+  // Fetch activities with infinite scroll
   const {
-    activities,
-    totalCount,
-    hasMore,
-    loadMore,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
-  } = useBatchActivityFeed(batchId, filters);
+    error,
+  } = useBatchActivities(batchId);
 
-  // Refs for infinite scroll
-  const observerTarget = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Enable real-time updates
+  useRealtimeActivities(batchId);
 
-  /**
-   * Infinite scroll observer
-   */
+  // Intersection observer for infinite scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Auto-load more when scrolled to bottom
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMore();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0 }
     );
 
-    const target = observerTarget.current;
+    const target = loadMoreRef.current;
     if (target) {
       observer.observe(target);
     }
@@ -246,140 +102,515 @@ export const BatchActivityFeed = ({
         observer.unobserve(target);
       }
     };
-  }, [hasMore, loadMore, isLoading]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  /**
-   * Toggle activity type filter
-   */
-  const toggleActivityType = (type: string) => {
-    setFilters(prev => ({
-      ...prev,
-      types: prev.types.includes(type as any)
-        ? prev.types.filter(t => t !== type)
-        : [...prev.types, type as any],
-    }));
+  // Flatten all pages of activities
+  const allActivities = useMemo(() => {
+    return data?.pages.flatMap((page) => page.activities) || [];
+  }, [data]);
+
+  // Apply filters
+  const filteredActivities = useMemo(() => {
+    let filtered = allActivities;
+
+    // Filter by type
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((a) => a.activity_type === typeFilter);
+    }
+
+    // Filter by date
+    if (dateFilter) {
+      filtered = filtered.filter((a) => {
+        const activityDate = new Date(a.created_at);
+        return activityDate.toDateString() === dateFilter.toDateString();
+      });
+    }
+
+    return filtered;
+  }, [allActivities, typeFilter, dateFilter]);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (typeFilter !== 'all') count++;
+    if (dateFilter) count++;
+    return count;
+  }, [typeFilter, dateFilter]);
+
+  const handleExport = () => {
+    exportActivities(filteredActivities);
+    toast({
+      title: "Activity log exported",
+      description: `Exported ${filteredActivities.length} activities`,
+    });
   };
 
-  /**
-   * Export feed as PDF
-   */
-  const handleExport = () => {
-    // TODO: Implement PDF export
-    console.log('Export activity feed as PDF');
+  if (isLoading) {
+    return <ActivityFeedSkeleton compact={compact} />;
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6 text-center">
+        <p className="text-muted-foreground">Failed to load activities</p>
+        <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
+          Retry
+        </Button>
+      </Card>
+    );
+  }
+
+  return (
+    <div className={cn('space-y-4', className)}>
+      {/* Header with filters */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">
+          Activity Feed
+          {filteredActivities.length > 0 && (
+            <span className="ml-2 text-sm text-muted-foreground font-normal">
+              ({filteredActivities.length})
+            </span>
+          )}
+        </h3>
+
+        <div className="flex items-center gap-2">
+          {/* Export activities */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={filteredActivities.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+
+          {/* Filter toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="relative"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+            {activeFilterCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              >
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Type filter */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Activity Type</label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="stage_changed">Stage Changes</SelectItem>
+                  <SelectItem value="measurement_added">Measurements</SelectItem>
+                  <SelectItem value="note_added">Notes</SelectItem>
+                  <SelectItem value="photo_uploaded">Photos</SelectItem>
+                  <SelectItem value="label_printed">Labels</SelectItem>
+                  <SelectItem value="exported">Exports</SelectItem>
+                  <SelectItem value="cloned">Cloned</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date filter */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'All Dates'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateFilter}
+                    onSelect={setDateFilter}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {/* Clear filters */}
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setTypeFilter('all');
+                setDateFilter(undefined);
+              }}
+              className="mt-4"
+            >
+              Clear all filters
+            </Button>
+          )}
+        </Card>
+      )}
+
+      {/* Activity timeline */}
+      <ScrollArea className={cn(compact ? 'h-[400px]' : 'h-[600px]')}>
+        <div className="space-y-4 pr-4">
+          {filteredActivities.length === 0 ? (
+            <Card className="p-8 text-center">
+              <div className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground">
+                {activeFilterCount > 0
+                  ? 'No activities match your filters'
+                  : batchId
+                  ? 'No activities yet for this batch'
+                  : 'No activities yet'}
+              </p>
+            </Card>
+          ) : (
+            filteredActivities.map((activity, index) => (
+              <ActivityItem
+                key={activity.id}
+                activity={activity}
+                compact={compact}
+                isLast={index === filteredActivities.length - 1}
+                user={user}
+              />
+            ))
+          )}
+
+          {/* Load more trigger */}
+          {hasNextPage && (
+            <div ref={loadMoreRef} className="py-4 text-center">
+              {isFetchingNextPage ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">Loading more...</span>
+                </div>
+              ) : (
+                <Button variant="outline" onClick={() => fetchNextPage()}>
+                  Load More
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+};
+
+// Individual activity item
+interface ActivityItemProps {
+  activity: Activity;
+  compact: boolean;
+  isLast: boolean;
+  user: any;
+}
+
+const ActivityItem = ({ activity, compact, isLast, user }: ActivityItemProps) => {
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const { addComment, isAddingComment } = useActivityComments();
+  const { toast } = useToast();
+
+  const Icon = getActivityIcon(activity.activity_type);
+  const color = getActivityColor(activity.activity_type);
+  const description = getActivityDescription(activity);
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+
+    addComment(
+      { activityId: activity.id, comment: newComment },
+      {
+        onSuccess: () => {
+          setNewComment('');
+        },
+      }
+    );
+  };
+
+  const handleCopyLink = () => {
+    copyActivityLink(activity.id);
+    toast({
+      title: "Link copied",
+      description: "Activity link copied to clipboard",
+    });
   };
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      {!compact && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Activity Feed</h3>
-            <Badge variant="secondary">{totalCount} activities</Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Filter Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filter
-                  {filters.types.length > 0 && (
-                    <Badge variant="secondary" className="ml-1">
-                      {filters.types.length}
-                    </Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Activity Types</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {Object.entries(activityConfig).map(([type, config]) => (
-                  <DropdownMenuCheckboxItem
-                    key={type}
-                    checked={filters.types.includes(type as any)}
-                    onCheckedChange={() => toggleActivityType(type)}
-                  >
-                    <config.icon className="mr-2 h-4 w-4" />
-                    {config.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Export Button */}
-            <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-          </div>
-        </div>
+    <div className="relative">
+      {/* Timeline line */}
+      {!isLast && (
+        <div
+          className="absolute left-5 top-12 bottom-0 w-0.5 bg-border"
+          aria-hidden="true"
+        />
       )}
 
-      {/* Activity Feed */}
-      <div 
-        ref={containerRef}
-        className="space-y-3 overflow-y-auto pr-2"
-        style={{ maxHeight }}
-      >
-        {activities.length === 0 ? (
-          <Card className="p-12 text-center border-dashed">
-            <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">
-              {filters.types.length > 0 || filters.searchQuery
-                ? 'No activities match your filters'
-                : 'No activities yet'}
-            </p>
-          </Card>
-        ) : (
-          <>
-            {activities.map((activity, index) => (
-              <div key={activity.id}>
-                <ActivityCard activity={activity} compact={compact} />
-                
-                {/* Date separator */}
-                {index < activities.length - 1 && (
-                  (() => {
-                    const currentDate = new Date(activity.timestamp).toDateString();
-                    const nextDate = new Date(activities[index + 1].timestamp).toDateString();
-                    
-                    if (currentDate !== nextDate) {
-                      return (
-                        <div className="flex items-center gap-3 my-4">
-                          <Separator className="flex-1" />
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {nextDate}
-                          </span>
-                          <Separator className="flex-1" />
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()
-                )}
-              </div>
-            ))}
+      <Card className="relative">
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            {/* Icon */}
+            <div
+              className={cn(
+                'flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center',
+                color
+              )}
+            >
+              <Icon className="h-5 w-5" />
+            </div>
 
-            {/* Loading indicator */}
-            {hasMore && (
-              <div ref={observerTarget} className="flex justify-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            )}
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium">User</span>
+                    <span className="text-sm text-muted-foreground">
+                      {getActivityTitle(activity.activity_type)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <time dateTime={activity.created_at}>
+                      {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                    </time>
+                    <span>•</span>
+                    <time dateTime={activity.created_at}>
+                      {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                    </time>
+                  </div>
+                </div>
 
-            {/* End of feed */}
-            {!hasMore && activities.length > 0 && (
-              <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
-                  You've reached the end of the activity feed
-                </p>
+                {/* Actions menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowComments(!showComments)}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      {showComments ? 'Hide' : 'Show'} Comments
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyLink}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            )}
-          </>
-        )}
+
+              {/* Description */}
+              {!compact && description && (
+                <div className="text-sm text-muted-foreground mb-3">
+                  {description}
+                </div>
+              )}
+
+              {/* Activity-specific content */}
+              <ActivityContent activity={activity} compact={compact} />
+
+              {/* Comments section */}
+              {showComments && (
+                <div className="mt-4 space-y-4">
+                  {/* Existing comments */}
+                  {activity.comments && activity.comments.length > 0 && (
+                    <div className="space-y-3">
+                      {activity.comments.map((comment) => (
+                        <CommentItem key={comment.id} comment={comment} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add comment */}
+                  <div className="flex gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user?.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Textarea
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[60px]"
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setNewComment('');
+                            setShowComments(false);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleAddComment}
+                          disabled={!newComment.trim() || isAddingComment}
+                        >
+                          {isAddingComment ? 'Adding...' : 'Comment'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Activity-specific content renderer
+const ActivityContent = ({ activity, compact }: { activity: Activity; compact: boolean }) => {
+  const { activity_type, activity_data } = activity;
+
+  if (compact) return null;
+
+  switch (activity_type) {
+    case 'stage_changed':
+      return (
+        <div className="flex items-center gap-2 text-sm">
+          <Badge variant="secondary">{activity_data.fromStage}</Badge>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          <Badge>{activity_data.toStage}</Badge>
+        </div>
+      );
+
+    case 'measurement_added':
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+          {activity_data.ph && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">pH:</span>
+              <span className="font-medium">{activity_data.ph}</span>
+            </div>
+          )}
+          {activity_data.specific_gravity && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">SG:</span>
+              <span className="font-medium">{activity_data.specific_gravity}</span>
+            </div>
+          )}
+          {activity_data.temperature && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Temp:</span>
+              <span className="font-medium">{activity_data.temperature}°C</span>
+            </div>
+          )}
+          {activity_data.abv && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">ABV:</span>
+              <span className="font-medium">{activity_data.abv}%</span>
+            </div>
+          )}
+        </div>
+      );
+
+    case 'note_added':
+      return (
+        <div className="bg-muted/50 rounded-md p-3 text-sm">
+          <p className="whitespace-pre-wrap">{activity_data.note}</p>
+        </div>
+      );
+
+    case 'photo_uploaded':
+      return (
+        <div className="mt-2">
+          <img
+            src={activity_data.photoUrl}
+            alt="Uploaded photo"
+            className="rounded-md max-w-sm w-full h-auto"
+          />
+        </div>
+      );
+
+    case 'label_printed':
+      return (
+        <div className="text-sm text-muted-foreground">
+          Printed {activity_data.count} label{activity_data.count > 1 ? 's' : ''}
+        </div>
+      );
+
+    case 'exported':
+      return (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{activity_data.format?.toUpperCase()}</Badge>
+          <span className="text-sm text-muted-foreground">format</span>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+};
+
+// Comment item component
+const CommentItem = ({ comment }: { comment: ActivityComment }) => {
+  return (
+    <div className="flex gap-2">
+      <Avatar className="h-8 w-8 flex-shrink-0">
+        <AvatarFallback>U</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="bg-muted/50 rounded-md p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium">User</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+            </span>
+          </div>
+          <p className="text-sm whitespace-pre-wrap">{comment.comment}</p>
+        </div>
       </div>
+    </div>
+  );
+};
+
+// Loading skeleton
+const ActivityFeedSkeleton = ({ compact }: { compact: boolean }) => {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <Card key={i}>
+          <CardContent className="p-4">
+            <div className="flex gap-4">
+              <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+                {!compact && <Skeleton className="h-16 w-full" />}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
