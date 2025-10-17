@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import { queryKeys } from '@/lib/queryConfig';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import type { Batch } from '@/components/BatchCard';
 
 /**
@@ -51,6 +52,7 @@ const calculateProgress = (stage: string): number => {
 export const useBatchActions = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { logStageChange, logActivity } = useActivityLogger();
 
   /**
    * Update batch stage with optimistic update
@@ -119,6 +121,15 @@ export const useBatchActions = () => {
       });
     },
     onSuccess: (data, variables) => {
+      // Get previous stage from cache
+      const previousBatches = queryClient.getQueryData<Batch[]>(queryKeys.batches.all());
+      const oldStage = previousBatches?.find(b => b.id === variables.batchId)?.currentStage;
+      
+      // Log activity
+      if (oldStage && oldStage !== variables.newStage) {
+        logStageChange(variables.batchId, oldStage, variables.newStage);
+      }
+      
       toast({
         title: "Stage updated",
         description: `Batch moved to ${variables.newStage}`,
@@ -189,8 +200,16 @@ export const useBatchActions = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      
+      // Log activity
+      logActivity({
+        batchId: data.id,
+        activityType: 'cloned',
+        activityData: { source_batch_name: data.name },
+      });
+      
       toast({
         title: "Batch cloned",
         description: "A copy of the batch has been created",
@@ -218,8 +237,16 @@ export const useBatchActions = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (data, batchId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      
+      // Log activity
+      logActivity({
+        batchId,
+        activityType: 'archived',
+        activityData: {},
+      });
+      
       toast({
         title: "Batch archived",
         description: "Batch marked as complete",

@@ -6,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save, Activity } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { StageProgressionCard } from "./StageProgressionCard";
 import { ImageUpload } from "./ImageUpload";
+import { BatchActivityFeed } from "@/components/production/BatchActivityFeed";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -189,7 +191,14 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="progression">Progression</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="space-y-6">
           {isEditingDetails ? (
             <div className="space-y-4 p-4 border rounded-lg">
               <div>
@@ -496,27 +505,34 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 )}
               </div>
             )}
-          </div>
+            </div>
+          </TabsContent>
 
-          {/* Go to Production Button */}
-          {onGoToProduction && (
-            <Button 
-              onClick={() => onGoToProduction(batch)}
-              className="w-full text-center"
-              size="lg"
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Go to Production
-            </Button>
-          )}
+          <TabsContent value="activity">
+            <BatchActivityFeed batchId={batch.id} compact={false} />
+          </TabsContent>
 
-          {/* Stage Progression Card */}
-          <StageProgressionCard
-            batch={batch}
-            onAdvanceStage={handleAdvanceStage}
-            onSkipToStage={handleSkipToStage}
-          />
-        </div>
+          <TabsContent value="progression" className="space-y-6">
+            {/* Go to Production Button */}
+            {onGoToProduction && (
+              <Button 
+                onClick={() => onGoToProduction(batch)}
+                className="w-full text-center"
+                size="lg"
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                Go to Production
+              </Button>
+            )}
+
+            {/* Stage Progression Card */}
+            <StageProgressionCard
+              batch={batch}
+              onAdvanceStage={handleAdvanceStage}
+              onSkipToStage={handleSkipToStage}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
