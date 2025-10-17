@@ -2,6 +2,21 @@
  * Batch type definitions
  */
 
+export interface StageHistory {
+  stage: string;
+  started_at: string;
+  completed_at?: string;
+  duration_days?: number;
+  notes?: string;
+  photos?: string[];
+  user_id: string;
+  measurements?: {
+    temperature?: number;
+    ph?: number;
+    specific_gravity?: number;
+  };
+}
+
 export interface Batch {
   id: string;
   user_id: string;
@@ -30,6 +45,11 @@ export interface Batch {
   target_end_ph?: number | null;
   target_ta?: number | null;
   target_temp_c?: number | null;
+  
+  // Timeline fields
+  stage_history?: StageHistory[];
+  estimated_completion_date?: string | null;
+  expected_stage_durations?: Record<string, { min: number; max: number }>;
 }
 
 export interface CreateBatchInput {

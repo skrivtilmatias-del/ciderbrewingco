@@ -194,23 +194,16 @@ export const ProductionTab = ({
           />
         </TabsContent>
 
-        <TabsContent value="timeline" className="mt-4">;
+        <TabsContent value="timeline" className="mt-4">
           <BatchTimeline
             batch={{
-              ...selectedBatch,
-              user_id: '',
+              id: selectedBatch.id,
+              name: selectedBatch.name,
               current_stage: selectedBatch.currentStage,
               started_at: selectedBatch.startDate,
               completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
-              created_at: selectedBatch.startDate,
-              updated_at: new Date().toISOString(),
-            } as BatchType}
-            logs={logs.map(log => ({
-              ...log,
-              user_id: '',
-              updated_at: log.created_at,
-            } as BatchLog))}
-            variant="detailed"
+            }}
+            variant="standard"
             onStageClick={(stage) => {
               console.log('Stage clicked:', stage);
             }}
