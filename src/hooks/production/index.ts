@@ -27,3 +27,6 @@ export type { BatchGroup, GroupByOption } from './useBatchGrouping';
 
 export { useBatchActivityFeed, getUniqueUsers } from './useBatchActivityFeed';
 export type { ActivityItem, ActivityFilters, ActivityType } from './useBatchActivityFeed';
+
+export { useRecentActions } from '@/hooks/useRecentActions';
+export type { RecentAction } from '@/hooks/useRecentActions';

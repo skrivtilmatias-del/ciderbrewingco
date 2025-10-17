@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import QRCode from "react-qr-code";
 import { STAGES } from "@/constants/ciderStages";
 import {
@@ -78,17 +78,24 @@ export const BatchContextMenu = ({
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [noteText, setNoteText] = useState("");
+  const { toast } = useToast();
 
   const batchUrl = `${window.location.origin}/b/${batch.id}`;
 
   const handleCopyBatchId = () => {
     navigator.clipboard.writeText(batch.id);
-    toast.success("Batch ID copied to clipboard");
+    toast({
+      title: "Copied",
+      description: "Batch ID copied to clipboard",
+    });
   };
 
   const handleCopyBatchUrl = () => {
     navigator.clipboard.writeText(batchUrl);
-    toast.success("Batch URL copied to clipboard");
+    toast({
+      title: "Copied",
+      description: "Batch URL copied to clipboard",
+    });
   };
 
   const handleDownloadQR = () => {
@@ -116,7 +123,10 @@ export const BatchContextMenu = ({
         link.download = `${batch.name.replace(/\s+/g, "-")}-QR.png`;
         link.href = URL.createObjectURL(blob);
         link.click();
-        toast.success("QR code downloaded");
+        toast({
+          title: "Downloaded",
+          description: "QR code downloaded successfully",
+        });
       });
     };
 
@@ -128,7 +138,10 @@ export const BatchContextMenu = ({
       onAddNote?.(batch.id, noteText);
       setNoteText("");
       setShowNoteDialog(false);
-      toast.success("Note added to batch");
+      toast({
+        title: "Note added",
+        description: "Note has been added to the batch",
+      });
     }
   };
 
@@ -139,12 +152,18 @@ export const BatchContextMenu = ({
   const handleArchive = () => {
     onArchive?.(batch.id);
     setShowArchiveDialog(false);
-    toast.success("Batch archived");
+    toast({
+      title: "Archived",
+      description: "Batch has been archived",
+    });
   };
 
   const handleClone = () => {
     onClone?.(batch);
-    toast.success("Batch cloned - edit and save");
+    toast({
+      title: "Batch cloned",
+      description: "Edit the cloned batch and save",
+    });
   };
 
   const handleExport = () => {

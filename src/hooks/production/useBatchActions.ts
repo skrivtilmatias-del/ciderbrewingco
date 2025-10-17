@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import { queryKeys } from '@/lib/queryConfig';
 import type { Batch } from '@/components/BatchCard';
@@ -50,6 +50,7 @@ const calculateProgress = (stage: string): number => {
  */
 export const useBatchActions = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   /**
    * Update batch stage with optimistic update

@@ -21,6 +21,7 @@ import { BatchTimeline } from '@/components/production/BatchTimeline';
 import { GroupedBatchView } from '@/components/production/GroupedBatchView';
 import { BatchActivityFeed } from '@/components/production/BatchActivityFeed';
 import { ProductionMetricsWidget } from '@/components/production/ProductionMetricsWidget';
+import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuGuide';
 import type { Batch } from '@/components/BatchCard';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
@@ -131,6 +132,9 @@ export const ProductionTab = ({
       <div className="space-y-4">
         {/* Production Metrics Widget */}
         <ProductionMetricsWidget batches={batches} />
+        
+        {/* Context Menu Guide */}
+        <BatchContextMenuGuide />
 
       {/* ========== Search Results Dropdown ========== */}
       {batchSearchQuery && (
