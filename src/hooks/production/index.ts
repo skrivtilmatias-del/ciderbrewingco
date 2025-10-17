@@ -30,3 +30,14 @@ export type { ActivityItem, ActivityFilters, ActivityType } from './useBatchActi
 
 export { useRecentActions } from '@/hooks/useRecentActions';
 export type { RecentAction } from '@/hooks/useRecentActions';
+
+// Progress components
+export { 
+  BatchProgressMini, 
+  BatchProgressCard, 
+  BatchProgressDetailed,
+  ProgressBadge 
+} from '@/components/production/BatchProgress';
+export { CircularProgress } from '@/components/production/CircularProgress';
+export { LinearProgress } from '@/components/production/LinearProgress';
+export { ProgressOverview } from '@/components/production/ProgressOverview';

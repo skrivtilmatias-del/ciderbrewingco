@@ -168,3 +168,6 @@ All colors MUST be HSL.
     padding: 0 !important;
   }
 }
+
+/* Import progress animations */
+@import './styles/progress-animations.css';

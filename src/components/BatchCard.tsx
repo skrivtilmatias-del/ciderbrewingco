@@ -13,6 +13,9 @@ import { prefetchBatchDetails, prefetchBatchLogs } from '@/lib/prefetchUtils';
 import { BatchContextMenu } from "@/components/production/BatchContextMenu";
 import { useBatchComparisonStore } from "@/stores/batchComparisonStore";
 import { cn } from "@/lib/utils";
+import { BatchProgressMini, ProgressBadge } from "@/components/production/BatchProgress";
+import { LinearProgress } from "@/components/production/LinearProgress";
+import { calculateProgress } from "@/lib/progressUtils";
 
 export interface Batch {
   id: string;
@@ -259,10 +262,14 @@ export const BatchCard = ({
             {batch.apple_origin && <> from {batch.apple_origin}</>}
           </p>
         </div>
-        <Badge className={`${stageColor} text-white flex-shrink-0 ml-2`}>
-          <StageIcon className="w-3 h-3 mr-1" />
-          {highlightText(batch.currentStage, searchQuery)}
-        </Badge>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {/* Mini circular progress */}
+          <BatchProgressMini batch={batch} />
+          <Badge className={`${stageColor} text-white`}>
+            <StageIcon className="w-3 h-3 mr-1" />
+            {highlightText(batch.currentStage, searchQuery)}
+          </Badge>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -281,11 +288,19 @@ export const BatchCard = ({
 
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium text-foreground">{batch.progress}%</span>
+            <span className="text-muted-foreground">Production Progress</span>
+            <span className="font-medium text-foreground">
+              {Math.round(calculateProgress(batch).overallProgress)}%
+            </span>
           </div>
-          <Progress value={batch.progress} className="h-2" />
+          <LinearProgress 
+            progress={calculateProgress(batch).overallProgress} 
+            compact 
+          />
         </div>
+
+        {/* Progress badges */}
+        <ProgressBadge batch={batch} />
 
         {(batch.target_og || batch.target_ph || batch.yeast_type) && (
           <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
