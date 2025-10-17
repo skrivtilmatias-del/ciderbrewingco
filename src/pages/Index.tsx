@@ -230,7 +230,8 @@ const Index = () => {
     }
     
     // Defensive: Verify batch exists in current batch list
-    const batchExists = batches.some(b => b.id === batch.id);
+    // Use ref for latest data to avoid stale closures
+    const batchExists = batchesRef.current.some(b => b.id === batch.id);
     if (!batchExists) {
       console.warn('handleBatchClick: Batch not found in current batch list', batch.id);
       toast.error('This batch is no longer available');
@@ -245,13 +246,13 @@ const Index = () => {
      * When user clicks a batch, anticipate they might view the next ones
      * Prefetch the next 3 batches for smooth scrolling experience
      */
-    const currentIndex = batches.findIndex(b => b.id === batch.id);
+    const currentIndex = batchesRef.current.findIndex(b => b.id === batch.id);
     if (currentIndex >= 0) {
-      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+      prefetchAdjacentBatches(queryClient, batchesRef.current, currentIndex, 3).catch(() => {
         // Silently fail - prefetch is optional optimization
       });
     }
-  }, [batches, queryClient, setSelectedBatchId, setDetailsOpen]);
+  }, [queryClient, setSelectedBatchId, setDetailsOpen]); // Removed batches dependency to fix stale closure
 
   const handleUpdateStage = useCallback(async (batchId: string, newStage: Batch["currentStage"]) => {
     // Use the mutation from useBatches hook
