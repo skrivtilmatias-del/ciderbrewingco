@@ -80,7 +80,7 @@ export const ProductionTab = ({
       batchId: selectedBatch.id,
       title,
       role,
-      stage: selectedBatch.currentStage,
+      stage: selectedBatch.current_stage,
     });
   };
 
@@ -154,7 +154,7 @@ export const ProductionTab = ({
                 <span className="font-medium text-sm">{batch.name}</span>
                 <span className="text-xs text-muted-foreground">• {batch.variety}</span>
                 <Badge variant="outline" className="text-xs ml-auto">
-                  {batch.currentStage}
+                  {batch.current_stage}
                 </Badge>
               </button>
             ))
@@ -207,9 +207,9 @@ export const ProductionTab = ({
             batch={{
               id: selectedBatch.id,
               name: selectedBatch.name,
-              current_stage: selectedBatch.currentStage,
-              started_at: selectedBatch.startDate,
-              completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
+              current_stage: selectedBatch.current_stage,
+              started_at: selectedBatch.started_at,
+              completed_at: selectedBatch.current_stage === 'Complete' ? new Date().toISOString() : null,
             }}
             variant="standard"
             onStageClick={(stage) => {
@@ -226,7 +226,7 @@ export const ProductionTab = ({
 
           {/* Stage Progression UI */}
           <StageProgressionUI
-            currentStage={selectedBatch.currentStage}
+            currentStage={selectedBatch.current_stage as any}
             batchId={selectedBatch.id}
             batchName={selectedBatch.name}
             onAdvanceStage={onUpdateStage}
@@ -234,7 +234,7 @@ export const ProductionTab = ({
 
           {/* AI-Powered Smart Insights */}
           <SmartInsights
-            batch={selectedBatch}
+            batch={selectedBatch as any}
             logs={logs}
           />
 
