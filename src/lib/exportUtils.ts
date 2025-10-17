@@ -1,7 +1,6 @@
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { format as formatDateFns, parseISO } from 'date-fns';
 import type { Batch } from '@/types/batch.types';
 import type { ExportConfig, ColumnSelection } from '@/types/export.types';
