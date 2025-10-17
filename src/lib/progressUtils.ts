@@ -79,12 +79,14 @@ export const getDaysInStage = (batch: Batch): number => {
  * Calculate batch progress
  */
 export const calculateProgress = (batch: Batch): ProgressCalculation => {
-  const currentStageWeight = STAGE_WEIGHTS[batch.currentStage] || { start: 0, end: 100 };
+  // Handle both camelCase and snake_case properties
+  const currentStage = batch.currentStage || (batch as any).current_stage || 'Harvest';
+  const currentStageWeight = STAGE_WEIGHTS[currentStage] || { start: 0, end: 100 };
   const stageProgress = currentStageWeight.start;
   
   // Calculate progress within current stage
   const daysInStage = getDaysInStage(batch);
-  const expectedDuration = EXPECTED_DURATIONS[batch.currentStage] || { min: 1, max: 1, typical: 1 };
+  const expectedDuration = EXPECTED_DURATIONS[currentStage] || { min: 1, max: 1, typical: 1 };
   const stageCompletion = Math.min(
     daysInStage / expectedDuration.typical,
     1
@@ -151,7 +153,8 @@ export const getEstimatedCompletionDate = (batch: Batch): Date => {
  */
 export const getNextMilestone = (batch: Batch): string => {
   const stages = Object.keys(STAGE_WEIGHTS);
-  const currentIndex = stages.indexOf(batch.currentStage);
+  const currentStage = batch.currentStage || (batch as any).current_stage || 'Harvest';
+  const currentIndex = stages.indexOf(currentStage);
   
   if (currentIndex === -1 || currentIndex === stages.length - 1) {
     return 'Batch is complete!';
@@ -159,7 +162,7 @@ export const getNextMilestone = (batch: Batch): string => {
   
   const nextStage = stages[currentIndex + 1];
   const daysInCurrentStage = getDaysInStage(batch);
-  const expectedDuration = EXPECTED_DURATIONS[batch.currentStage]?.typical || 1;
+  const expectedDuration = EXPECTED_DURATIONS[currentStage]?.typical || 1;
   const daysUntilNext = Math.max(0, expectedDuration - daysInCurrentStage);
   
   if (daysUntilNext === 0) {
@@ -173,8 +176,9 @@ export const getNextMilestone = (batch: Batch): string => {
  * Check if batch needs action
  */
 export const needsAction = (batch: Batch): boolean => {
+  const currentStage = batch.currentStage || (batch as any).current_stage || 'Harvest';
   const daysInStage = getDaysInStage(batch);
-  const expectedMax = EXPECTED_DURATIONS[batch.currentStage]?.max || 999;
+  const expectedMax = EXPECTED_DURATIONS[currentStage]?.max || 999;
   
   // Needs action if past maximum expected duration
   return daysInStage > expectedMax;
