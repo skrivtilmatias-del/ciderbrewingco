@@ -127,6 +127,13 @@ const Index = () => {
       window.dispatchEvent(event);
     },
     onFocusSearch: () => {
+      // Only focus search on tabs where it's visible
+      const tabsWithSearch = ['batches', 'production', 'blending'];
+      if (!tabsWithSearch.includes(activeTab)) {
+        toast.info('Search is available on Batches, Production, and Blending tabs');
+        return;
+      }
+      
       if (searchInputRef.current) {
         searchInputRef.current.focus();
       } else {
