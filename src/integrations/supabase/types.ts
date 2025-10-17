@@ -209,13 +209,17 @@ export type Database = {
       }
       batches: {
         Row: {
+          abv: number | null
           apple_mix: string | null
           apple_origin: string | null
+          archived: boolean | null
           attachments: string[] | null
           completed_at: string | null
           created_at: string
           current_stage: string
+          expected_completion_date: string | null
           id: string
+          location: string | null
           name: string
           notes: string | null
           progress: number
@@ -234,13 +238,17 @@ export type Database = {
           yeast_type: string | null
         }
         Insert: {
+          abv?: number | null
           apple_mix?: string | null
           apple_origin?: string | null
+          archived?: boolean | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage: string
+          expected_completion_date?: string | null
           id?: string
+          location?: string | null
           name: string
           notes?: string | null
           progress?: number
@@ -259,13 +267,17 @@ export type Database = {
           yeast_type?: string | null
         }
         Update: {
+          abv?: number | null
           apple_mix?: string | null
           apple_origin?: string | null
+          archived?: boolean | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage?: string
+          expected_completion_date?: string | null
           id?: string
+          location?: string | null
           name?: string
           notes?: string | null
           progress?: number
@@ -473,6 +485,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      filter_presets: {
+        Row: {
+          created_at: string | null
+          filters: Json
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters: Json
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       floor_plan_layouts: {
         Row: {

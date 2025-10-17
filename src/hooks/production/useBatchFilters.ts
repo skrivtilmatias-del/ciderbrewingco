@@ -1,26 +1,12 @@
 import { useMemo } from 'react';
 import type { Batch } from '@/components/BatchCard';
+import { BatchFilterState } from '@/types/filters';
+import { isOverdue as checkIsOverdue } from '@/lib/filterUtils';
 
 /**
- * Filter criteria for batch filtering
+ * Filter criteria for batch filtering (extended)
  */
-export interface BatchFilterCriteria {
-  /** Array of stages to filter by (empty = all stages) */
-  stages: string[];
-  /** Date range filter */
-  dateRange: {
-    from?: Date;
-    to?: Date;
-  };
-  /** Volume range [min, max] in liters */
-  volumeRange: [number, number];
-  /** Batch status filter */
-  status: 'all' | 'active' | 'completed';
-  /** Apple variety filter (empty = all varieties) */
-  variety: string;
-  /** Alcohol content range [min, max] in % ABV */
-  alcoholRange: [number, number];
-}
+export type BatchFilterCriteria = BatchFilterState;
 
 /**
  * Individual filter functions exported for reuse
@@ -79,33 +65,64 @@ export const filterFunctions = {
   },
 
   /**
-   * Filter batches by status (active/completed)
+   * Filter batches by status (active/completed/archived/overdue)
    */
-  statusFilter: (batch: Batch, status: 'all' | 'active' | 'completed'): boolean => {
+  statusFilter: (
+    batch: Batch,
+    status: 'all' | 'active' | 'completed' | 'archived' | 'overdue'
+  ): boolean => {
     if (status === 'all') return true;
-    
+
     const isCompleted = batch.currentStage === 'Complete' || batch.progress === 100;
-    return status === 'completed' ? isCompleted : !isCompleted;
+    const isArchived = (batch as any).archived === true;
+    const isOverdueBatch = checkIsOverdue((batch as any).expected_completion_date);
+
+    if (status === 'completed') return isCompleted;
+    if (status === 'active') return !isCompleted && !isArchived;
+    if (status === 'archived') return isArchived;
+    if (status === 'overdue') return isOverdueBatch && !isCompleted;
+
+    return true;
   },
 
   /**
-   * Filter batches by variety
+   * Filter by varieties (multi-select)
    */
-  varietyFilter: (batch: Batch, variety: string): boolean => {
-    if (!variety) return true;
-    return batch.variety === variety;
+  varietiesFilter: (batch: Batch, varieties: string[]): boolean => {
+    if (varieties.length === 0) return true;
+    return varieties.includes(batch.variety);
   },
 
   /**
-   * Filter batches by estimated alcohol content
+   * Filter by location
+   */
+  locationFilter: (batch: Batch, location?: string): boolean => {
+    if (!location) return true;
+    return (batch as any).location === location;
+  },
+
+  /**
+   * Filter batches by alcohol content
    */
   alcoholFilter: (batch: Batch, min: number, max: number): boolean => {
-    if (!batch.target_og) return true;
-    
-    // Simple ABV estimation: (OG - FG) * 131.25
-    // Assuming FG ~1.005 for dry cider
-    const estimatedABV = (batch.target_og - 1.005) * 131.25;
-    return estimatedABV >= min && estimatedABV <= max;
+    if (min === 0 && max === 12) return true;
+
+    // Use calculated ABV field if available
+    const abv = (batch as any).abv;
+    if (abv !== null && abv !== undefined) {
+      return abv >= min && abv <= max;
+    }
+
+    // Fallback: Calculate ABV from target_og if available
+    if (batch.target_og) {
+      const estimatedABV = batch.target_fg 
+        ? (batch.target_og - batch.target_fg) * 131.25
+        : (batch.target_og - 1.005) * 131.25;
+      return estimatedABV >= min && estimatedABV <= max;
+    }
+
+    // If no ABV data, can't filter by alcohol
+    return true;
   },
 };
 
@@ -113,8 +130,8 @@ export const filterFunctions = {
  * useBatchFilters - High-performance batch filtering hook
  * 
  * Applies multiple filter criteria to batch list with memoization for performance.
- * Supports text search, stage filtering, date ranges, volume ranges, status, variety,
- * and alcohol content filtering.
+ * Supports text search, stage filtering, date ranges, volume ranges, status, varieties,
+ * location, and alcohol content filtering.
  * 
  * @param batches - Array of batches to filter
  * @param filters - Filter criteria object
@@ -129,8 +146,9 @@ export const filterFunctions = {
  *   status: 'active',
  *   volumeRange: [0, 1000],
  *   dateRange: { from: startDate, to: endDate },
- *   variety: '',
+ *   varieties: ['Bramley', 'Cox'],
  *   alcoholRange: [0, 12],
+ *   location: 'Cellar A'
  * }, 'apple');
  * ```
  * 
@@ -171,9 +189,15 @@ export const useBatchFilters = (
       filterFunctions.statusFilter(batch, filters.status)
     );
 
-    if (filters.variety) {
+    if (filters.varieties.length > 0) {
       filtered = filtered.filter(batch => 
-        filterFunctions.varietyFilter(batch, filters.variety)
+        filterFunctions.varietiesFilter(batch, filters.varieties)
+      );
+    }
+
+    if (filters.location) {
+      filtered = filtered.filter(batch => 
+        filterFunctions.locationFilter(batch, filters.location)
       );
     }
 
@@ -207,4 +231,20 @@ export const getUniqueVarieties = (batches: Batch[]): string[] => {
 export const getUniqueStages = (batches: Batch[]): string[] => {
   const stages = new Set(batches.map(b => b.currentStage));
   return Array.from(stages).sort();
+};
+
+/**
+ * Extract unique locations from batch list
+ * Used to populate location filter
+ * 
+ * @param batches - Array of batches
+ * @returns Sorted array of unique locations
+ */
+export const getUniqueLocations = (batches: Batch[]): string[] => {
+  const locations = new Set(
+    batches
+      .map(b => (b as any).location)
+      .filter((loc): loc is string => !!loc)
+  );
+  return Array.from(locations).sort();
 };

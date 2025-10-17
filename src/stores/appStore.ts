@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { BatchFilterState, DEFAULT_FILTER_STATE } from '@/types/filters';
 
 interface AppState {
   // Selected items (store IDs only, derive full objects from React Query)
@@ -17,6 +18,7 @@ interface AppState {
   // Filters and sorting
   batchSortOrder: string;
   stageFilter: string;
+  batchFilters: BatchFilterState;
   
   // Setters
   setSelectedBatchId: (batchId: string | null) => void;
@@ -28,6 +30,8 @@ interface AppState {
   setTastingSearchQuery: (query: string) => void;
   setBatchSortOrder: (order: string) => void;
   setStageFilter: (filter: string) => void;
+  setBatchFilters: (filters: BatchFilterState) => void;
+  clearBatchFilters: () => void;
   clearSelection: () => void;
 }
 
@@ -42,6 +46,7 @@ export const useAppStore = create<AppState>((set) => ({
   tastingSearchQuery: '',
   batchSortOrder: 'newest',
   stageFilter: 'All',
+  batchFilters: DEFAULT_FILTER_STATE,
   
   // Setters
   setSelectedBatchId: (batchId) => set({ selectedBatchId: batchId }),
@@ -53,6 +58,8 @@ export const useAppStore = create<AppState>((set) => ({
   setTastingSearchQuery: (query) => set({ tastingSearchQuery: query }),
   setBatchSortOrder: (order) => set({ batchSortOrder: order }),
   setStageFilter: (filter) => set({ stageFilter: filter }),
+  setBatchFilters: (filters) => set({ batchFilters: filters }),
+  clearBatchFilters: () => set({ batchFilters: DEFAULT_FILTER_STATE }),
   clearSelection: () => set({ 
     selectedBatchId: null, 
     selectedBlendId: null,

@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
+/**
+ * Comprehensive BatchFilters Component
+ * Provides advanced filtering capabilities for batch lists
+ */
+
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, X, ChevronDown, ChevronUp, Save, Star } from 'lucide-react';
+import { Filter, X, ChevronDown, ChevronUp, Save, Star, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -28,70 +33,44 @@ import {
 } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { STAGES } from '@/constants/ciderStages';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-
-// Filter preset interface
-interface FilterPreset {
-  id: string;
-  name: string;
-  filters: BatchFilters;
-}
-
-// Batch filters interface (for backward compatibility)
-export interface BatchFilters {
-  stages: string[];
-  dateRange: { from?: Date; to?: Date };
-  volumeRange: [number, number];
-  status: 'all' | 'active' | 'completed' | 'archived' | 'overdue';
-  varieties: string[];
-  alcoholRange: [number, number];
-  location?: string;
-  // Legacy field for backward compatibility
-  variety?: string;
-}
-
-// Default filter values
-const DEFAULT_FILTERS: BatchFilters = {
-  stages: [],
-  dateRange: {},
-  volumeRange: [0, 10000],
-  status: 'all',
-  varieties: [],
-  alcoholRange: [0, 12],
-  location: undefined,
-};
+import { BatchFilterState, DEFAULT_FILTER_STATE, BUILT_IN_PRESETS } from '@/types/filters';
+import { encodeFiltersToURL, decodeFiltersFromURL, countActiveFilters } from '@/lib/filterUtils';
+import { useFilterPresets } from '@/hooks/useFilterPresets';
 
 // Date range presets
 const DATE_PRESETS = [
+  { label: 'Today', days: 0 },
   { label: 'Last 7 days', days: 7 },
   { label: 'Last 30 days', days: 30 },
-  { label: 'Last 3 months', days: 90 },
+  { label: 'This month', days: 30 },
+  { label: 'This quarter', days: 90 },
   { label: 'This year', days: 365 },
 ];
 
-// Local storage keys
-const PRESETS_KEY = 'batch-filter-presets';
-
 interface BatchFiltersProps {
-  filters: BatchFilters;
-  onChange: (filters: BatchFilters) => void;
+  filters: BatchFilterState;
+  onChange: (filters: BatchFilterState) => void;
   /** Total number of batches before filtering */
   totalCount: number;
   /** Number of batches after filtering */
   filteredCount: number;
   /** Available varieties for dropdown */
   varieties: string[];
+  /** Available locations for dropdown */
+  locations: string[];
 }
 
 /**
  * BatchFilters - Comprehensive filtering UI for batch lists
  * 
  * Features:
- * - Multi-category filtering (stage, date, volume, status, variety, alcohol)
+ * - Multi-category filtering (stage, date, volume, status, varieties, location, alcohol)
  * - URL query param persistence (shareable, bookmarkable)
- * - Filter presets (save/load common filter combinations)
+ * - Filter presets saved to Supabase (cross-device sync)
  * - Active filter chips (dismissible)
  * - Collapsible panel (mobile-friendly)
  * - Real-time result count
@@ -103,107 +82,38 @@ export const BatchFilters = ({
   totalCount,
   filteredCount,
   varieties,
+  locations,
 }: BatchFiltersProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [savePresetOpen, setSavePresetOpen] = useState(false);
   const [presetName, setPresetName] = useState('');
 
-  // Load presets from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(PRESETS_KEY);
-      if (stored) {
-        setPresets(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Failed to load filter presets:', error);
-    }
-  }, []);
+  // Fetch presets from Supabase
+  const { presets, isLoading: presetsLoading, savePreset: savePresetMutation, deletePreset } = useFilterPresets();
+
+  // Combine built-in and user presets
+  const allPresets = useMemo(() => {
+    const builtIn = BUILT_IN_PRESETS.map((p, i) => ({ ...p, id: `built-in-${i}` }));
+    return [...builtIn, ...presets];
+  }, [presets]);
 
   // Sync filters to URL query params
   useEffect(() => {
-    const params = new URLSearchParams();
-    
-    if (filters.stages.length > 0) {
-      params.set('stages', filters.stages.join(','));
-    }
-    if (filters.dateRange.from) {
-      params.set('dateFrom', filters.dateRange.from.toISOString());
-    }
-    if (filters.dateRange.to) {
-      params.set('dateTo', filters.dateRange.to.toISOString());
-    }
-    if (filters.volumeRange[0] !== 0 || filters.volumeRange[1] !== 10000) {
-      params.set('volumeMin', filters.volumeRange[0].toString());
-      params.set('volumeMax', filters.volumeRange[1].toString());
-    }
-    if (filters.status !== 'all') {
-      params.set('status', filters.status);
-    }
-    if (filters.variety) {
-      params.set('variety', filters.variety);
-    }
-    if (filters.alcoholRange[0] !== 0 || filters.alcoholRange[1] !== 12) {
-      params.set('alcoholMin', filters.alcoholRange[0].toString());
-      params.set('alcoholMax', filters.alcoholRange[1].toString());
-    }
-
+    const params = encodeFiltersToURL(filters);
     setSearchParams(params, { replace: true });
   }, [filters, setSearchParams]);
 
   // Load filters from URL on mount
   useEffect(() => {
-    const stagesParam = searchParams.get('stages');
-    const dateFromParam = searchParams.get('dateFrom');
-    const dateToParam = searchParams.get('dateTo');
-    const volumeMinParam = searchParams.get('volumeMin');
-    const volumeMaxParam = searchParams.get('volumeMax');
-    const statusParam = searchParams.get('status');
-    const varietyParam = searchParams.get('variety');
-    const alcoholMinParam = searchParams.get('alcoholMin');
-    const alcoholMaxParam = searchParams.get('alcoholMax');
-
-    if (
-      stagesParam ||
-      dateFromParam ||
-      dateToParam ||
-      volumeMinParam ||
-      volumeMaxParam ||
-      statusParam ||
-      varietyParam ||
-      alcoholMinParam ||
-      alcoholMaxParam
-    ) {
-      onChange({
-        stages: stagesParam ? stagesParam.split(',') : [],
-        dateRange: {
-          from: dateFromParam ? new Date(dateFromParam) : undefined,
-          to: dateToParam ? new Date(dateToParam) : undefined,
-        },
-        volumeRange: [
-          volumeMinParam ? parseInt(volumeMinParam) : 0,
-          volumeMaxParam ? parseInt(volumeMaxParam) : 10000,
-        ],
-        status: (statusParam as any) || 'all',
-        varieties: varietyParam ? [varietyParam] : [],
-        alcoholRange: [
-          alcoholMinParam ? parseFloat(alcoholMinParam) : 0,
-          alcoholMaxParam ? parseFloat(alcoholMaxParam) : 12,
-        ],
-      });
+    const decoded = decodeFiltersFromURL(searchParams);
+    if (Object.keys(decoded).length > 0) {
+      onChange({ ...DEFAULT_FILTER_STATE, ...decoded });
     }
   }, []); // Only run on mount
 
   // Count active filters
-  const activeFilterCount =
-    filters.stages.length +
-    (filters.dateRange.from || filters.dateRange.to ? 1 : 0) +
-    (filters.volumeRange[0] !== 0 || filters.volumeRange[1] !== 10000 ? 1 : 0) +
-    (filters.status !== 'all' ? 1 : 0) +
-    (filters.variety ? 1 : 0) +
-    (filters.alcoholRange[0] !== 0 || filters.alcoholRange[1] !== 12 ? 1 : 0);
+  const activeFilterCount = countActiveFilters(filters);
 
   // Toggle stage filter
   const toggleStage = (stage: string) => {
@@ -213,21 +123,31 @@ export const BatchFilters = ({
     onChange({ ...filters, stages: newStages });
   };
 
+  // Toggle variety filter
+  const toggleVariety = (variety: string) => {
+    const newVarieties = filters.varieties.includes(variety)
+      ? filters.varieties.filter((v) => v !== variety)
+      : [...filters.varieties, variety];
+    onChange({ ...filters, varieties: newVarieties });
+  };
+
   // Apply date preset
   const applyDatePreset = (days: number) => {
     const to = new Date();
-    const from = new Date();
-    from.setDate(from.getDate() - days);
+    const from = days === 0 ? new Date() : new Date();
+    if (days > 0) {
+      from.setDate(from.getDate() - days);
+    }
     onChange({ ...filters, dateRange: { from, to } });
   };
 
   // Clear all filters
   const clearAll = () => {
-    onChange(DEFAULT_FILTERS);
+    onChange(DEFAULT_FILTER_STATE);
   };
 
   // Remove specific filter
-  const removeFilter = (key: keyof BatchFilters) => {
+  const removeFilter = (key: keyof BatchFilterState) => {
     const newFilters = { ...filters };
     switch (key) {
       case 'stages':
@@ -242,11 +162,14 @@ export const BatchFilters = ({
       case 'status':
         newFilters.status = 'all';
         break;
-      case 'variety':
-        newFilters.variety = '';
+      case 'varieties':
+        newFilters.varieties = [];
         break;
       case 'alcoholRange':
         newFilters.alcoholRange = [0, 12];
+        break;
+      case 'location':
+        newFilters.location = undefined;
         break;
     }
     onChange(newFilters);
@@ -255,41 +178,14 @@ export const BatchFilters = ({
   // Save current filters as preset
   const savePreset = () => {
     if (!presetName.trim()) return;
-
-    const newPreset: FilterPreset = {
-      id: Date.now().toString(),
-      name: presetName,
-      filters: { ...filters },
-    };
-
-    const updatedPresets = [...presets, newPreset];
-    setPresets(updatedPresets);
-    
-    try {
-      localStorage.setItem(PRESETS_KEY, JSON.stringify(updatedPresets));
-    } catch (error) {
-      console.error('Failed to save preset:', error);
-    }
-
+    savePresetMutation({ name: presetName, filters });
     setPresetName('');
     setSavePresetOpen(false);
   };
 
   // Load preset
-  const loadPreset = (preset: FilterPreset) => {
+  const loadPreset = (preset: typeof allPresets[0]) => {
     onChange(preset.filters);
-  };
-
-  // Delete preset
-  const deletePreset = (presetId: string) => {
-    const updatedPresets = presets.filter((p) => p.id !== presetId);
-    setPresets(updatedPresets);
-    
-    try {
-      localStorage.setItem(PRESETS_KEY, JSON.stringify(updatedPresets));
-    } catch (error) {
-      console.error('Failed to delete preset:', error);
-    }
   };
 
   return (
@@ -321,7 +217,7 @@ export const BatchFilters = ({
         </Button>
 
         {/* Presets Dropdown */}
-        {presets.length > 0 && (
+        {allPresets.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
@@ -329,12 +225,12 @@ export const BatchFilters = ({
                 Presets
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-2">
+            <PopoverContent className="w-64 p-2 z-50 bg-popover">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground px-2 py-1">
                   Saved filter presets
                 </p>
-                {presets.map((preset) => (
+                {allPresets.map((preset) => (
                   <div
                     key={preset.id}
                     className="flex items-center justify-between p-2 rounded-sm hover:bg-accent group"
@@ -345,14 +241,16 @@ export const BatchFilters = ({
                     >
                       {preset.name}
                     </button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deletePreset(preset.id)}
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
+                    {!preset.id.startsWith('built-in') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePreset(preset.id)}
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -425,16 +323,17 @@ export const BatchFilters = ({
               <X className="h-3 w-3" />
             </Badge>
           )}
-          {filters.variety && (
+          {filters.varieties.map((variety) => (
             <Badge
+              key={variety}
               variant="secondary"
               className="gap-1 pr-1 cursor-pointer hover:bg-secondary/80 transition-colors"
-              onClick={() => removeFilter('variety')}
+              onClick={() => toggleVariety(variety)}
             >
-              {filters.variety}
+              {variety}
               <X className="h-3 w-3" />
             </Badge>
-          )}
+          ))}
           {(filters.alcoholRange[0] !== 0 || filters.alcoholRange[1] !== 12) && (
             <Badge
               variant="secondary"
@@ -442,6 +341,16 @@ export const BatchFilters = ({
               onClick={() => removeFilter('alcoholRange')}
             >
               {filters.alcoholRange[0]}-{filters.alcoholRange[1]}% ABV
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+          {filters.location && (
+            <Badge
+              variant="secondary"
+              className="gap-1 pr-1 cursor-pointer hover:bg-secondary/80 transition-colors"
+              onClick={() => removeFilter('location')}
+            >
+              {filters.location}
               <X className="h-3 w-3" />
             </Badge>
           )}
@@ -504,10 +413,11 @@ export const BatchFilters = ({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
                     Custom Range
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-50 bg-popover" align="start">
                   <Calendar
                     mode="range"
                     selected={
@@ -589,25 +499,27 @@ export const BatchFilters = ({
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Variety Filter */}
+            {/* Location Filter */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Apple Variety</Label>
+              <Label className="text-sm font-medium">Location</Label>
               <Select
-                value={filters.variety || "all-varieties"}
-                onValueChange={(value) => onChange({ ...filters, variety: value === "all-varieties" ? "" : value })}
+                value={filters.location || 'all-locations'}
+                onValueChange={(value) => onChange({ ...filters, location: value === 'all-locations' ? undefined : value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All varieties" />
+                  <SelectValue placeholder="All locations" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all-varieties">All varieties</SelectItem>
-                  {varieties.map((variety) => (
-                    <SelectItem key={variety} value={variety}>
-                      {variety}
+                  <SelectItem value="all-locations">All locations</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -651,6 +563,42 @@ export const BatchFilters = ({
             </div>
           </div>
 
+          <Separator />
+
+          {/* Apple Varieties (Multi-select with checkboxes) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Apple Varieties</Label>
+              {filters.varieties.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onChange({ ...filters, varieties: [] })}
+                  className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
+              {varieties.map((variety) => (
+                <div key={variety} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`variety-${variety}`}
+                    checked={filters.varieties.includes(variety)}
+                    onCheckedChange={() => toggleVariety(variety)}
+                  />
+                  <label
+                    htmlFor={`variety-${variety}`}
+                    className="text-sm cursor-pointer select-none"
+                  >
+                    {variety}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Save Preset Button */}
           <div className="pt-2 flex justify-end">
             <Button
@@ -672,7 +620,7 @@ export const BatchFilters = ({
           <DialogHeader>
             <DialogTitle>Save Filter Preset</DialogTitle>
             <DialogDescription>
-              Give your filter combination a name to quickly access it later.
+              Give your filter combination a name to quickly access it later across all your devices.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
