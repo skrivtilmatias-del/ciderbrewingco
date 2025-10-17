@@ -50,6 +50,17 @@ export interface Batch {
   stage_history?: StageHistory[];
   estimated_completion_date?: string | null;
   expected_stage_durations?: Record<string, { min: number; max: number }>;
+  
+  // Version control for optimistic locking
+  version?: number;
+  updated_by_id?: string | null;
+  deleted_by_id?: string | null;
+  
+  // Real-time animation flags (client-side only)
+  _justAdded?: boolean;
+  _justUpdated?: boolean;
+  _deleting?: boolean;
+  _updating?: boolean;
 }
 
 export interface CreateBatchInput {
@@ -98,4 +109,7 @@ export interface UpdateBatchInput {
   target_end_ph?: number | null;
   target_ta?: number | null;
   target_temp_c?: number | null;
+  
+  // Version for optimistic locking
+  version?: number;
 }

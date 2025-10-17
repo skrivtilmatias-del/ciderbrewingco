@@ -8,6 +8,8 @@ import { NewBatchDialog } from '@/components/NewBatchDialog';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
 import { useBatches } from '@/hooks/useBatches';
+import { ActiveUsersIndicator } from '@/components/ActiveUsersIndicator';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
 
 interface AppHeaderProps {
   user: any;
@@ -81,6 +83,8 @@ export const AppHeader = ({
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <ConnectionStatus />
+            <ActiveUsersIndicator />
             <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
               {userProfile?.full_name || user?.email}
             </span>

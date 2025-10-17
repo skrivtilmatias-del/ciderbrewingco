@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, Loader2 } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -218,9 +218,14 @@ export const BatchCard = ({
       onExport={onExport}
     >
       <Card 
+        data-just-added={(batch as any)._justAdded}
+        data-just-updated={(batch as any)._justUpdated}
+        data-deleting={(batch as any)._deleting}
+        data-updating={(batch as any)._updating}
         className={cn(
           "p-6 hover:shadow-lg transition-all cursor-pointer border-border relative",
-          isSelected && "ring-2 ring-primary border-primary"
+          isSelected && "ring-2 ring-primary border-primary",
+          (batch as any)._updating && "opacity-75 pointer-events-none"
         )}
         onClick={onClick}
         onMouseEnter={handleMouseEnter}
@@ -228,6 +233,11 @@ export const BatchCard = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+      {(batch as any)._updating && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-lg z-10">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      )}
       {/* Selection Checkbox */}
       {showSelection && (
         <div 

@@ -171,3 +171,4 @@ All colors MUST be HSL.
 
 /* Import progress animations */
 @import './styles/progress-animations.css';
+@import './styles/realtime-animations.css';

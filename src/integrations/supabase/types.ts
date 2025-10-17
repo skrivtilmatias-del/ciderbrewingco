@@ -217,6 +217,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           current_stage: string
+          deleted_by_id: string | null
           expected_completion_date: string | null
           id: string
           location: string | null
@@ -232,8 +233,10 @@ export type Database = {
           target_ta: number | null
           target_temp_c: number | null
           updated_at: string
+          updated_by_id: string | null
           user_id: string
           variety: string
+          version: number | null
           volume: number
           yeast_type: string | null
         }
@@ -246,6 +249,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           current_stage: string
+          deleted_by_id?: string | null
           expected_completion_date?: string | null
           id?: string
           location?: string | null
@@ -261,8 +265,10 @@ export type Database = {
           target_ta?: number | null
           target_temp_c?: number | null
           updated_at?: string
+          updated_by_id?: string | null
           user_id: string
           variety: string
+          version?: number | null
           volume: number
           yeast_type?: string | null
         }
@@ -275,6 +281,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           current_stage?: string
+          deleted_by_id?: string | null
           expected_completion_date?: string | null
           id?: string
           location?: string | null
@@ -290,8 +297,10 @@ export type Database = {
           target_ta?: number | null
           target_temp_c?: number | null
           updated_at?: string
+          updated_by_id?: string | null
           user_id?: string
           variety?: string
+          version?: number | null
           volume?: number
           yeast_type?: string | null
         }

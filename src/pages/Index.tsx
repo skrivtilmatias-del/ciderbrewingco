@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
+import { useRealtimeBatches } from "@/hooks/useRealtimeBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useOptimizedBatches } from "@/hooks/useOptimizedBatches";
 import { useRenderTracking } from "@/hooks/useRenderTracking";
@@ -58,6 +59,9 @@ const Index = () => {
   const { toolView } = useParams();
   const { user, userRole, userProfile, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
+  
+  // Enable real-time updates
+  useRealtimeBatches();
   
   // Use parallel data fetching hook for optimal performance
   // This fetches batches, blends, and suppliers in parallel to eliminate request waterfalls
