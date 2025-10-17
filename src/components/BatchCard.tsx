@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, Loader2, Activity, TrendingUp, Calendar } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, Loader2 } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -213,26 +213,6 @@ export const BatchCard = ({
     e.stopPropagation();
   };
 
-  // Calculate progress color based on value
-  const getProgressColor = (progress: number) => {
-    if (progress >= 75) return 'bg-success';
-    if (progress >= 40) return 'bg-warning';
-    return 'bg-destructive';
-  };
-
-  // Determine schedule status based on progress calculation
-  const progressCalc = calculateProgress(batch);
-  const getScheduleStatus = () => {
-    const daysAhead = progressCalc.daysAhead;
-    if (daysAhead > 7) return { variant: 'default' as const, text: `${daysAhead}d ahead of schedule`, icon: TrendingUp };
-    if (daysAhead > 0) return { variant: 'secondary' as const, text: `${daysAhead}d ahead`, icon: TrendingUp };
-    if (daysAhead < 0) return { variant: 'destructive' as const, text: `${Math.abs(daysAhead)}d behind`, icon: Activity };
-    return { variant: 'outline' as const, text: 'On schedule', icon: Calendar };
-  };
-
-  const scheduleStatus = getScheduleStatus();
-  const ScheduleIcon = scheduleStatus.icon;
-
   return (
     <BatchContextMenu
       batch={batch}
@@ -252,7 +232,7 @@ export const BatchCard = ({
         role="article"
         aria-label={`Batch ${batch.name}, ${batch.variety}, currently in ${currentStage} stage`}
         className={cn(
-          "p-5 hover:shadow-lg transition-shadow duration-200 cursor-pointer border-border relative group",
+          "p-6 hover:shadow-lg transition-all cursor-pointer border-border relative",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           isSelected && "ring-2 ring-primary border-primary",
           (batch as any)._updating && "opacity-75 pointer-events-none"
@@ -287,121 +267,96 @@ export const BatchCard = ({
           />
         </div>
       )}
-      {/* Header Section - Improved Hierarchy */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-bold text-foreground mb-1">
+      <div className="absolute top-4 right-4 flex gap-1" onClick={handleMenuClick}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8"
+          title="Right-click for more options"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="flex items-start justify-between mb-4 pr-8">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xl font-semibold text-foreground mb-1">
             {highlightText(batch.name, searchQuery)}
           </h3>
-          <p className="text-sm text-muted-foreground line-clamp-1">
+          <p className="text-sm text-muted-foreground">
             {highlightText(batch.variety, searchQuery)}
             {batch.apple_origin && <> from {batch.apple_origin}</>}
           </p>
         </div>
-        
-        {/* Status Badge - Better Positioned */}
-        <Badge 
-          variant="secondary"
-          className="ml-2 shrink-0"
-          aria-label={`Status: ${currentStage}`}
-        >
-          <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
-          {highlightText(currentStage, searchQuery)}
-        </Badge>
-        
-        {/* Three-dot menu - Only visible on hover */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={handleMenuClick}>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 w-8 p-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="More options"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-popover z-50">
-            <DropdownMenuItem onClick={onClick}>View Details</DropdownMenuItem>
-            {onUpdateStage && <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }}>Update Stage</DropdownMenuItem>}
-            {onExport && <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onExport(batch); }}>Export</DropdownMenuItem>}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {/* Mini circular progress */}
+          <BatchProgressMini batch={batch} />
+          <Badge 
+            className={`${stageColor} text-white`}
+            aria-label={`Status: ${currentStage}`}
+          >
+            <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
+            {highlightText(currentStage, searchQuery)}
+          </Badge>
+        </div>
       </div>
 
-      {/* Key Metrics - Better Layout */}
-      <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+      <div className="space-y-3">
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Volume</span>
+            <span className="font-medium text-foreground">{batch.volume}L</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Started</span>
+            <span className="font-medium text-foreground">
+              {new Date(startDate || Date.now()).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+
         <div>
-          <span className="text-muted-foreground">Volume</span>
-          <p className="font-semibold text-base text-foreground">{batch.volume}L</p>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-muted-foreground">Production Progress</span>
+            <span className="font-medium text-foreground">
+              {Math.round(calculateProgress(batch).overallProgress)}%
+            </span>
+          </div>
+          <LinearProgress 
+            progress={calculateProgress(batch).overallProgress} 
+            compact 
+          />
         </div>
-        <div>
-          <span className="text-muted-foreground">Started</span>
-          <p className="font-semibold text-base text-foreground">
-            {new Date(startDate || Date.now()).toLocaleDateString()}
-          </p>
-        </div>
-      </div>
 
-      {/* Progress Section - With Colored Bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Production Progress</span>
-          <span className="text-sm font-bold">{Math.round(progressCalc.overallProgress)}%</span>
-        </div>
-        <Progress 
-          value={progressCalc.overallProgress} 
-          className="h-2"
-        />
-      </div>
+        {/* Progress badges */}
+        <ProgressBadge batch={batch} />
 
-      {/* Schedule Status - Clear Indicator */}
-      <div className="mb-4">
-        <Badge 
-          variant={scheduleStatus.variant}
-          className="gap-1.5"
-        >
-          <ScheduleIcon className="h-3.5 w-3.5" />
-          {scheduleStatus.text}
-        </Badge>
+        {(batch.target_og || batch.target_ph || batch.yeast_type) && (
+          <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
+            {batch.target_og && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <Droplets className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">OG:</span>
+                <span className="text-foreground">{batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</span>
+              </div>
+            )}
+            {batch.target_ph && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <FlaskConical className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">PH:</span>
+                <span className="text-foreground">{batch.target_ph}</span>
+              </div>
+            )}
+            {batch.yeast_type && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
+                <Beaker className="w-3.5 h-3.5 text-primary" />
+                <span className="text-muted-foreground">Yeast:</span>
+                <span className="text-foreground">{batch.yeast_type}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Technical Metrics - Improved Icons and Layout */}
-      {(batch.target_og || batch.target_ph || batch.yeast_type) && (
-        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border">
-          {batch.target_og && (
-            <div className="flex items-center gap-1.5">
-              <Droplets className="h-4 w-4 text-info" />
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">OG</p>
-                <p className="text-sm font-semibold truncate text-foreground">
-                  {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}
-                </p>
-              </div>
-            </div>
-          )}
-          
-          {batch.target_ph && (
-            <div className="flex items-center gap-1.5">
-              <FlaskConical className="h-4 w-4 text-accent" />
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">PH</p>
-                <p className="text-sm font-semibold truncate text-foreground">{batch.target_ph}</p>
-              </div>
-            </div>
-          )}
-          
-          {batch.yeast_type && (
-            <div className="flex items-center gap-1.5">
-              <Beaker className="h-4 w-4 text-warning" />
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Yeast</p>
-                <p className="text-sm font-semibold truncate text-foreground">{batch.yeast_type}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </Card>
     </BatchContextMenu>
   );
