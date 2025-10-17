@@ -1,4 +1,5 @@
 import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 import type { Batch } from '@/components/BatchCard';
@@ -9,6 +10,7 @@ interface ParallelProductionDataResult {
   blends: any[];
   suppliers: Supplier[];
   isLoading: boolean;
+  isLoadingAnyResource: boolean;
   hasError: boolean;
   errors: {
     batches?: Error;
@@ -176,6 +178,12 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
     suppliers: suppliersQuery.isLoading,
   };
 
+  // Memoize loading states check to prevent recalculation
+  const isLoadingAnyResource = useMemo(
+    () => Object.values(loadingStates).some(Boolean),
+    [loadingStates.batches, loadingStates.blends, loadingStates.suppliers]
+  );
+
   // Combined retry function using centralized query keys
   const retry = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
@@ -188,6 +196,7 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
     blends: blendsQuery.data || [],
     suppliers: suppliersQuery.data || [],
     isLoading,
+    isLoadingAnyResource,
     hasError,
     errors,
     retry,
