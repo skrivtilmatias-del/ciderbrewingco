@@ -137,8 +137,6 @@ export const ProductionTab = ({
         {/* Progress Overview */}
         <ProgressOverview batches={batches as any} />
         
-        {/* Context Menu Guide */}
-        <BatchContextMenuGuide />
 
       {/* ========== Search Results Dropdown ========== */}
       {batchSearchQuery && (

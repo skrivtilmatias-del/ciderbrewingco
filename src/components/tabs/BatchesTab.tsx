@@ -134,10 +134,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
         )}
       </div>
 
-      {/* Help Guide */}
-      <div className="flex justify-end">
-        <BatchContextMenuGuide />
-      </div>
 
       {/* Comprehensive Filter Panel */}
       <BatchFilters
