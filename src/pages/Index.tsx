@@ -160,25 +160,24 @@ const Index = () => {
   // Handle batch selection from QR redirect via URL params
   const qrRedirectHandled = useRef(false);
   useEffect(() => {
-    if (qrRedirectHandled.current) return;
+    // Only run once on mount when we have batches
+    if (qrRedirectHandled.current || batchesRef.current.length === 0) return;
     
     const params = new URLSearchParams(location.search);
     const batchId = params.get("batch");
 
-    if (batchId && batchesRef.current.length > 0) {
+    if (batchId) {
       const batch = batchesRef.current.find((b) => b.id === batchId);
       if (batch) {
+        qrRedirectHandled.current = true;
         setSelectedBatchId(batch.id);
-        setTimeout(() => {
-          navigate("/production", { replace: true });
-          qrRedirectHandled.current = true;
-        }, 100);
+        navigate("/production", { replace: true });
       } else {
         toast.error(`Batch ${batchId} not found`);
         navigate("/batches", { replace: true });
       }
     }
-  }, [location.search, batches.length]);
+  }, [location.search]); // Only depend on search params to avoid race conditions
 
   // Track if initial batch selection has been made
   const hasInitializedSelection = useRef(false);
