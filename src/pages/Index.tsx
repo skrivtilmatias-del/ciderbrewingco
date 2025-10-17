@@ -755,8 +755,8 @@ const Index = () => {
               <TabErrorBoundary tabName="Production">
                 <Suspense fallback={<TabLoadingFallback />}>
                   <ProductionTab 
-                    batches={optimizedBatches}
-                    selectedBatch={selectedBatch}
+                    batches={optimizedBatches as any}
+                    selectedBatch={selectedBatch as any}
                     onSelectBatch={(batch) => setSelectedBatchId(batch.id)}
                     onUpdateStage={handleUpdateStage}
                   />

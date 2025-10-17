@@ -17,6 +17,7 @@ import { BatchProgressMini, ProgressBadge } from "@/components/production/BatchP
 import { LinearProgress } from "@/components/production/LinearProgress";
 import { calculateProgress } from "@/lib/progressUtils";
 
+// Legacy interface for backward compatibility
 export interface Batch {
   id: string;
   name: string;
@@ -34,6 +35,9 @@ export interface Batch {
   target_end_ph?: number;
   target_temp_c?: number;
   yeast_type?: string;
+  // Allow database fields too
+  started_at?: string;
+  current_stage?: string;
 }
 
 const getStageIcon = (stage: string) => {
@@ -114,10 +118,12 @@ export const BatchCard = ({
   const queryClient = useQueryClient();
   const { selectedBatchIds, toggleBatchSelection } = useBatchComparisonStore();
   const isSelected = selectedBatchIds.includes(batch.id);
-  const StageIcon = getStageIcon(batch.currentStage);
-  const stageColor = getStageColor(batch.currentStage);
-  const isComplete = batch.currentStage === 'Complete';
-  const currentIndex = STAGES.indexOf(batch.currentStage as CiderStage);
+  const currentStage = batch.currentStage || batch.current_stage || 'Planning';
+  const startDate = batch.startDate || batch.started_at;
+  const StageIcon = getStageIcon(currentStage);
+  const stageColor = getStageColor(currentStage);
+  const isComplete = currentStage === 'Complete';
+  const currentIndex = STAGES.indexOf(currentStage as CiderStage);
   const canGoPrevious = !isComplete && currentIndex > 0;
 
   // Mobile long-press support
@@ -222,8 +228,12 @@ export const BatchCard = ({
         data-just-updated={(batch as any)._justUpdated}
         data-deleting={(batch as any)._deleting}
         data-updating={(batch as any)._updating}
+        tabIndex={0}
+        role="article"
+        aria-label={`Batch ${batch.name}, ${batch.variety}, currently in ${currentStage} stage`}
         className={cn(
           "p-6 hover:shadow-lg transition-all cursor-pointer border-border relative",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           isSelected && "ring-2 ring-primary border-primary",
           (batch as any)._updating && "opacity-75 pointer-events-none"
         )}
@@ -232,6 +242,12 @@ export const BatchCard = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.();
+          }
+        }}
       >
       {(batch as any)._updating && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-lg z-10">
@@ -275,9 +291,12 @@ export const BatchCard = ({
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           {/* Mini circular progress */}
           <BatchProgressMini batch={batch} />
-          <Badge className={`${stageColor} text-white`}>
-            <StageIcon className="w-3 h-3 mr-1" />
-            {highlightText(batch.currentStage, searchQuery)}
+          <Badge 
+            className={`${stageColor} text-white`}
+            aria-label={`Status: ${currentStage}`}
+          >
+            <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
+            {highlightText(currentStage, searchQuery)}
           </Badge>
         </div>
       </div>
@@ -291,7 +310,7 @@ export const BatchCard = ({
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Started</span>
             <span className="font-medium text-foreground">
-              {new Date(batch.startDate).toLocaleDateString()}
+              {new Date(startDate || Date.now()).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -355,9 +374,9 @@ const batchCardPropsAreEqual = (prevProps: BatchCardProps, nextProps: BatchCardP
     prevProps.batch.name === nextProps.batch.name &&
     prevProps.batch.variety === nextProps.batch.variety &&
     prevProps.batch.volume === nextProps.batch.volume &&
-    prevProps.batch.currentStage === nextProps.batch.currentStage &&
+    (prevProps.batch.currentStage || prevProps.batch.current_stage) === (nextProps.batch.currentStage || nextProps.batch.current_stage) &&
     prevProps.batch.progress === nextProps.batch.progress &&
-    prevProps.batch.startDate === nextProps.batch.startDate;
+    (prevProps.batch.startDate || prevProps.batch.started_at) === (nextProps.batch.startDate || nextProps.batch.started_at);
 
   // Compare search query
   const searchEqual = prevProps.searchQuery === nextProps.searchQuery;

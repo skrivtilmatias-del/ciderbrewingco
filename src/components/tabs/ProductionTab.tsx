@@ -65,7 +65,7 @@ export const ProductionTab = ({
   
   // Hooks - Business logic extracted
   const { logs, addLog, deleteLog, isLoading, isAdding } = useBatchLogs(selectedBatch?.id || null);
-  const { results: searchResults } = useBatchSearch(batches, batchSearchQuery);
+  const { results: searchResults } = useBatchSearch(batches as any, batchSearchQuery);
   
   // Local UI state
   const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped' | 'activity'>('grid');
@@ -94,7 +94,7 @@ export const ProductionTab = ({
     // Prefetch adjacent batches for smooth navigation
     const currentIndex = batches.findIndex(b => b.id === batch.id);
     if (currentIndex >= 0) {
-      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
+      prefetchAdjacentBatches(queryClient, batches as any, currentIndex, 3).catch(() => {
         // Silently fail - prefetch is optional optimization
       });
     }
@@ -132,10 +132,10 @@ export const ProductionTab = ({
     <QueryErrorBoundary>
       <div className="space-y-4">
         {/* Production Metrics Widget */}
-        <ProductionMetricsWidget batches={batches} />
+        <ProductionMetricsWidget batches={batches as any} />
         
         {/* Progress Overview */}
-        <ProgressOverview batches={batches} />
+        <ProgressOverview batches={batches as any} />
         
         {/* Context Menu Guide */}
         <BatchContextMenuGuide />
@@ -147,8 +147,10 @@ export const ProductionTab = ({
             searchResults.map(({ batch }) => (
               <button
                 key={batch.id}
-                onClick={() => handleSelectBatch(batch)}
-                className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2"
+                role="option"
+                aria-selected={selectedBatch?.id === batch.id}
+                onClick={() => handleSelectBatch(batch as any)}
+                className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <FlaskConical className="h-4 w-4 text-primary flex-shrink-0" />
                 <span className="font-medium text-sm">{batch.name}</span>
@@ -167,25 +169,25 @@ export const ProductionTab = ({
       )}
 
       {/* ========== Batch Header ========== */}
-      <BatchProductionHeader batch={selectedBatch} allBatches={batches} />
+      <BatchProductionHeader batch={selectedBatch as any} allBatches={batches as any} />
 
       {/* ========== View Mode Toggle ========== */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-        <TabsList>
-          <TabsTrigger value="grid" className="gap-2">
-            <LayoutGrid className="w-4 h-4" />
+        <TabsList role="tablist" aria-label="Production view modes">
+          <TabsTrigger value="grid" className="gap-2" aria-label="Grid view">
+            <LayoutGrid className="w-4 h-4" aria-hidden="true" />
             Grid
           </TabsTrigger>
-          <TabsTrigger value="timeline" className="gap-2">
-            <Clock className="w-4 h-4" />
+          <TabsTrigger value="timeline" className="gap-2" aria-label="Timeline view">
+            <Clock className="w-4 h-4" aria-hidden="true" />
             Timeline
           </TabsTrigger>
-          <TabsTrigger value="grouped" className="gap-2">
-            <Layers className="w-4 h-4" />
+          <TabsTrigger value="grouped" className="gap-2" aria-label="Grouped view">
+            <Layers className="w-4 h-4" aria-hidden="true" />
             Grouped
           </TabsTrigger>
-          <TabsTrigger value="activity" className="gap-2">
-            <Activity className="w-4 h-4" />
+          <TabsTrigger value="activity" className="gap-2" aria-label="Activity view">
+            <Activity className="w-4 h-4" aria-hidden="true" />
             Activity
           </TabsTrigger>
         </TabsList>
@@ -193,8 +195,8 @@ export const ProductionTab = ({
         {/* ========== Content: View Mode Dependent ========== */}
         <TabsContent value="grouped" className="mt-4">
           <GroupedBatchView
-            batches={batches}
-            onSelectBatch={onSelectBatch}
+            batches={batches as any}
+            onSelectBatch={onSelectBatch as any}
             onDeleteBatch={(batchId: string) => {
               console.log('Delete batch:', batchId);
             }}
