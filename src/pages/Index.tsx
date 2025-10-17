@@ -431,12 +431,21 @@ const Index = () => {
 
   // Show error state - handle partial failures gracefully
   if (hasError && !isLoading) {
-    // Check which specific queries failed
-    const failedQueries = Object.entries(errors)
+    const failedResources = Object.entries(errors)
       .filter(([_, error]) => error)
       .map(([name]) => name);
     
     const hasAnyData = batches.length > 0 || blends.length > 0;
+    
+    // Map failed resources to affected features
+    const affectedFeatures = {
+      batches: ['All Batches tab', 'Production tracking', 'Batch details'],
+      blends: ['Blending tab', 'Cellar management', 'Tasting notes'],
+      suppliers: ['Supplier management', 'Cost calculations']
+    };
+    
+    const limitedFeatures = failedResources
+      .flatMap(resource => affectedFeatures[resource as keyof typeof affectedFeatures] || []);
     
     return (
       <div className="min-h-dvh bg-background">
@@ -450,21 +459,30 @@ const Index = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error Loading Data</AlertTitle>
             <AlertDescription className="space-y-4">
+              {/* Show specific errors */}
               <div className="space-y-2">
                 {Object.entries(errors).map(([key, error]) => 
                   error ? (
                     <p key={key} className="text-sm">
-                      <strong className="font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{' '}
+                      <strong className="font-semibold capitalize">{key}:</strong>{' '}
                       {getUserFriendlyError(error)}
                     </p>
                   ) : null
                 )}
               </div>
-              {hasAnyData && (
-                <p className="text-sm text-muted-foreground">
-                  Some data loaded successfully. You can continue using the app with limited functionality.
-                </p>
+              
+              {/* Show affected features */}
+              {hasAnyData && limitedFeatures.length > 0 && (
+                <div className="text-sm">
+                  <p className="font-semibold mb-1">Limited Features:</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    {limitedFeatures.map((feature, i) => (
+                      <li key={i}>{feature}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
+              
               <Button onClick={handleRetry} variant="outline" className="gap-2">
                 <RefreshCw className="h-4 w-4" />
                 Retry Failed Requests
@@ -478,7 +496,8 @@ const Index = () => {
               <p className="text-sm text-muted-foreground text-center mb-4">
                 Showing available data for: {[
                   batches.length > 0 && 'Batches',
-                  blends.length > 0 && 'Blends'
+                  blends.length > 0 && 'Blends',
+                  suppliers.length > 0 && 'Suppliers'
                 ].filter(Boolean).join(', ')}
               </p>
             </div>
