@@ -576,7 +576,6 @@ const Index = () => {
           user={user}
           userProfile={userProfile}
           userRole={userRole}
-          onBatchCreated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
           onTastingSaved={handleSaveTasting}
           blendBatches={blends}
           onShowShortcuts={() => setShowShortcuts(true)}
@@ -855,7 +854,6 @@ const Index = () => {
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdateStage={handleUpdateStage}
-          onBatchUpdated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
           onGoToProduction={handleGoToProduction}
         />
       </Suspense>

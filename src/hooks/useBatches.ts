@@ -161,13 +161,20 @@ export const useBatches = () => {
            console.error('Failed to create initial log:', logError);
          }
        }
-        
-        // Invalidate queries using centralized keys
-        queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
-        queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
-        
-        toast.success('Batch created successfully');
-     },
+         
+         // Deduplicated query invalidation - TanStack Query handles deduplication automatically
+         // Use 'none' refetchType to avoid showing loading states while background refetch happens
+         queryClient.invalidateQueries({ 
+           queryKey: queryKeys.batches.all(),
+           refetchType: 'none'
+         });
+         queryClient.invalidateQueries({ 
+           queryKey: queryKeys.batchLogs.all(),
+           refetchType: 'none'
+         });
+         
+         toast.success('Batch created successfully');
+      },
     onError: (error: any) => {
       toast.error(getUserFriendlyError(error));
     },
@@ -184,7 +191,11 @@ export const useBatches = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      // Deduplicated invalidation with background refetch
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
       toast.success('Batch deleted successfully');
     },
     onError: (error: any) => {
@@ -266,7 +277,11 @@ export const useBatches = () => {
     },
     onSettled: () => {
       // Always refetch after mutation completes to ensure data consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      // Use 'none' to prevent showing loading state during background refetch
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
     },
   });
 

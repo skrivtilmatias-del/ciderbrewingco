@@ -84,7 +84,10 @@ export const useBatchLogs = (batchId: string | null) => {
     onError: (error: any) => {
       if (error?.code === '42501') {
         toast.error('Permission denied while creating note. Please refresh and try again.');
-        queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.batches.all(),
+          refetchType: 'none'
+        });
       } else {
         toast.error(getUserFriendlyError(error));
       }

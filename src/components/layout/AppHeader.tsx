@@ -15,7 +15,6 @@ interface AppHeaderProps {
   user: any;
   userProfile: any;
   userRole: string;
-  onBatchCreated?: () => void;
   onTastingSaved?: (data: any, analysisId?: string) => void;
   blendBatches?: any[];
   onShowShortcuts?: () => void;
@@ -25,7 +24,6 @@ export const AppHeader = ({
   user, 
   userProfile, 
   userRole,
-  onBatchCreated,
   onTastingSaved,
   blendBatches = [],
   onShowShortcuts
@@ -51,6 +49,7 @@ export const AppHeader = ({
   };
 
   const handleBatchCreated = async (batchData: any) => {
+    // Create batch via mutation - invalidation is handled automatically by useBatches hook
     createBatch({
       name: batchData.name,
       variety: batchData.variety,
@@ -65,10 +64,6 @@ export const AppHeader = ({
       target_end_ph: batchData.target_end_ph,
       initial_temp_c: batchData.initial_temp_c,
     });
-    
-    if (onBatchCreated) {
-      onBatchCreated();
-    }
   };
 
   return (

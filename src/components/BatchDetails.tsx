@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryConfig";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -61,11 +63,12 @@ interface BatchDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateStage: (batchId: string, newStage: Batch["currentStage"]) => void;
-  onBatchUpdated?: () => void;
   onGoToProduction?: (batch: Batch) => void;
 }
 
-export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated, onGoToProduction }: BatchDetailsProps) => {
+export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onGoToProduction }: BatchDetailsProps) => {
+  const queryClient = useQueryClient();
+  
   // Add null guard at the top
   if (!batch) return null;
 
@@ -133,7 +136,12 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
       toast.success("Notes updated successfully");
       setIsEditingNotes(false);
-      if (onBatchUpdated) onBatchUpdated();
+      
+      // Deduplicated query invalidation with background refetch
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
@@ -164,7 +172,12 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
       toast.success("Batch details updated successfully");
       setIsEditingDetails(false);
-      if (onBatchUpdated) onBatchUpdated();
+      
+      // Deduplicated query invalidation with background refetch
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {

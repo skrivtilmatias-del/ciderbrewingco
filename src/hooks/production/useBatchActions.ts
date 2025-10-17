@@ -136,8 +136,11 @@ export const useBatchActions = () => {
       });
     },
     onSettled: () => {
-      // Always refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      // Always refetch to ensure consistency with deduplicated invalidation
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
     },
   });
 
@@ -154,7 +157,10 @@ export const useBatchActions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
       toast({
         title: "Batch deleted",
         description: "The batch has been permanently removed",
@@ -201,7 +207,10 @@ export const useBatchActions = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
       
       // Log activity
       logActivity({
@@ -238,7 +247,10 @@ export const useBatchActions = () => {
       if (error) throw error;
     },
     onSuccess: (data, batchId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.batches.all(),
+        refetchType: 'none'
+      });
       
       // Log activity
       logActivity({
