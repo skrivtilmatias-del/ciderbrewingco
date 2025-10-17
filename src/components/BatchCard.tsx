@@ -89,7 +89,7 @@ const highlightText = (text: string, query: string) => {
   return (
     <>
       {parts.map((part, index) => 
-        part.toLowerCase() === query.toLowerCase() ? (
+        part?.toLowerCase() === query?.toLowerCase() ? (
           <mark key={index} className="bg-warning/30 text-foreground rounded-sm px-0.5">
             {part}
           </mark>

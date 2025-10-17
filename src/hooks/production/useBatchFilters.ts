@@ -20,9 +20,9 @@ export const filterFunctions = {
     
     const normalizedQuery = query.toLowerCase();
     return (
-      batch.name.toLowerCase().includes(normalizedQuery) ||
-      batch.variety.toLowerCase().includes(normalizedQuery) ||
-      batch.currentStage.toLowerCase().includes(normalizedQuery)
+      batch.name?.toLowerCase().includes(normalizedQuery) ||
+      batch.variety?.toLowerCase().includes(normalizedQuery) ||
+      batch.currentStage?.toLowerCase().includes(normalizedQuery)
     );
   },
 

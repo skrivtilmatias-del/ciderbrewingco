@@ -101,16 +101,16 @@ export const useBatchSearch = (
     return batches
       .filter(batch => {
         return (
-          batch.name.toLowerCase().includes(normalizedQuery) ||
-          batch.variety.toLowerCase().includes(normalizedQuery) ||
-          batch.currentStage.toLowerCase().includes(normalizedQuery)
+          batch.name?.toLowerCase().includes(normalizedQuery) ||
+          batch.variety?.toLowerCase().includes(normalizedQuery) ||
+          batch.currentStage?.toLowerCase().includes(normalizedQuery)
         );
       })
       .map(batch => {
         // Determine which field matched
-        const name = batch.name.toLowerCase();
-        const variety = batch.variety.toLowerCase();
-        const stage = batch.currentStage.toLowerCase();
+        const name = batch.name?.toLowerCase() || '';
+        const variety = batch.variety?.toLowerCase() || '';
+        const stage = batch.currentStage?.toLowerCase() || '';
 
         let matchField: SearchResult['matchField'] = 'name';
         let matchText = batch.name;
