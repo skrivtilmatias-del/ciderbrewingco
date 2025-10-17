@@ -142,6 +142,19 @@ const Index = () => {
       }
     },
   });
+
+  // Show visual feedback for keyboard shortcuts on first visit
+  useEffect(() => {
+    const hasSeenShortcutsHint = localStorage.getItem('hasSeenShortcutsHint');
+    if (!hasSeenShortcutsHint && user) {
+      setTimeout(() => {
+        toast.info('Press ? to view keyboard shortcuts', {
+          duration: 5000,
+        });
+        localStorage.setItem('hasSeenShortcutsHint', 'true');
+      }, 2000);
+    }
+  }, [user]);
   
   // Memoize active tab computation
   const activeTab = useMemo((): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
