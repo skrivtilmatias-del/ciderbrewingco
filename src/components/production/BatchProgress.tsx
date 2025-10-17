@@ -106,9 +106,10 @@ const ProgressTooltipContent = ({
  */
 export const ProgressBadge = ({ batch }: { batch: Batch }) => {
   const progress = calculateProgress(batch);
+  const actionStatus = needsAction(batch);
   const badges = [];
 
-  // Overdue badge
+  // Overdue badge - only show when it makes sense
   if (progress.status === 'overdue') {
     badges.push(
       <Badge
@@ -150,17 +151,25 @@ export const ProgressBadge = ({ batch }: { batch: Batch }) => {
     );
   }
 
-  // Action needed
-  if (needsAction(batch)) {
+  // Action needed with specific reason
+  if (actionStatus.needed) {
     badges.push(
-      <Badge
-        key="action"
-        variant="secondary"
-        className="bg-yellow-100 text-yellow-700 gap-1"
-      >
-        <Bell className="h-3 w-3" />
-        Action Needed
-      </Badge>
+      <TooltipProvider key="action">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="bg-yellow-100 text-yellow-700 gap-1 cursor-help"
+            >
+              <Bell className="h-3 w-3" />
+              Action Needed
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">{actionStatus.reason}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 

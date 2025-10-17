@@ -101,12 +101,22 @@ export const calculateProgress = (batch: Batch): ProgressCalculation => {
     100
   );
   
-  // Calculate status
+  // Calculate status with smarter overdue logic
   const expectedDays = expectedDuration.typical;
   const variance = daysInStage - expectedDays;
   
   let status: ProgressStatus;
-  if (daysInStage > expectedDuration.max) {
+  
+  // Smart overdue detection - don't show "overdue" if making good progress
+  const shouldShowOverdue = () => {
+    if (overallProgress >= 100) return false; // Completed
+    if (overallProgress === 0 && daysInStage > 30) return true; // Not started and late
+    if (overallProgress < 50 && daysInStage > 90) return true; // Slow progress and very late
+    if (daysInStage > expectedDuration.max * 2) return true; // Extremely overdue
+    return false;
+  };
+  
+  if (shouldShowOverdue()) {
     status = 'overdue';
   } else if (variance > 2) {
     status = 'behind';
@@ -173,15 +183,31 @@ export const getNextMilestone = (batch: Batch): string => {
 };
 
 /**
- * Check if batch needs action
+ * Check if batch needs action with specific reason
  */
-export const needsAction = (batch: Batch): boolean => {
+export const needsAction = (batch: Batch): { needed: boolean; reason?: string } => {
   const currentStage = batch.currentStage || (batch as any).current_stage || 'Harvest';
   const daysInStage = getDaysInStage(batch);
   const expectedMax = EXPECTED_DURATIONS[currentStage]?.max || 999;
+  const progress = calculateProgress(batch);
   
-  // Needs action if past maximum expected duration
-  return daysInStage > expectedMax;
+  // Not started for more than a week
+  if (progress.overallProgress === 0 && daysInStage > 7) {
+    return { needed: true, reason: `Not started for ${daysInStage} days` };
+  }
+  
+  // Stuck in current stage
+  if (daysInStage > expectedMax) {
+    const daysOverdue = daysInStage - expectedMax;
+    return { needed: true, reason: `${daysOverdue}d over expected time in ${currentStage}` };
+  }
+  
+  // Very slow progress
+  if (progress.overallProgress < 30 && daysInStage > 60) {
+    return { needed: true, reason: `Only ${Math.round(progress.overallProgress)}% after ${daysInStage} days` };
+  }
+  
+  return { needed: false };
 };
 
 /**
