@@ -322,13 +322,17 @@ export const BatchCard = ({
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
           <div className="flex items-center gap-1.5">
             <Beaker className="h-4 w-4" aria-hidden="true" />
-            <span className="font-medium text-foreground">{batch.volume}L</span>
+            <span>
+              Volume <span className="font-semibold text-foreground">{batch.volume}L</span>
+            </span>
           </div>
           
           <div className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4" aria-hidden="true" />
-            <span className="font-medium text-foreground">
-              {new Date(startDate || Date.now()).toLocaleDateString()}
+            <span>
+              Started <span className="font-semibold text-foreground">
+                {new Date(startDate || Date.now()).toLocaleDateString()}
+              </span>
             </span>
           </div>
         </div>
