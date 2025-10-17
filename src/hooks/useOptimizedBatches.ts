@@ -40,9 +40,9 @@ export const useOptimizedBatches = ({
     const query = searchQuery.toLowerCase();
     return batches.filter(
       (batch) =>
-        batch.name.toLowerCase().includes(query) ||
-        batch.variety.toLowerCase().includes(query) ||
-        batch.currentStage.toLowerCase().includes(query) ||
+        batch.name?.toLowerCase().includes(query) ||
+        batch.variety?.toLowerCase().includes(query) ||
+        batch.currentStage?.toLowerCase().includes(query) ||
         batch.apple_origin?.toLowerCase().includes(query)
     );
   }, [batches, searchQuery]);
