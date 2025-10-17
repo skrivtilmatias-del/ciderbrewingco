@@ -107,12 +107,17 @@ const Index = () => {
   useKeyboardShortcuts({
     onShowShortcuts: () => setShowShortcuts(true),
     onNewBatch: () => {
-      // TODO: Open new batch dialog
-      console.log('Open new batch dialog');
+      // Trigger new batch dialog via CustomEvent
+      // This allows components to listen and respond without tight coupling
+      const event = new CustomEvent('openNewBatch');
+      window.dispatchEvent(event);
     },
     onFocusSearch: () => {
-      // Focus search input if it exists
-      searchInputRef.current?.focus();
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      } else {
+        console.warn('Search input ref not available - ensure BatchSearch is rendered with ref');
+      }
     },
   });
   
