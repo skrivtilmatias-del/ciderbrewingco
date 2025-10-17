@@ -225,15 +225,6 @@ export const BatchProgressCard = ({ batch }: { batch: Batch }) => {
 
   return (
     <div className="space-y-3">
-      {/* Circular progress */}
-      <div className="flex items-center justify-center">
-        <CircularProgress
-          progress={progress.overallProgress}
-          size={80}
-          strokeWidth={8}
-        />
-      </div>
-
       {/* Status badges */}
       <ProgressBadge batch={batch} />
 
@@ -282,15 +273,6 @@ export const BatchProgressDetailed = ({ batch }: { batch: Batch }) => {
         <CardTitle>Production Progress</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Large circular progress */}
-        <div className="flex justify-center">
-          <CircularProgress
-            progress={progress.overallProgress}
-            size={120}
-            strokeWidth={12}
-          />
-        </div>
-
         {/* Metrics grid */}
         <div className="grid grid-cols-2 gap-4">
           <MetricCard
