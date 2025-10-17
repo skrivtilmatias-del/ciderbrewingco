@@ -440,7 +440,7 @@ const Index = () => {
     );
   }
 
-  // Show loading state - only show skeleton if ALL queries are loading
+  // Show loading state with granular loading indicators
   if (isLoading || !user) {
     return (
       <div className="min-h-dvh bg-background">
@@ -450,8 +450,47 @@ const Index = () => {
           </div>
         </header>
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full max-w-md" />
+          <div className="space-y-6">
+            {/* Granular loading indicators for each resource */}
+            <div className="space-y-3 max-w-md">
+              {/* Batches loading state */}
+              {loadingStates.batches ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              ) : batches.length > 0 ? (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Batches loaded ({batches.length})
+                </p>
+              ) : null}
+              
+              {/* Blends loading state */}
+              {loadingStates.blends ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              ) : blends.length > 0 ? (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Blends loaded ({blends.length})
+                </p>
+              ) : null}
+              
+              {/* Suppliers loading state */}
+              {loadingStates.suppliers ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              ) : suppliers.length > 0 ? (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Suppliers loaded ({suppliers.length})
+                </p>
+              ) : null}
+            </div>
+            
+            {/* Show skeleton cards for visual feedback */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
                 <Card key={i} className="p-6">
