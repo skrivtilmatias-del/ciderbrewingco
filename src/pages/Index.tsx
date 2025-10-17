@@ -684,7 +684,7 @@ const Index = () => {
                           <span className="hidden sm:inline">Tools</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
+                      <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuLabel>Tools</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
@@ -733,10 +733,10 @@ const Index = () => {
                     className="w-full sm:w-[300px]"
                   />
                   <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[180px] bg-background z-50">
+                    <SelectTrigger className="w-full sm:w-[180px] bg-background">
                       <SelectValue placeholder="Sort by..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover z-50">
+                    <SelectContent>
                       <SelectItem value="newest">Newest First</SelectItem>
                       <SelectItem value="oldest">Oldest First</SelectItem>
                       <SelectItem value="name-asc">Name (A-Z)</SelectItem>

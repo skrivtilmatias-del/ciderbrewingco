@@ -109,6 +109,15 @@ All colors MUST be HSL.
 
     --info: 200 70% 50%;
     --info-foreground: 0 0% 100%;
+
+    /* Z-index hierarchy for consistent stacking contexts */
+    --z-base: 0;
+    --z-dropdown: 50;
+    --z-sticky: 100;
+    --z-modal: 1000;
+    --z-popover: 1050;
+    --z-toast: 1100;
+    --z-tooltip: 1150;
   }
 
   .dark {
