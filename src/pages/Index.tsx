@@ -156,8 +156,8 @@ const Index = () => {
     const params = new URLSearchParams(location.search);
     const batchId = params.get("batch");
 
-    if (batchId && batches.length > 0) {
-      const batch = batches.find((b) => b.id === batchId);
+    if (batchId && batchesRef.current.length > 0) {
+      const batch = batchesRef.current.find((b) => b.id === batchId);
       if (batch) {
         setSelectedBatchId(batch.id);
         setTimeout(() => {
@@ -169,7 +169,7 @@ const Index = () => {
         navigate("/batches", { replace: true });
       }
     }
-  }, [location.search, batches.length, navigate, setSelectedBatchId]);
+  }, [location.search, batches.length]);
 
   // Track if initial batch selection has been made
   const hasInitializedSelection = useRef(false);
