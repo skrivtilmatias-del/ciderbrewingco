@@ -319,11 +319,22 @@ export const BatchCard = ({
           <div className="flex justify-between text-sm mb-2">
             <span className="text-muted-foreground">Production Progress</span>
             <span className="font-medium text-foreground">
-              {Math.round(calculateProgress(batch).overallProgress)}%
+              {(() => {
+                const progressValue = calculateProgress(batch).overallProgress;
+                const safeProgress = isNaN(progressValue) || progressValue === null 
+                  ? 0 
+                  : Math.min(Math.max(progressValue, 0), 100);
+                return safeProgress === 0 ? 'Not started' : `${Math.round(safeProgress)}%`;
+              })()}
             </span>
           </div>
           <LinearProgress 
-            progress={calculateProgress(batch).overallProgress} 
+            progress={(() => {
+              const progressValue = calculateProgress(batch).overallProgress;
+              return isNaN(progressValue) || progressValue === null 
+                ? 0 
+                : Math.min(Math.max(progressValue, 0), 100);
+            })()} 
             compact 
           />
         </div>
