@@ -12,7 +12,7 @@
  * @module hooks/production
  */
 
-export { useBatchFilters, getUniqueVarieties, getUniqueStages } from './useBatchFilters';
+export { useBatchFilters, getUniqueVarieties, getUniqueStages, getUniqueLocations } from './useBatchFilters';
 export type { BatchFilterCriteria } from './useBatchFilters';
 
 export { useBatchSelection } from './useBatchSelection';

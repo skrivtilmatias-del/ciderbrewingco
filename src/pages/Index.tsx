@@ -91,6 +91,7 @@ const Index = () => {
     setBatchSearchQuery,
     batchSortOrder,
     setBatchSortOrder,
+    batchFilters,
   } = useAppStore();
   
   // Derive selected batch and blend from React Query cache (single source of truth)
@@ -144,21 +145,11 @@ const Index = () => {
     return 'batches';
   }, [location.pathname]);
 
-  // Use optimized batches hook with proper memoization
-  const batchFilters = useMemo(() => ({
-    stages: [],
-    dateRange: {},
-    volumeRange: [0, 10000] as [number, number],
-    status: 'all' as const,
-    variety: '',
-    alcoholRange: [0, 12] as [number, number],
-  }), []);
-
   // This hook memoizes all expensive computations
   const { sorted: optimizedBatches, groupedByStage } = useOptimizedBatches({
     batches,
     searchQuery: batchSearchQuery,
-    filters: batchFilters,
+    filters: batchFilters, // From store
     sortOrder: batchSortOrder as any,
   });
 

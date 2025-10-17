@@ -60,6 +60,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     volumeRange: [0, 10000],
     status: 'all',
     variety: '',
+    varieties: [],
     alcoholRange: [0, 12],
   };
 
