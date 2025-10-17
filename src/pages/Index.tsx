@@ -33,7 +33,7 @@ import {
   TastingAnalysisDialog,
   BatchDetails,
 } from "@/components/lazy";
-import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw } from "lucide-react";
+import { Package, Activity, TrendingUp, Settings2, Wine, Award, Warehouse, QrCode, Layout, DollarSign, Loader2, Webhook, Download, FlaskConical, AlertCircle, RefreshCw, Truck } from "lucide-react";
 import { BatchSearch } from "@/components/BatchSearch";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -635,7 +635,7 @@ const Index = () => {
                           onMouseEnter={handleSuppliersTabHover}
                           className="py-1.5 px-3"
                         >
-                          <TrendingUp className="h-4 w-4 sm:mr-2" />
+                          <Truck className="h-4 w-4 sm:mr-2" />
                           <span className="hidden sm:inline">Suppliers</span>
                         </button>
                       </TabsTrigger>
