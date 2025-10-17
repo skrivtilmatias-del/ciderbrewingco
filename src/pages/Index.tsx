@@ -173,11 +173,17 @@ const Index = () => {
 
   // Track if initial batch selection has been made
   const hasInitializedSelection = useRef(false);
+  // Keep a ref to the current batches array to avoid stale closures
+  const batchesRef = useRef(batches);
+  batchesRef.current = batches;
   
   // Auto-select first batch on initial load and handle edge cases
+  // Dependencies: Only batches.length and selectedBatchId to avoid unnecessary reruns
   useEffect(() => {
+    const currentBatches = batchesRef.current;
+    
     // No batches available - clear selection
-    if (batches.length === 0) {
+    if (currentBatches.length === 0) {
       if (selectedBatchId) {
         setSelectedBatchId(null);
       }
@@ -187,10 +193,10 @@ const Index = () => {
     
     // If we have a selected batch, verify it still exists
     if (selectedBatchId) {
-      const batchStillExists = batches.some(b => b.id === selectedBatchId);
+      const batchStillExists = currentBatches.some(b => b.id === selectedBatchId);
       if (!batchStillExists) {
         // Selected batch was deleted - select first batch
-        setSelectedBatchId(batches[0].id);
+        setSelectedBatchId(currentBatches[0].id);
         hasInitializedSelection.current = true;
       }
       return;
@@ -198,7 +204,7 @@ const Index = () => {
     
     // No selection and haven't initialized yet - select first batch
     if (!hasInitializedSelection.current) {
-      setSelectedBatchId(batches[0].id);
+      setSelectedBatchId(currentBatches[0].id);
       hasInitializedSelection.current = true;
     }
   }, [batches.length, selectedBatchId]);
