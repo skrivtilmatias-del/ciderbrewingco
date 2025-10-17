@@ -412,10 +412,15 @@ const Index = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error Loading Data</AlertTitle>
             <AlertDescription className="space-y-4">
-              <div>
-                {errors.batches && <p>Failed to load batches: {errors.batches.message}</p>}
-                {errors.blends && <p>Failed to load blends: {errors.blends.message}</p>}
-                {errors.suppliers && <p>Failed to load suppliers: {errors.suppliers.message}</p>}
+              <div className="space-y-2">
+                {Object.entries(errors).map(([key, error]) => 
+                  error ? (
+                    <p key={key} className="text-sm">
+                      <strong className="font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{' '}
+                      {getUserFriendlyError(error)}
+                    </p>
+                  ) : null
+                )}
               </div>
               {hasAnyData && (
                 <p className="text-sm text-muted-foreground">
