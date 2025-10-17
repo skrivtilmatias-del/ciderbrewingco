@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import type { Batch } from '@/types/batch.types';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,6 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format as formatDate } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Batch } from '@/components/BatchCard';
 import { 
   exportBatches, 
   getExportPreview, 
@@ -87,6 +87,8 @@ const FORMAT_CONFIG = {
     color: 'text-blue-500',
   },
 } as const;
+
+type FormatKey = keyof typeof FORMAT_CONFIG;
 
 /**
  * ExportDialog - Comprehensive batch export with multiple formats
@@ -226,7 +228,7 @@ export const ExportDialog = ({
           {/* Format Selection */}
           <TabsContent value="format" className="flex-1 overflow-y-auto space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              {(Object.entries(FORMAT_CONFIG) as Array<[ExportFormat, typeof FORMAT_CONFIG[ExportFormat]]>).map(([key, config]) => {
+              {(Object.entries(FORMAT_CONFIG) as Array<[FormatKey, typeof FORMAT_CONFIG[FormatKey]]>).map(([key, config]) => {
                 const Icon = config.icon;
                 const isSelected = format === key;
 
@@ -483,7 +485,7 @@ export const ExportDialog = ({
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Export as {FORMAT_CONFIG[format as keyof typeof FORMAT_CONFIG].label}
+                Export as {FORMAT_CONFIG[format as FormatKey].label}
               </>
             )}
           </Button>

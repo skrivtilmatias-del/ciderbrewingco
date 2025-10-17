@@ -1,48 +1,93 @@
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import type { Batch } from '@/components/BatchCard';
+import 'jspdf-autotable';
+import { format as formatDateFns, parseISO } from 'date-fns';
+import type { Batch } from '@/types/batch.types';
+import type { ExportConfig, ColumnSelection } from '@/types/export.types';
+import { supabase } from '@/integrations/supabase/client';
+
+// Re-export types for convenience
+export type { ExportFormat, ExportConfig, ColumnSelection } from '@/types/export.types';
 
 /**
- * Export format types
- */
-export type ExportFormat = 'csv' | 'excel' | 'pdf' | 'json';
-
-/**
- * Export options configuration
+ * Export options configuration (backwards compatible)
  */
 export interface ExportOptions {
-  format: ExportFormat;
+  format: 'csv' | 'excel' | 'pdf' | 'json';
   batches: Batch[];
-  columns: string[];
+  columns: string[] | ColumnSelection[];
   includeBlends?: boolean;
   includeMeasurements?: boolean;
   includeNotes?: boolean;
+  includeActivities?: boolean;
+  includeCosts?: boolean;
   dateRange?: {
     from?: Date;
     to?: Date;
   };
-  delimiter?: string; // For CSV
-  formatted?: boolean; // For JSON
+  delimiter?: string;
+  formatted?: boolean;
+  config?: ExportConfig;
 }
 
 /**
- * Column definitions for batch data
+ * Column definitions for batch data (backwards compatible)
  */
 export const BATCH_COLUMNS = {
   id: 'Batch ID',
   name: 'Name',
   variety: 'Variety',
-  appleOrigin: 'Apple Origin',
+  apple_origin: 'Apple Origin',
   volume: 'Volume (L)',
-  currentStage: 'Current Stage',
-  startDate: 'Start Date',
-  yeastType: 'Yeast Type',
-  targetOG: 'Target OG',
-  targetFG: 'Target FG',
-  targetPH: 'Target pH',
+  current_stage: 'Current Stage',
+  started_at: 'Start Date',
+  yeast_type: 'Yeast Type',
+  target_og: 'Target OG',
+  target_fg: 'Target FG',
+  target_ph: 'Target pH',
   notes: 'Notes',
+  progress: 'Progress %',
+  style: 'Style',
+  created_at: 'Created',
+  completed_at: 'Completed',
+  abv: 'ABV %',
 } as const;
+
+/**
+ * Format value based on column format type
+ */
+export const formatValue = (value: any, format?: string): string => {
+  if (value === null || value === undefined) return '';
+  
+  switch (format) {
+    case 'date':
+      try {
+        const date = typeof value === 'string' ? parseISO(value) : value;
+        return formatDateFns(date, 'MMM dd, yyyy');
+      } catch {
+        return String(value);
+      }
+    
+    case 'decimal':
+      return typeof value === 'number' ? value.toFixed(2) : String(value);
+    
+    case 'percentage':
+      return typeof value === 'number' ? `${value}%` : String(value);
+    
+    case 'currency':
+      return typeof value === 'number' ? `$${value.toFixed(2)}` : String(value);
+    
+    case 'number':
+      return typeof value === 'number' ? value.toString() : String(value);
+    
+    case 'array':
+      return Array.isArray(value) ? value.join(', ') : String(value);
+    
+    default:
+      return String(value);
+  }
+};
 
 /**
  * Export batches as CSV
@@ -117,7 +162,7 @@ export const exportToExcel = (options: ExportOptions): void => {
   
   // Add stage distribution
   const stageCounts = filteredBatches.reduce((acc, batch) => {
-    acc[batch.currentStage] = (acc[batch.currentStage] || 0) + 1;
+    acc[batch.current_stage] = (acc[batch.current_stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
@@ -173,7 +218,7 @@ export const exportToPDF = async (options: ExportOptions): Promise<void> => {
   
   // Stage distribution
   const stageCounts = filteredBatches.reduce((acc, batch) => {
-    acc[batch.currentStage] = (acc[batch.currentStage] || 0) + 1;
+    acc[batch.current_stage] = (acc[batch.current_stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
@@ -253,8 +298,8 @@ export const exportToJSON = (options: ExportOptions): void => {
       variety: batch.variety,
       apple_origin: batch.apple_origin,
       volume: batch.volume,
-      currentStage: batch.currentStage,
-      startDate: batch.startDate,
+      current_stage: batch.current_stage,
+      started_at: batch.started_at,
       yeast_type: batch.yeast_type,
       target_og: batch.target_og,
       target_fg: batch.target_fg,
@@ -303,18 +348,22 @@ const getBatchValue = (batch: Batch, column: string): any => {
     id: batch.id,
     name: batch.name,
     variety: batch.variety,
-    appleOrigin: batch.apple_origin,
+    apple_origin: batch.apple_origin,
     volume: batch.volume,
-    currentStage: batch.currentStage,
-    startDate: new Date(batch.startDate).toLocaleDateString(),
-    yeastType: batch.yeast_type,
-    targetOG: batch.target_og,
-    targetFG: batch.target_fg,
-    targetPH: batch.target_ph,
+    current_stage: batch.current_stage,
+    started_at: batch.started_at ? new Date(batch.started_at).toLocaleDateString() : '',
+    yeast_type: batch.yeast_type,
+    target_og: batch.target_og,
+    target_fg: batch.target_fg,
+    target_ph: batch.target_ph,
     notes: batch.notes,
+    progress: batch.progress,
+    style: batch.style,
+    created_at: batch.created_at ? new Date(batch.created_at).toLocaleDateString() : '',
+    completed_at: batch.completed_at ? new Date(batch.completed_at).toLocaleDateString() : '',
   };
   
-  return mapping[column];
+  return mapping[column] ?? batch[column as keyof Batch];
 };
 
 /**
@@ -326,7 +375,7 @@ const filterBatchesByDate = (batches: Batch[], dateRange?: { from?: Date; to?: D
   }
   
   return batches.filter(batch => {
-    const batchDate = new Date(batch.startDate);
+    const batchDate = new Date(batch.started_at || batch.created_at);
     
     if (dateRange.from && batchDate < dateRange.from) {
       return false;
@@ -354,8 +403,8 @@ const getTimestamp = (): string => {
 /**
  * Get file extension for format
  */
-export const getFileExtension = (format: ExportFormat): string => {
-  const extensions: Record<ExportFormat, string> = {
+export const getFileExtension = (format: 'csv' | 'excel' | 'pdf' | 'json'): string => {
+  const extensions = {
     csv: '.csv',
     excel: '.xlsx',
     pdf: '.pdf',
