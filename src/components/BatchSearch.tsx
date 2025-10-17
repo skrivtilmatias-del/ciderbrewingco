@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, forwardRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ const MAX_RECENT_SEARCHES = 5;
  * - Parent component receives debounced value only
  * - Prevents re-rendering entire batch list on every keystroke
  */
-export const BatchSearch = ({
+export const BatchSearch = forwardRef<HTMLInputElement, BatchSearchProps>(({
   value,
   onChange,
   totalCount,
@@ -59,7 +59,7 @@ export const BatchSearch = ({
   isSearching = false,
   placeholder = 'Search batches by name, variety, or stage...',
   className,
-}: BatchSearchProps) => {
+}, forwardedRef) => {
   // Local input state for instant visual feedback
   const [localValue, setLocalValue] = useState(value);
   
@@ -70,8 +70,9 @@ export const BatchSearch = ({
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  // Ref for input element
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Use internal ref if no ref is forwarded
+  const internalRef = useRef<HTMLInputElement>(null);
+  const inputRef = (forwardedRef as React.RefObject<HTMLInputElement>) || internalRef;
 
   // Load recent searches from localStorage on mount
   useEffect(() => {
@@ -267,4 +268,6 @@ export const BatchSearch = ({
       )}
     </div>
   );
-};
+});
+
+BatchSearch.displayName = 'BatchSearch';
