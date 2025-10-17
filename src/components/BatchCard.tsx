@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, memo } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, Loader2 } from "lucide-react";
+import { Apple, Droplets, Clock, Wine, CheckCircle2, Beaker, FlaskConical, Loader2, Calendar } from "lucide-react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { CiderStage, STAGES } from "@/constants/ciderStages";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -254,6 +254,7 @@ export const BatchCard = ({
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       )}
+      
       {/* Selection Checkbox */}
       {showSelection && (
         <div 
@@ -267,54 +268,73 @@ export const BatchCard = ({
           />
         </div>
       )}
-      <div className="absolute top-4 right-4 flex gap-1" onClick={handleMenuClick}>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-8 w-8"
-          title="Right-click for more options"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </div>
 
-      <div className="flex items-start justify-between mb-4 pr-8">
-        <div className="min-w-0 flex-1">
-          <h3 className="text-xl font-semibold text-foreground mb-1">
-            {highlightText(batch.name, searchQuery)}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {highlightText(batch.variety, searchQuery)}
-            {batch.apple_origin && <> from {batch.apple_origin}</>}
-          </p>
+      <CardHeader className="pb-3 space-y-0">
+        {/* Top Row: Batch Number and Actions */}
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-xl font-bold truncate">
+              {highlightText(batch.name, searchQuery)}
+            </CardTitle>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge 
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium whitespace-nowrap",
+                `${stageColor} text-white`
+              )}
+              aria-label={`Status: ${currentStage}`}
+            >
+              <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
+              {highlightText(currentStage, searchQuery)}
+            </Badge>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={handleMenuClick}>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-8 w-8 p-0 flex-shrink-0"
+                  aria-label={`Actions for batch ${batch.name}`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onClick}>View Details</DropdownMenuItem>
+                {onClone && <DropdownMenuItem onClick={() => onClone(batch)}>Clone</DropdownMenuItem>}
+                {onArchive && <DropdownMenuItem onClick={() => onArchive(batch.id)}>Archive</DropdownMenuItem>}
+                {onExport && <DropdownMenuItem onClick={() => onExport(batch)}>Export</DropdownMenuItem>}
+                {onDelete && <DropdownMenuItem onClick={handleDelete} className="text-destructive">Delete</DropdownMenuItem>}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          {/* Mini circular progress */}
-          <BatchProgressMini batch={batch} />
-          <Badge 
-            className={`${stageColor} text-white`}
-            aria-label={`Status: ${currentStage}`}
-          >
-            <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
-            {highlightText(currentStage, searchQuery)}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Volume</span>
+        
+        {/* Recipe/Subtitle */}
+        <CardDescription className="text-sm line-clamp-1 mb-3">
+          {highlightText(batch.variety, searchQuery)}
+          {batch.apple_origin && <> from {batch.apple_origin}</>}
+        </CardDescription>
+        
+        {/* Bottom Row: Metadata */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1.5">
+            <Beaker className="h-4 w-4" aria-hidden="true" />
             <span className="font-medium text-foreground">{batch.volume}L</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Started</span>
+          
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-4 w-4" aria-hidden="true" />
             <span className="font-medium text-foreground">
               {new Date(startDate || Date.now()).toLocaleDateString()}
             </span>
           </div>
         </div>
+      </CardHeader>
 
+      <CardContent className="space-y-3">
         <div>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-muted-foreground">Production Progress</span>
@@ -367,7 +387,7 @@ export const BatchCard = ({
             )}
           </div>
         )}
-      </div>
+      </CardContent>
     </Card>
     </BatchContextMenu>
   );
