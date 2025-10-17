@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useTouchFriendlyPrefetch } from "@/hooks/useTouchFriendlyPrefetch";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { TabLoadingFallback } from "@/components/ui/TabLoadingFallback";
@@ -284,96 +285,77 @@ const Index = () => {
   }, [batches, navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
 
   /**
-   * Tab Hover Prefetching Handlers
-   * Strategy: Prefetch data AND component code when user hovers over tab
-   * Makes tab navigation feel instant
+   * Touch-Friendly Tab Prefetching
+   * Strategy: 
+   * - Desktop: Prefetch on hover for instant navigation
+   * - Mobile: Prefetch when tab enters viewport (Intersection Observer)
    * 
-   * Memory Leak Prevention: Uses isMountedRef to prevent operations after unmount
+   * This provides optimal UX across devices since mobile lacks hover states
    */
-  const handleBlendingTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    // Prefetch both data and component code
-    Promise.all([
-      prefetchBlendData(queryClient),
-      preloadComponent(BlendingTab)
-    ]).catch(() => {
-      // Silently fail - prefetch is optional
-      // Check mounted before any potential state updates
+  const blendingTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, [queryClient]);
+      Promise.all([
+        prefetchBlendData(queryClient),
+        preloadComponent(BlendingTab)
+      ]).catch(() => {});
+    }, [queryClient])
+  );
 
-  const handleAnalyticsTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    // Prefetch both data and component code
-    Promise.all([
-      prefetchAnalyticsData(queryClient),
-      preloadComponent(ProductionAnalytics)
-    ]).catch(() => {
-      // Silently fail - prefetch is optional
+  const analyticsTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, [queryClient]);
+      Promise.all([
+        prefetchAnalyticsData(queryClient),
+        preloadComponent(ProductionAnalytics)
+      ]).catch(() => {});
+    }, [queryClient])
+  );
 
-  const handleSuppliersTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    // Prefetch both data and component code
-    Promise.all([
-      prefetchSupplierData(queryClient),
-      preloadComponent(SuppliersTab)
-    ]).catch(() => {
-      // Silently fail - prefetch is optional
+  const suppliersTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, [queryClient]);
+      Promise.all([
+        prefetchSupplierData(queryClient),
+        preloadComponent(SuppliersTab)
+      ]).catch(() => {});
+    }, [queryClient])
+  );
 
-  const handleProductionTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    preloadComponent(ProductionTab).catch(() => {
-      // Silently fail - prefetch is optional
+  const productionTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, []);
+      preloadComponent(ProductionTab).catch(() => {});
+    }, [])
+  );
 
-  const handleBatchesTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    preloadComponent(BatchesTab).catch(() => {
-      // Silently fail - prefetch is optional
+  const batchesTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, []);
+      preloadComponent(BatchesTab).catch(() => {});
+    }, [])
+  );
 
-  const handleTastingTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    preloadComponent(TastingTab).catch(() => {
-      // Silently fail - prefetch is optional
+  const tastingTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, []);
+      preloadComponent(TastingTab).catch(() => {});
+    }, [])
+  );
 
-  const handleToolsTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    preloadComponent(ToolsTab).catch(() => {
-      // Silently fail - prefetch is optional
+  const toolsTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, []);
+      preloadComponent(ToolsTab).catch(() => {});
+    }, [])
+  );
 
-  const handleCellarTabHover = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    preloadComponent(CellarTab).catch(() => {
-      // Silently fail - prefetch is optional
+  const cellarTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
       if (!isMountedRef.current) return;
-    });
-  }, []);
+      preloadComponent(CellarTab).catch(() => {});
+    }, [])
+  );
 
   const handleSaveTasting = async (data: any, analysisId?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -613,8 +595,9 @@ const Index = () => {
                     <>
                       <TabsTrigger value="batches" asChild>
                         <button 
+                          ref={batchesTabPrefetch.ref as any}
                           onClick={() => navigate(paths.batches())} 
-                          onMouseEnter={handleBatchesTabHover}
+                          onMouseEnter={batchesTabPrefetch.onMouseEnter}
                           className="py-1.5 px-3"
                         >
                           <Package className="h-4 w-4 sm:mr-2" />
@@ -623,8 +606,9 @@ const Index = () => {
                       </TabsTrigger>
                       <TabsTrigger value="production" asChild>
                         <button 
+                          ref={productionTabPrefetch.ref as any}
                           onClick={() => navigate(paths.production())} 
-                          onMouseEnter={handleProductionTabHover}
+                          onMouseEnter={productionTabPrefetch.onMouseEnter}
                           className="py-1.5 px-3"
                         >
                           <Activity className="h-4 w-4 sm:mr-2" />
@@ -633,8 +617,9 @@ const Index = () => {
                       </TabsTrigger>
                       <TabsTrigger value="blending" asChild>
                         <button 
+                          ref={blendingTabPrefetch.ref as any}
                           onClick={() => navigate(paths.blending())} 
-                          onMouseEnter={handleBlendingTabHover}
+                          onMouseEnter={blendingTabPrefetch.onMouseEnter}
                           className="py-1.5 px-3"
                         >
                           <Wine className="h-4 w-4 sm:mr-2" />
@@ -643,8 +628,9 @@ const Index = () => {
                       </TabsTrigger>
                       <TabsTrigger value="cellar" asChild>
                         <button 
+                          ref={cellarTabPrefetch.ref as any}
                           onClick={() => navigate(paths.cellar())} 
-                          onMouseEnter={handleCellarTabHover}
+                          onMouseEnter={cellarTabPrefetch.onMouseEnter}
                           className="py-1.5 px-3"
                         >
                           <Warehouse className="h-4 w-4 sm:mr-2" />
@@ -653,8 +639,9 @@ const Index = () => {
                       </TabsTrigger>
                       <TabsTrigger value="suppliers" asChild>
                         <button 
+                          ref={suppliersTabPrefetch.ref as any}
                           onClick={() => navigate(paths.suppliers())} 
-                          onMouseEnter={handleSuppliersTabHover}
+                          onMouseEnter={suppliersTabPrefetch.onMouseEnter}
                           className="py-1.5 px-3"
                         >
                           <Truck className="h-4 w-4 sm:mr-2" />
@@ -665,8 +652,9 @@ const Index = () => {
                   )}
                   <TabsTrigger value="tasting" asChild>
                     <button 
+                      ref={tastingTabPrefetch.ref as any}
                       onClick={() => navigate(paths.tasting())} 
-                      onMouseEnter={handleTastingTabHover}
+                      onMouseEnter={tastingTabPrefetch.onMouseEnter}
                       className="py-1.5 px-3"
                     >
                       <Award className="h-4 w-4 sm:mr-2" />
@@ -675,8 +663,9 @@ const Index = () => {
                   </TabsTrigger>
                   <TabsTrigger value="analytics" asChild>
                     <button 
+                      ref={analyticsTabPrefetch.ref as any}
                       onClick={() => navigate(paths.analytics())} 
-                      onMouseEnter={handleAnalyticsTabHover}
+                      onMouseEnter={analyticsTabPrefetch.onMouseEnter}
                       className="py-1.5 px-3"
                     >
                       <TrendingUp className="h-4 w-4 sm:mr-2" />
