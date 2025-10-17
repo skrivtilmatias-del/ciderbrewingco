@@ -509,6 +509,8 @@ const Index = () => {
 
   // Show loading state with granular loading indicators
   if (isLoading || !user) {
+    const hasPartialData = batches.length > 0 || blends.length > 0;
+    
     return (
       <div className="min-h-dvh bg-background">
         <header className="border-b border-border bg-card/95 backdrop-blur">
@@ -518,55 +520,54 @@ const Index = () => {
         </header>
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="space-y-6">
-            {/* Granular loading indicators for each resource */}
-            <div className="space-y-3 max-w-md">
-              {/* Batches loading state */}
-              {loadingStates.batches ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <Skeleton className="h-6 w-full" />
-                </div>
-              ) : batches.length > 0 ? (
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="text-green-500">✓</span> Batches loaded ({batches.length})
-                </p>
-              ) : null}
-              
-              {/* Blends loading state */}
-              {loadingStates.blends ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <Skeleton className="h-6 w-full" />
-                </div>
-              ) : blends.length > 0 ? (
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="text-green-500">✓</span> Blends loaded ({blends.length})
-                </p>
-              ) : null}
-              
-              {/* Suppliers loading state */}
-              {loadingStates.suppliers ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <Skeleton className="h-6 w-full" />
-                </div>
-              ) : suppliers.length > 0 ? (
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="text-green-500">✓</span> Suppliers loaded ({suppliers.length})
-                </p>
-              ) : null}
-            </div>
+            <Card className="max-w-md">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Loading Production Data
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Show consolidated loading progress */}
+                {Object.entries(loadingStates).map(([key, loading]) => {
+                  const counts = {
+                    batches: batches.length,
+                    blends: blends.length,
+                    suppliers: suppliers.length
+                  };
+                  const count = counts[key as keyof typeof counts];
+                  
+                  return (
+                    <div key={key} className="flex items-center justify-between">
+                      <span className="text-sm capitalize">{key}</span>
+                      {loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      ) : count > 0 ? (
+                        <span className="text-sm text-green-600 flex items-center gap-1">
+                          <span>✓</span>
+                          <span className="text-muted-foreground">({count})</span>
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
             
-            {/* Show skeleton cards for visual feedback */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <Card key={i} className="p-6">
-                  <Skeleton className="h-6 w-32 mb-4" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-3/4" />
-                </Card>
-              ))}
-            </div>
+            {/* Only show skeleton cards if no data loaded yet */}
+            {!hasPartialData && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => (
+                  <Card key={i} className="p-6">
+                    <Skeleton className="h-6 w-32 mb-4" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
