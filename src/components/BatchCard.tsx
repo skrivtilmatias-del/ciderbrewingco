@@ -267,61 +267,37 @@ export const BatchCard = ({
           />
         </div>
       )}
+      <div className="absolute top-4 right-4 flex gap-1" onClick={handleMenuClick}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8"
+          title="Right-click for more options"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </div>
 
-      {/* Header with proper spacing and hierarchy */}
-      <div className="space-y-0">
-        {/* Top Row: Batch Number + Stage Badge + Menu */}
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-foreground truncate">
-              {highlightText(batch.name, searchQuery)}
-            </h3>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge 
-              className={cn(
-                "px-2.5 py-1 text-xs font-medium whitespace-nowrap",
-                stageColor,
-                "text-white"
-              )}
-              aria-label={`Status: ${currentStage}`}
-            >
-              <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
-              {highlightText(currentStage, searchQuery)}
-            </Badge>
-            
-            <div onClick={handleMenuClick}>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="h-8 w-8 p-0 flex-shrink-0"
-                title="Right-click for more options"
-                aria-label={`Actions for batch ${batch.name}`}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+      <div className="flex items-start justify-between mb-4 pr-8">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xl font-semibold text-foreground mb-1">
+            {highlightText(batch.name, searchQuery)}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {highlightText(batch.variety, searchQuery)}
+            {batch.apple_origin && <> from {batch.apple_origin}</>}
+          </p>
         </div>
-
-        {/* Recipe/Subtitle */}
-        <p className="text-sm text-muted-foreground line-clamp-1 mb-3">
-          {highlightText(batch.variety, searchQuery)}
-          {batch.apple_origin && <> from {batch.apple_origin}</>}
-        </p>
-
-        {/* Bottom Row: Volume and Start Date */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1.5">
-            <Beaker className="h-4 w-4" aria-hidden="true" />
-            <span className="font-medium text-foreground">{batch.volume}L</span>
-          </div>
-          
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" aria-hidden="true" />
-            <span>Started {new Date(startDate || Date.now()).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
-          </div>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {/* Mini circular progress */}
+          <BatchProgressMini batch={batch} />
+          <Badge 
+            className={`${stageColor} text-white`}
+            aria-label={`Status: ${currentStage}`}
+          >
+            <StageIcon className="w-3 h-3 mr-1" aria-hidden="true" />
+            {highlightText(currentStage, searchQuery)}
+          </Badge>
         </div>
       </div>
 
