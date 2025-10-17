@@ -103,7 +103,8 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
 
   // Production time analysis
   const daysInProduction = differenceInDays(new Date(), new Date(batch.startDate));
-  if (daysInProduction > 30 && batch.currentStage.includes('Fermentation')) {
+  const currentStage = batch.currentStage || batch.current_stage || '';
+  if (daysInProduction > 30 && currentStage.includes('Fermentation')) {
     insights.push({
       type: 'info',
       icon: Lightbulb,
@@ -113,7 +114,7 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
   }
 
   // Progress-based insights
-  if (batch.progress >= 80 && !batch.currentStage.includes('Bottling') && batch.currentStage !== 'Complete') {
+  if (batch.progress >= 80 && !currentStage.includes('Bottling') && currentStage !== 'Complete') {
     insights.push({
       type: 'info',
       icon: Lightbulb,
