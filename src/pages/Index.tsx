@@ -102,6 +102,15 @@ const Index = () => {
   const [selectedBlendIdForTasting, setSelectedBlendIdForTasting] = useState<string | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Track if component is mounted to prevent memory leaks from async operations
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Initialize keyboard shortcuts
   useKeyboardShortcuts({
@@ -276,64 +285,91 @@ const Index = () => {
    * Tab Hover Prefetching Handlers
    * Strategy: Prefetch data AND component code when user hovers over tab
    * Makes tab navigation feel instant
+   * 
+   * Memory Leak Prevention: Uses isMountedRef to prevent operations after unmount
    */
   const handleBlendingTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     // Prefetch both data and component code
-    prefetchBlendData(queryClient).catch(() => {
+    Promise.all([
+      prefetchBlendData(queryClient),
+      preloadComponent(BlendingTab)
+    ]).catch(() => {
       // Silently fail - prefetch is optional
-    });
-    preloadComponent(BlendingTab).catch(() => {
-      // Silently fail
+      // Check mounted before any potential state updates
+      if (!isMountedRef.current) return;
     });
   }, [queryClient]);
 
   const handleAnalyticsTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     // Prefetch both data and component code
-    prefetchAnalyticsData(queryClient).catch(() => {
-      // Silently fail
-    });
-    preloadComponent(ProductionAnalytics).catch(() => {
-      // Silently fail
+    Promise.all([
+      prefetchAnalyticsData(queryClient),
+      preloadComponent(ProductionAnalytics)
+    ]).catch(() => {
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, [queryClient]);
 
   const handleSuppliersTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     // Prefetch both data and component code
-    prefetchSupplierData(queryClient).catch(() => {
-      // Silently fail
-    });
-    preloadComponent(SuppliersTab).catch(() => {
-      // Silently fail
+    Promise.all([
+      prefetchSupplierData(queryClient),
+      preloadComponent(SuppliersTab)
+    ]).catch(() => {
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, [queryClient]);
 
   const handleProductionTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     preloadComponent(ProductionTab).catch(() => {
-      // Silently fail
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, []);
 
   const handleBatchesTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     preloadComponent(BatchesTab).catch(() => {
-      // Silently fail
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, []);
 
   const handleTastingTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     preloadComponent(TastingTab).catch(() => {
-      // Silently fail
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, []);
 
   const handleToolsTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     preloadComponent(ToolsTab).catch(() => {
-      // Silently fail
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, []);
 
   const handleCellarTabHover = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     preloadComponent(CellarTab).catch(() => {
-      // Silently fail
+      // Silently fail - prefetch is optional
+      if (!isMountedRef.current) return;
     });
   }, []);
 
