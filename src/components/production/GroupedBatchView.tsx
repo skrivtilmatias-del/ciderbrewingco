@@ -2,6 +2,9 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -10,7 +13,23 @@ import {
   AlertCircle,
   Clock,
   Droplets,
-  Package
+  Package,
+  MoreVertical,
+  FileDown,
+  Printer,
+  Archive,
+  Tag,
+  FileText,
+  ArrowRight,
+  ChevronsDown,
+  ChevronsUp,
+  EyeOff,
+  BarChart3,
+  Grid,
+  Calendar,
+  TrendingUp,
+  AlertTriangle,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STAGES } from "@/constants/ciderStages";
@@ -26,12 +45,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface GroupedBatchViewProps {
   batches: Batch[];
   onSelectBatch: (batch: Batch) => void;
   onDeleteBatch: (batchId: string) => void;
   onUpdateStage?: (batchId: string, newStage: string) => void;
+  onBulkExport?: (batches: Batch[]) => void;
+  onBulkPrintLabels?: (batches: Batch[]) => void;
+  onNewBatch?: () => void;
 }
 
 interface StageGroup {
@@ -80,6 +110,9 @@ export const GroupedBatchView = ({
   onSelectBatch,
   onDeleteBatch,
   onUpdateStage,
+  onBulkExport,
+  onBulkPrintLabels,
+  onNewBatch,
 }: GroupedBatchViewProps) => {
   // Load expand/collapse state from localStorage
   const loadExpandedState = (): Record<string, boolean> => {
@@ -98,6 +131,8 @@ export const GroupedBatchView = ({
     batch: Batch;
     newStage: string;
   } | null>(null);
+  const [showEmptyGroups, setShowEmptyGroups] = useState(false);
+  const [showGroupStats, setShowGroupStats] = useState(true);
 
   // Save expand/collapse state to localStorage
   const saveExpandedState = (newState: Record<string, boolean>) => {
@@ -261,88 +296,335 @@ export const GroupedBatchView = ({
     return Package;
   };
 
+  // Bulk actions handlers
+  const handleBulkAdvance = (group: StageGroup) => {
+    if (!onUpdateStage) return;
+    
+    const currentStageIndex = [...STAGES, "Complete"].indexOf(group.stage);
+    const nextStage = [...STAGES, "Complete"][currentStageIndex + 1];
+    
+    if (!nextStage) return;
+
+    // Update all batches in group to next stage
+    group.batches.forEach(batch => {
+      onUpdateStage(batch.id, nextStage);
+    });
+    
+    toast.success(`Advanced ${group.batches.length} batches to ${nextStage}`);
+  };
+
+  const handleBulkExport = (group: StageGroup) => {
+    if (onBulkExport) {
+      onBulkExport(group.batches);
+    } else {
+      toast.info("Export functionality not implemented");
+    }
+  };
+
+  const handleBulkPrintLabels = (group: StageGroup) => {
+    if (onBulkPrintLabels) {
+      onBulkPrintLabels(group.batches);
+    } else {
+      toast.info("Print labels functionality not implemented");
+    }
+  };
+
+  const handleBulkArchive = (group: StageGroup) => {
+    const completed = group.batches.filter(b => b.currentStage === 'Complete');
+    if (completed.length === 0) {
+      toast.error("No completed batches to archive");
+      return;
+    }
+    
+    completed.forEach(batch => onDeleteBatch(batch.id));
+    toast.success(`Archived ${completed.length} completed batches`);
+  };
+
+  // Filter groups based on showEmptyGroups
+  const displayGroups = showEmptyGroups 
+    ? stageGroups 
+    : stageGroups.filter(g => g.batches.length > 0);
+
   return (
     <div className="space-y-4">
-      {/* Header controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-lg">Batches by Stage</h3>
-          <Badge variant="outline">{batches.length} total</Badge>
+      {/* Global Toolbar */}
+      <Card className="p-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg">Batches by Stage</h3>
+            <Badge variant="outline" className="gap-1">
+              <BarChart3 className="w-3 h-3" />
+              {batches.length} total
+            </Badge>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={expandAll} className="gap-2">
+              <ChevronsDown className="w-4 h-4" />
+              <span className="hidden sm:inline">Expand All</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={collapseAll} className="gap-2">
+              <ChevronsUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Collapse All</span>
+            </Button>
+            
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+            
+            <Button
+              variant={showEmptyGroups ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowEmptyGroups(!showEmptyGroups)}
+              className="gap-2"
+            >
+              <EyeOff className="w-4 h-4" />
+              <span className="hidden sm:inline">Empty</span>
+            </Button>
+            
+            <Button
+              variant={showGroupStats ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowGroupStats(!showGroupStats)}
+              className="gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Stats</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={expandAll} className="gap-2">
-            <Maximize2 className="w-4 h-4" />
-            Expand All
-          </Button>
-          <Button variant="outline" size="sm" onClick={collapseAll} className="gap-2">
-            <Minimize2 className="w-4 h-4" />
-            Collapse All
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {/* Stage groups */}
       <div className="space-y-3">
-        {stageGroups.map((group) => {
+        {displayGroups.map((group) => {
           const isExpanded = expandedGroups[group.stage] ?? false;
           const Icon = getStageIcon(group.stage);
           const previewBatches = group.batches.slice(0, 3);
           const remainingCount = group.batches.length - 3;
+          const isEmpty = group.batches.length === 0;
+          const overdueCount = group.batches.filter(b => calculateUrgency(b) === "overdue").length;
+          const completionRate = group.batches.length > 0 
+            ? Math.round((group.batches.reduce((sum, b) => sum + b.progress, 0) / group.batches.length))
+            : 0;
 
           return (
             <Card
               key={group.stage}
               className={cn(
                 "border-l-4 transition-all duration-300",
-                getUrgencyColor(group.urgency),
-                dragOverStage === group.stage && "ring-2 ring-primary"
+                isEmpty ? "border-l-2 border-l-muted" : getUrgencyColor(group.urgency),
+                dragOverStage === group.stage && "ring-2 ring-primary shadow-lg",
+                isExpanded && !isEmpty && "shadow-md"
               )}
-              onDragOver={(e) => handleDragOver(e, group.stage)}
+              onDragOver={(e) => !isEmpty && handleDragOver(e, group.stage)}
               onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, group.stage)}
+              onDrop={(e) => !isEmpty && handleDrop(e, group.stage)}
             >
               {/* Group header */}
-              <button
-                onClick={() => toggleGroup(group.stage)}
-                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  {isExpanded ? (
-                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              <div className="flex items-center">
+                <button
+                  onClick={() => !isEmpty && toggleGroup(group.stage)}
+                  disabled={isEmpty}
+                  className={cn(
+                    "flex-1 p-4 flex items-center justify-between transition-colors",
+                    !isEmpty && "hover:bg-muted/50 cursor-pointer",
+                    isEmpty && "cursor-default"
                   )}
-                  <Icon className="w-5 h-5 text-primary" />
-                  <div className="text-left">
-                    <h4 className="font-semibold">{group.stage}</h4>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                      <span>{group.batches.length} batches</span>
-                      <span>•</span>
-                      <span>{group.totalVolume.toFixed(0)}L total</span>
-                      <span>•</span>
-                      <span>Avg {group.avgDaysInStage} days</span>
+                >
+                  <div className="flex items-center gap-3">
+                    {!isEmpty && (
+                      isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                      )
+                    )}
+                    {isEmpty && <div className="w-5" />}
+                    <Icon className={cn("w-6 h-6 flex-shrink-0", isEmpty ? "text-muted-foreground" : "text-primary")} />
+                    <div className="text-left min-w-0">
+                      <h4 className={cn("font-semibold", isEmpty && "text-muted-foreground")}>
+                        {group.stage}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                        <span className="flex items-center gap-1">
+                          <Package className="w-3 h-3" />
+                          {group.batches.length} batches
+                        </span>
+                        {!isEmpty && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Droplets className="w-3 h-3" />
+                              {group.totalVolume.toFixed(0)}L total
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Avg {group.avgDaysInStage} days
+                            </span>
+                            {overdueCount > 0 && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 text-destructive font-medium">
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {overdueCount} overdue
+                                </span>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                {getUrgencyBadge(group.urgency)}
-              </button>
-
-              {/* Group content */}
-              <div
-                className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  isExpanded ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
+                  <div className="flex items-center gap-2">
+                    {getUrgencyBadge(group.urgency)}
+                  </div>
+                </button>
+                
+                {/* Bulk Actions Dropdown */}
+                {!isEmpty && (
+                  <div className="pr-4" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        {onUpdateStage && group.stage !== 'Complete' && (
+                          <>
+                            <DropdownMenuItem onClick={() => handleBulkAdvance(group)}>
+                              <ArrowRight className="w-4 h-4 mr-2" />
+                              Advance All to Next Stage
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        <DropdownMenuItem onClick={() => handleBulkExport(group)}>
+                          <FileDown className="w-4 h-4 mr-2" />
+                          Export Group
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkPrintLabels(group)}>
+                          <Printer className="w-4 h-4 mr-2" />
+                          Print All Labels
+                        </DropdownMenuItem>
+                        {group.stage === 'Complete' && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleBulkArchive(group)}>
+                              <Archive className="w-4 h-4 mr-2" />
+                              Archive Completed
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Tag className="w-4 h-4 mr-2" />
+                          Set Group Tags
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Generate Report
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 )}
-              >
-                <div className="p-4 pt-0 space-y-3">
+              </div>
+
+              {/* Empty Group State */}
+              {isEmpty && (
+                <div className="p-8 text-center">
+                  <Icon className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <h3 className="text-sm font-semibold mb-1 text-muted-foreground">
+                    No batches in {group.stage}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Batches will appear here when they reach this stage
+                  </p>
+                  {group.stage === 'Harvest' && onNewBatch && (
+                    <Button size="sm" onClick={onNewBatch}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Start New Batch
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Group Statistics Card */}
+              {isExpanded && !isEmpty && showGroupStats && (
+                <div className="px-4 pb-3">
+                  <Card className="bg-muted/30 border-muted">
+                    <div className="p-4 space-y-4">
+                      {/* Metrics Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Total Batches</p>
+                          <p className="text-2xl font-bold">{group.batches.length}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Total Volume</p>
+                          <div className="flex items-baseline gap-1">
+                            <p className="text-2xl font-bold">{group.totalVolume.toFixed(0)}</p>
+                            <span className="text-sm text-muted-foreground">L</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Avg Duration</p>
+                          <div className="flex items-baseline gap-1">
+                            <p className="text-2xl font-bold">{group.avgDaysInStage}</p>
+                            <span className="text-sm text-muted-foreground">days</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Completion</p>
+                          <div className="flex items-baseline gap-1">
+                            <p className="text-2xl font-bold">{completionRate}</p>
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress Distribution */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Progress Distribution</span>
+                          <span className="font-medium">{completionRate}% average</span>
+                        </div>
+                        <Progress value={completionRate} className="h-2" />
+                      </div>
+
+                      {/* Alerts */}
+                      {overdueCount > 0 && (
+                        <Alert variant="destructive" className="py-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <AlertDescription className="text-sm">
+                            {overdueCount} {overdueCount === 1 ? 'batch is' : 'batches are'} overdue in this stage
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+              )}
+
+              {/* Group content - Expanded */}
+              {isExpanded && !isEmpty && (
+                <div className="p-4 pt-3 space-y-3 animate-in fade-in duration-300">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {group.batches.map((batch) => (
+                    {group.batches.map((batch, index) => (
                       <div
                         key={batch.id}
                         draggable={!!onUpdateStage}
                         onDragStart={() => handleDragStart(batch)}
                         onDragEnd={handleDragEnd}
-                        className="cursor-move"
+                        className={cn(
+                          "cursor-move transition-all",
+                          draggedBatch?.id === batch.id && "opacity-50 scale-95"
+                        )}
+                        style={{
+                          animationDelay: `${index * 50}ms`,
+                          animationFillMode: 'both'
+                        }}
                       >
                         <BatchCard
                           batch={batch}
@@ -358,19 +640,22 @@ export const GroupedBatchView = ({
                     ))}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Collapsed preview */}
-              {!isExpanded && group.batches.length > 0 && (
-                <div className="p-4 pt-0 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {!isExpanded && !isEmpty && (
+                <div className="p-4 pt-3 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 opacity-80 scale-95 origin-top transition-all">
                     {previewBatches.map((batch) => (
                       <div
                         key={batch.id}
                         draggable={!!onUpdateStage}
                         onDragStart={() => handleDragStart(batch)}
                         onDragEnd={handleDragEnd}
-                        className="cursor-move"
+                        className={cn(
+                          "cursor-move transition-all",
+                          draggedBatch?.id === batch.id && "opacity-50"
+                        )}
                       >
                         <BatchCard
                           batch={batch}
@@ -390,9 +675,9 @@ export const GroupedBatchView = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleGroup(group.stage)}
-                      className="w-full"
+                      className="w-full hover:bg-muted"
                     >
-                      Show {remainingCount} more
+                      Show {remainingCount} more {remainingCount === 1 ? 'batch' : 'batches'}
                     </Button>
                   )}
                 </div>
@@ -403,14 +688,19 @@ export const GroupedBatchView = ({
       </div>
 
       {/* Empty state */}
-      {stageGroups.length === 0 && (
+      {batches.length === 0 && (
         <Card className="p-12 text-center border-dashed">
           <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
           <h3 className="text-lg font-semibold mb-2">No batches yet</h3>
           <p className="text-muted-foreground mb-4">
             Start your first batch to see it organized by stage here.
           </p>
-          <Button>Create First Batch</Button>
+          {onNewBatch && (
+            <Button onClick={onNewBatch}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Batch
+            </Button>
+          )}
         </Card>
       )}
 
