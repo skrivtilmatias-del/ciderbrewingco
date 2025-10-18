@@ -39,13 +39,21 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         const componentVolume = blend.components
           .filter((comp: any) => comp.source_batch_id === batch.id)
           .reduce((sum: number, comp: any) => {
-            const volume = typeof comp.volume_liters === 'number' 
-              ? comp.volume_liters 
+            const vol = typeof comp.volume_liters === 'number'
+              ? comp.volume_liters
               : parseFloat(comp.volume_liters || '0') || 0;
+            const perc = typeof comp.percentage === 'number'
+              ? comp.percentage
+              : parseFloat(comp.percentage || '0') || 0;
+            const blendTotal = typeof blend.total_volume === 'number'
+              ? blend.total_volume
+              : parseFloat(blend.total_volume || '0') || 0;
+            // Prefer explicit volume; if missing, derive from percentage of the blend total
+            const derivedVol = vol > 0 ? vol : (perc > 0 ? (perc / 100) * blendTotal : 0);
             const spillage = typeof comp.spillage === 'number'
               ? comp.spillage
               : parseFloat(comp.spillage || '0') || 0;
-            return sum + volume + spillage; // Include spillage in total usage
+            return sum + derivedVol + spillage; // Include spillage in total usage
           }, 0);
         return total + componentVolume;
       }, 0);
