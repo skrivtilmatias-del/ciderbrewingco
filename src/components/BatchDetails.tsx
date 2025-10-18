@@ -115,11 +115,17 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     if (currentStageIndex < allStages.length - 1) {
       const nextStage = allStages[currentStageIndex + 1] as Batch["currentStage"];
       onUpdateStage(batch.id, nextStage);
+      
+      // Invalidate queries to sync with production page
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
     }
   };
 
   const handleSkipToStage = (stage: Batch["currentStage"]) => {
     onUpdateStage(batch.id, stage);
+    
+    // Invalidate queries to sync with production page
+    queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
   };
 
   const handleSaveNotes = async () => {
