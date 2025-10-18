@@ -689,4 +689,59 @@ const Index = () => {
                             Economic Planning
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
-                            <Webhook className="h-4
+                            <Webhook className="h-4 w-4 mr-2" />
+                            Webhooks
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </TabsList>
+                </div>
+              </div>
+            </div>
+
+            <TabsContent value="production" className="m-0 flex-1 overflow-hidden">
+              <ProductionTab 
+                batches={batches as any}
+                selectedBatch={selectedBatch as any}
+                onSelectBatch={handleBatchClick as any}
+                onUpdateStage={handleUpdateStage}
+              />
+            </TabsContent>
+            <TabsContent value="batches" className="m-0 flex-1 overflow-hidden">
+              <BatchesTab 
+                batches={batches}
+                onBatchClick={handleBatchClick}
+                onUpdateStage={handleUpdateStage}
+              />
+            </TabsContent>
+            <TabsContent value="blending" className="m-0 flex-1 overflow-hidden">
+              <BlendingTab 
+                batches={batches}
+                blendBatches={blends}
+              />
+            </TabsContent>
+            <TabsContent value="cellar" className="m-0 flex-1 overflow-hidden">
+              <CellarTab blendBatches={blends} />
+            </TabsContent>
+            <TabsContent value="suppliers" className="m-0 flex-1 overflow-hidden">
+              <SuppliersTab suppliers={suppliers} />
+            </TabsContent>
+            <TabsContent value="tasting" className="m-0 flex-1 overflow-hidden">
+              <TastingTab blendBatches={blends} />
+            </TabsContent>
+            <TabsContent value="tools" className="m-0 flex-1 overflow-hidden">
+              <ToolsTab 
+                batches={batches}
+                blendBatches={blends}
+                toolView={toolView}
+              />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </BaseErrorBoundary>
+  );
+}
+
+export default Index;
