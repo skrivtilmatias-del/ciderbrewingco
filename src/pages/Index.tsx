@@ -784,7 +784,7 @@ const Index = () => {
 
             <TabsContent value="suppliers" className="mt-0">
               <Suspense fallback={<TabLoadingFallback />}>
-                <SuppliersTab suppliers={suppliers} />
+                <SuppliersTab />
               </Suspense>
             </TabsContent>
 
