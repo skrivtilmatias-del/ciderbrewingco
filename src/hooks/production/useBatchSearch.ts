@@ -50,11 +50,6 @@ export const useBatchSearch = (
   const [query, setQuery] = useState(initialQuery);
   const [history, setHistory] = useState<string[]>([]);
 
-  // Sync local query with external initialQuery prop
-  useEffect(() => {
-    setQuery(initialQuery);
-  }, [initialQuery]);
-
   // Debounce search query for performance
   const debouncedQuery = useDebounce(query, 300);
 
