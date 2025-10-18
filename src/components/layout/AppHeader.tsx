@@ -1,4 +1,4 @@
-import { useState, startTransition } from 'react';
+import { useState, useCallback, startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
@@ -34,23 +34,23 @@ export const AppHeader = ({
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const { createBatch } = useBatches();
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error('Failed to sign out');
     } else {
       startTransition(() => navigate('/auth'));
     }
-  };
+  }, [navigate]);
 
-  const handleTastingSave = async (data: any, analysisId?: string) => {
+  const handleTastingSave = useCallback(async (data: any, analysisId?: string) => {
     if (onTastingSaved) {
       await onTastingSaved(data, analysisId);
     }
     setTastingDialogOpen(false);
-  };
+  }, [onTastingSaved]);
 
-  const handleBatchCreated = async (batchData: any) => {
+  const handleBatchCreated = useCallback(async (batchData: any) => {
     // Create batch via mutation - invalidation is handled automatically by useBatches hook
     createBatch({
       name: batchData.name,
@@ -71,7 +71,11 @@ export const AppHeader = ({
     if (onBatchCreated) {
       onBatchCreated();
     }
-  };
+  }, [createBatch, onBatchCreated]);
+
+  const handleOpenTastingDialog = useCallback(() => {
+    startTransition(() => setTastingDialogOpen(true));
+  }, []);
 
   return (
     <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50 shadow-sm">
@@ -94,7 +98,7 @@ export const AppHeader = ({
             <Button 
               className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
               size="sm"
-              onClick={() => startTransition(() => setTastingDialogOpen(true))}
+              onClick={handleOpenTastingDialog}
             >
               <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               <span className="hidden xs:inline">New </span>Tasting
