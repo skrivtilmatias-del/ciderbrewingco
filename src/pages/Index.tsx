@@ -589,6 +589,11 @@ const Index = () => {
           user={user}
           userProfile={userProfile}
           userRole={userRole}
+          onBatchCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ['batches'] });
+            const event = new CustomEvent('batchCreated');
+            window.dispatchEvent(event);
+          }}
           onTastingSaved={handleSaveTasting}
           blendBatches={blends}
           onShowShortcuts={() => setShowShortcuts(true)}
