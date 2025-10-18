@@ -176,7 +176,7 @@ const Index = () => {
   }, [user]);
 
   // Use optimized batches hook
-  const { sorted: optimizedBatches, groupedByStage } = useOptimizedBatches({
+  const { sorted: optimizedBatches } = useOptimizedBatches({
     batches,
     searchQuery: batchSearchQuery,
     filters: batchFilters,
