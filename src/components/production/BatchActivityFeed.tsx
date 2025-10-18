@@ -384,7 +384,9 @@ const ActivityItem = ({ activity, compact, isLast, user }: ActivityItemProps) =>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium">User</span>
+                    <span className="font-medium">
+                      {activity.user?.raw_user_meta_data?.name || activity.user?.email || 'Unknown User'}
+                    </span>
                     <span className="text-sm text-muted-foreground">
                       {getActivityTitle(activity.activity_type)}
                     </span>
@@ -581,7 +583,9 @@ const CommentItem = ({ comment }: { comment: ActivityComment }) => {
       <div className="flex-1 min-w-0">
         <div className="bg-muted/50 rounded-md p-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium">User</span>
+            <span className="text-sm font-medium">
+              {comment.user?.raw_user_meta_data?.name || comment.user?.email || 'Unknown User'}
+            </span>
             <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
             </span>
