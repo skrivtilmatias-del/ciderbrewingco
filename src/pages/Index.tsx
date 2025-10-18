@@ -191,7 +191,7 @@ const Index = () => {
     const batchId = params.get("batch");
     if (!batchId) return;
 
-    const batch = batches.find((b) => b.id === batchId);
+    const batch = batches.find((b) => b.id === batchId || b.name === batchId);
     if (!batch) {
       toast.error(`Batch ${batchId} not found`);
       navigate("/batches", { replace: true });
