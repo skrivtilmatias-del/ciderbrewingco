@@ -25,7 +25,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
     setSelectedBlendId,
     setBlendDetailsOpen 
   } = useAppStore();
-  const { deleteBlend, isLoading, isDeleting } = useBlends();
+  const { deleteBlend, createBlend, isLoading, isDeleting } = useBlends();
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
@@ -201,8 +201,21 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
             </div>
             <NewBlendDialog 
               availableBatches={availableBatchesForBlending}
-              onBlendCreated={() => {
-                // Refresh handled by React Query
+              onBlendCreated={(data) => {
+                createBlend({
+                  name: data.name,
+                  total_volume: data.total_volume,
+                  storage_location: data.storage_location || undefined,
+                  bottles_75cl: data.bottles_75cl ?? 0,
+                  bottles_150cl: data.bottles_150cl ?? 0,
+                  notes: data.notes || undefined,
+                  components: data.components.map((c: any) => ({
+                    source_batch_id: c.source_batch_id,
+                    percentage: c.percentage ?? undefined,
+                    volume_liters: c.volume_liters ?? undefined,
+                    spillage: c.spillage ?? 0,
+                  })),
+                });
               }}
             />
           </div>
