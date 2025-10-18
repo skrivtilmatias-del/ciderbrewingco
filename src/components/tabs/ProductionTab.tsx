@@ -36,10 +36,10 @@ interface ProductionTabProps {
   batches: Batch[];
   /** Currently selected batch */
   selectedBatch: Batch | null;
-  /** Callback when batch is selected */
-  onSelectBatch: (batch: Batch) => void;
-  /** Callback when batch stage is updated */
-  onUpdateStage: (batchId: string, newStage: string) => void;
+  /** Callback when batch is selected - accepts nullable batch */
+  onSelectBatch: (batch: Batch | null | undefined) => void;
+  /** Callback when batch stage is updated - returns Promise */
+  onUpdateStage: (batchId: string, newStage: Batch["currentStage"]) => Promise<void>;
 }
 
 /**

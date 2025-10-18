@@ -759,10 +759,10 @@ const Index = () => {
             <TabsContent value="production" className="mt-0">
               <Suspense fallback={<TabLoadingFallback />}>
                 <ProductionTab
-                  batches={batches as any}
-                  selectedBatch={selectedBatch as any}
-                  onSelectBatch={handleBatchClick as any}
-                  onUpdateStage={handleUpdateStage as any}
+                  batches={batches}
+                  selectedBatch={selectedBatch}
+                  onSelectBatch={handleBatchClick}
+                  onUpdateStage={handleUpdateStage}
                 />
               </Suspense>
             </TabsContent>
