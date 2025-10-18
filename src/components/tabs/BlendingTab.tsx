@@ -25,12 +25,12 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
     setSelectedBlendId,
     setBlendDetailsOpen 
   } = useAppStore();
-  const { deleteBlend, createBlend, isLoading, isDeleting } = useBlends();
+  const { blends: liveBlends, deleteBlend, createBlend, isLoading, isDeleting } = useBlends();
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
     return batches.map(batch => {
-      const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+      const volumeUsedInBlends = ((liveBlends && liveBlends.length) ? liveBlends : blendBatches).reduce((total, blend) => {
         // Ensure components array exists
         if (!blend.components || !Array.isArray(blend.components)) {
           return total;
@@ -71,7 +71,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         isAvailable: remainingVolume > 0.1
       };
     }).sort((a, b) => b.volumeRemaining - a.volumeRemaining);
-  }, [batches, blendBatches]);
+  }, [batches, blendBatches, liveBlends]);
 
   // Calculate available batches (exclude those fully used in blends)
   const availableBatchesForBlending = useMemo(() => {
@@ -81,7 +81,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   }, [batchUsageInfo]);
 
   // Filter blends based on search query
-  const filteredBlends = blendBatches.filter((blend) => {
+  const filteredBlends = ((liveBlends && liveBlends.length) ? liveBlends : blendBatches).filter((blend) => {
     if (!blendSearchQuery) return true;
     const query = blendSearchQuery.toLowerCase();
     return (
