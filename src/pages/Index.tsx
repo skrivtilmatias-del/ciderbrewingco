@@ -6,6 +6,7 @@ import { useBatches } from "@/hooks/useBatches";
 import { useRealtimeBatches } from "@/hooks/useRealtimeBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useOptimizedBatches } from "@/hooks/useOptimizedBatches";
+import type { SortOrder } from "@/hooks/useOptimizedBatches";
 import { useRenderTracking } from "@/hooks/useRenderTracking";
 import { useDerivedSelectedBatch } from "@/hooks/useDerivedSelectedBatch";
 import { useDerivedSelectedBlend } from "@/hooks/useDerivedSelectedBlend";
@@ -676,27 +677,27 @@ const Index = () => {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Tools</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.calculators()))}>
                             <FlaskConical className="h-4 w-4 mr-2" />
                             Calculators
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.printLabels()))}>
                             <QrCode className="h-4 w-4 mr-2" />
                             Print Labels
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.floorPlan()))}>
                             <Layout className="h-4 w-4 mr-2" />
                             Floor Plan
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.costCalculation()))}>
                             <DollarSign className="h-4 w-4 mr-2" />
                             Cost Calculation
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.planning()))}>
                             <Settings2 className="h-4 w-4 mr-2" />
                             Economic Planning
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
+                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.webhooks()))}>
                             <Webhook className="h-4 w-4 mr-2" />
                             Webhooks
                           </DropdownMenuItem>
@@ -712,14 +713,14 @@ const Index = () => {
                     <BatchSearch
                       ref={searchInputRef}
                       value={batchSearchQuery}
-                      onChange={setBatchSearchQuery}
+                      onChange={(v) => startTransition(() => setBatchSearchQuery(v))}
                       totalCount={batches.length}
                       resultCount={optimizedBatches.length}
                       className="w-64"
                     />
                     <Select
                       value={batchSortOrder}
-                      onValueChange={(value: any) => setBatchSortOrder(value)}
+                      onValueChange={(value) => startTransition(() => setBatchSortOrder(value as SortOrder))}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Sort by" />
@@ -745,7 +746,7 @@ const Index = () => {
                   <BatchSearch
                     ref={searchInputRef}
                     value={batchSearchQuery}
-                    onChange={setBatchSearchQuery}
+                    onChange={(v) => startTransition(() => setBatchSearchQuery(v))}
                     totalCount={batches.length}
                     resultCount={optimizedBatches.length}
                     className="w-full"
