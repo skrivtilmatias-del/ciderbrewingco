@@ -271,6 +271,13 @@ const Index = () => {
   const handleGoToProduction = useCallback((batch: Batch) => {
     if (!batch?.id) return;
     
+    // Verify batch exists in current batches array
+    const batchExists = batchesRef.current.some(b => b.id === batch.id);
+    if (!batchExists) {
+      toast.error('This batch is no longer available');
+      return;
+    }
+    
     setSelectedBatchId(batch.id);
     setDetailsOpen(false);
     navigate("/production");
