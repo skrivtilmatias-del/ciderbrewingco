@@ -146,6 +146,7 @@ export const useBlends = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.blends.all() });
+      queryClient.invalidateQueries({ queryKey: ["blend-usage-agg"] });
       toast.success('Blend batch created');
     },
     onError: (error: any) => {
@@ -165,6 +166,7 @@ export const useBlends = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.blends.all() });
+      queryClient.invalidateQueries({ queryKey: ["blend-usage-agg"] });
       toast.success('Blend batch deleted');
     },
     onError: (error: any) => {

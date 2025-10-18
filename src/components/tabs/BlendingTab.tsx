@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useBlends } from '@/hooks/useBlends';
 import { BlendBatchCard } from '@/components/BlendBatchCard';
 import { NewBlendDialog } from '@/components/NewBlendDialog';
+import { useBlendUsage } from '@/hooks/useBlendUsage';
 import type { Batch } from '@/components/BatchCard';
 
 interface BlendingTabProps {
@@ -26,38 +27,13 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
     setBlendDetailsOpen 
   } = useAppStore();
   const { blends: liveBlends, deleteBlend, createBlend, isLoading, isDeleting } = useBlends();
+  const { usageMap } = useBlendUsage();
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
     return batches.map(batch => {
-      const volumeUsedInBlends = ((liveBlends && liveBlends.length) ? liveBlends : blendBatches).reduce((total, blend) => {
-        // Ensure components array exists
-        if (!blend.components || !Array.isArray(blend.components)) {
-          return total;
-        }
-        
-        const componentVolume = blend.components
-          .filter((comp: any) => comp.source_batch_id === batch.id)
-          .reduce((sum: number, comp: any) => {
-            const vol = typeof comp.volume_liters === 'number'
-              ? comp.volume_liters
-              : parseFloat(comp.volume_liters || '0') || 0;
-            const perc = typeof comp.percentage === 'number'
-              ? comp.percentage
-              : parseFloat(comp.percentage || '0') || 0;
-            const blendTotal = typeof blend.total_volume === 'number'
-              ? blend.total_volume
-              : parseFloat(blend.total_volume || '0') || 0;
-            // Prefer explicit volume; if missing, derive from percentage of the blend total
-            const derivedVol = vol > 0 ? vol : (perc > 0 ? (perc / 100) * blendTotal : 0);
-            const spillage = typeof comp.spillage === 'number'
-              ? comp.spillage
-              : parseFloat(comp.spillage || '0') || 0;
-            return sum + derivedVol + spillage; // Include spillage in total usage
-          }, 0);
-        return total + componentVolume;
-      }, 0);
-      
+      const volumeUsedInBlends = usageMap[batch.id] || 0;
+
       const remainingVolume = Math.max(0, batch.volume - volumeUsedInBlends);
       const usagePercentage = batch.volume > 0 
         ? Math.min(100, (volumeUsedInBlends / batch.volume) * 100)
@@ -71,7 +47,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         isAvailable: remainingVolume > 0.1
       };
     }).sort((a, b) => b.volumeRemaining - a.volumeRemaining);
-  }, [batches, blendBatches, liveBlends]);
+  }, [batches, usageMap]);
 
   // Calculate available batches (exclude those fully used in blends)
   const availableBatchesForBlending = useMemo(() => {
