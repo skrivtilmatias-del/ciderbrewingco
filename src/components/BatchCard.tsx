@@ -255,24 +255,21 @@ export const BatchCard = ({
         </div>
       )}
       
-      {/* Selection Checkbox */}
-      {showSelection && (
-        <div 
-          className="absolute top-4 left-4 z-20" 
-          onClick={handleCheckboxClick}
-        >
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => toggleBatchSelection(batch.id)}
-            className="h-5 w-5"
-          />
-        </div>
-      )}
-
       <CardHeader className="pb-3 space-y-0">
-        {/* Top Row: Batch Number and Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
-          <div className="flex-1 min-w-0">
+        {/* Top Row: Checkbox, Batch Number, Status, and Actions */}
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Selection Checkbox */}
+            {showSelection && (
+              <div onClick={handleCheckboxClick}>
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => toggleBatchSelection(batch.id)}
+                  className="h-5 w-5"
+                />
+              </div>
+            )}
+            
             <CardTitle className="text-lg sm:text-xl font-bold truncate">
               {highlightText(batch.name, searchQuery)}
             </CardTitle>
