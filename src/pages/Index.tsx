@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, Suspense, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef, startTransition } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
@@ -575,7 +575,7 @@ const Index = () => {
                         <TabsTrigger value="batches" asChild>
                           <button 
                             ref={batchesTabPrefetch.ref as any}
-                            onClick={() => navigate(paths.batches())} 
+                            onClick={() => startTransition(() => navigate(paths.batches()))} 
                             onMouseEnter={batchesTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
@@ -586,7 +586,7 @@ const Index = () => {
                         <TabsTrigger value="production" asChild>
                           <button 
                             ref={productionTabPrefetch.ref as any}
-                            onClick={() => navigate(paths.production())} 
+                            onClick={() => startTransition(() => navigate(paths.production()))} 
                             onMouseEnter={productionTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
@@ -597,7 +597,7 @@ const Index = () => {
                         <TabsTrigger value="blending" asChild>
                           <button 
                             ref={blendingTabPrefetch.ref as any}
-                            onClick={() => navigate(paths.blending())} 
+                            onClick={() => startTransition(() => navigate(paths.blending()))} 
                             onMouseEnter={blendingTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
@@ -608,7 +608,7 @@ const Index = () => {
                         <TabsTrigger value="cellar" asChild>
                           <button 
                             ref={cellarTabPrefetch.ref as any}
-                            onClick={() => navigate(paths.cellar())} 
+                            onClick={() => startTransition(() => navigate(paths.cellar()))} 
                             onMouseEnter={cellarTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
@@ -619,7 +619,7 @@ const Index = () => {
                         <TabsTrigger value="suppliers" asChild>
                           <button 
                             ref={suppliersTabPrefetch.ref as any}
-                            onClick={() => navigate(paths.suppliers())} 
+                            onClick={() => startTransition(() => navigate(paths.suppliers()))} 
                             onMouseEnter={suppliersTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
@@ -632,7 +632,7 @@ const Index = () => {
                     <TabsTrigger value="tasting" asChild>
                       <button 
                         ref={tastingTabPrefetch.ref as any}
-                        onClick={() => navigate(paths.tasting())} 
+                        onClick={() => startTransition(() => navigate(paths.tasting()))} 
                         onMouseEnter={tastingTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
                       >
@@ -643,7 +643,7 @@ const Index = () => {
                     <TabsTrigger value="analytics" asChild>
                       <button 
                         ref={analyticsTabPrefetch.ref as any}
-                        onClick={() => navigate(paths.analytics())} 
+                        onClick={() => startTransition(() => navigate(paths.analytics()))} 
                         onMouseEnter={analyticsTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
                       >
@@ -701,41 +701,55 @@ const Index = () => {
             </div>
 
             <TabsContent value="production" className="m-0 flex-1 overflow-hidden">
-              <ProductionTab 
-                batches={batches as any}
-                selectedBatch={selectedBatch as any}
-                onSelectBatch={handleBatchClick as any}
-                onUpdateStage={handleUpdateStage}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ProductionTab 
+                  batches={batches as any}
+                  selectedBatch={selectedBatch as any}
+                  onSelectBatch={handleBatchClick as any}
+                  onUpdateStage={handleUpdateStage}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent value="batches" className="m-0 flex-1 overflow-hidden">
-              <BatchesTab 
-                batches={batches}
-                onBatchClick={handleBatchClick}
-                onUpdateStage={handleUpdateStage}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <BatchesTab 
+                  batches={batches}
+                  onBatchClick={handleBatchClick}
+                  onUpdateStage={handleUpdateStage}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent value="blending" className="m-0 flex-1 overflow-hidden">
-              <BlendingTab 
-                batches={batches}
-                blendBatches={blends}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <BlendingTab 
+                  batches={batches}
+                  blendBatches={blends}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent value="cellar" className="m-0 flex-1 overflow-hidden">
-              <CellarTab blendBatches={blends} />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <CellarTab blendBatches={blends} />
+              </Suspense>
             </TabsContent>
             <TabsContent value="suppliers" className="m-0 flex-1 overflow-hidden">
-              <SuppliersTab suppliers={suppliers} />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <SuppliersTab suppliers={suppliers} />
+              </Suspense>
             </TabsContent>
             <TabsContent value="tasting" className="m-0 flex-1 overflow-hidden">
-              <TastingTab blendBatches={blends} />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <TastingTab blendBatches={blends} />
+              </Suspense>
             </TabsContent>
             <TabsContent value="tools" className="m-0 flex-1 overflow-hidden">
-              <ToolsTab 
-                batches={batches}
-                blendBatches={blends}
-                toolView={toolView}
-              />
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ToolsTab 
+                  batches={batches}
+                  blendBatches={blends}
+                  toolView={toolView}
+                />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </main>
