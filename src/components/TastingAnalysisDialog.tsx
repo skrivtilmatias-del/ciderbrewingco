@@ -374,12 +374,16 @@ export function TastingAnalysisDialog({
                     <SelectTrigger className={cn("h-10", fieldErrors.blend_batch_id && "border-destructive")}>
                       <SelectValue placeholder="Select blend" />
                     </SelectTrigger>
-                    <SelectContent className="z-[100] bg-card border-border max-h-[300px]">
-                      {blendBatches.map((blend) => (
-                        <SelectItem key={blend.id} value={blend.id}>
-                          {blend.name}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="z-[100] bg-popover border max-h-[300px]">
+                      {blendBatches.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground">No blends available</div>
+                      ) : (
+                        blendBatches.map((blend) => (
+                          <SelectItem key={blend.id} value={blend.id}>
+                            {blend.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   {fieldErrors.blend_batch_id && (
