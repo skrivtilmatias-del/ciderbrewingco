@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, Suspense, useRef, startTransition } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef, startTransition, useDeferredValue } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
@@ -133,6 +133,9 @@ const Index = () => {
     return 'batches';
   }, [location.pathname]);
 
+  // Defer the tab value to prevent suspension during navigation
+  const deferredTab = useDeferredValue(activeTab);
+
   // Initialize keyboard shortcuts
   useKeyboardShortcuts({
     onShowShortcuts: () => setShowShortcuts(true),
@@ -142,7 +145,7 @@ const Index = () => {
     },
     onFocusSearch: () => {
       const tabsWithSearch = ['batches', 'production', 'blending'];
-      if (!tabsWithSearch.includes(activeTab)) {
+      if (!tabsWithSearch.includes(deferredTab)) {
         toast.info('Search is available on Batches, Production, and Blending tabs');
         return;
       }
@@ -568,7 +571,7 @@ const Index = () => {
         />
 
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 md:pb-6">
-          <Tabs value={activeTab} className="mb-6 sm:mb-8">
+          <Tabs value={deferredTab} className="mb-6 sm:mb-8">
             {/* Tabs and Search/Sort Controls */}
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -655,7 +658,7 @@ const Index = () => {
                         <DropdownMenuTrigger asChild>
                           <Button 
                             onMouseEnter={prefetchToolsTab}
-                            variant={activeTab === "tools" ? "default" : "ghost"} 
+                            variant={deferredTab === "tools" ? "default" : "ghost"}
                             size="sm" 
                             className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight"
                           >
@@ -697,7 +700,7 @@ const Index = () => {
                 </div>
 
                 {/* Search and Sort - Desktop */}
-                {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
+                {(deferredTab === "batches" || deferredTab === "production" || deferredTab === "blending") && (
                   <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                     <BatchSearch
                       ref={searchInputRef}
@@ -730,7 +733,7 @@ const Index = () => {
               </div>
 
               {/* Mobile Search */}
-              {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
+              {(deferredTab === "batches" || deferredTab === "production" || deferredTab === "blending") && (
                 <div className="md:hidden">
                   <BatchSearch
                     ref={searchInputRef}
