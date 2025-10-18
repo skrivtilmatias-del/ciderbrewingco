@@ -78,12 +78,17 @@ export const VirtualBatchList = ({
 }: VirtualBatchListProps) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(18);
   
   // Calculate responsive columns
   const columns = useResponsiveColumns(layout);
   
+  // Apply display limit
+  const displayedBatches = batches.slice(0, displayLimit);
+  const hasMore = batches.length > displayLimit;
+  
   // Calculate total rows (each row contains 'columns' number of items)
-  const rowCount = Math.ceil(batches.length / columns);
+  const rowCount = Math.ceil(displayedBatches.length / columns);
   
   // Scroll position restoration
   useScrollPosition(scrollKey, parentRef);
@@ -107,7 +112,7 @@ export const VirtualBatchList = ({
   const firstVisibleIndex = virtualItems[0]?.index ?? 0;
   const lastVisibleIndex = virtualItems[virtualItems.length - 1]?.index ?? 0;
   const firstVisibleBatch = firstVisibleIndex * columns + 1;
-  const lastVisibleBatch = Math.min((lastVisibleIndex + 1) * columns, batches.length);
+  const lastVisibleBatch = Math.min((lastVisibleIndex + 1) * columns, displayedBatches.length);
 
   // Show/hide scroll-to-top button based on scroll position
   useEffect(() => {
@@ -169,7 +174,12 @@ export const VirtualBatchList = ({
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing <strong>{firstVisibleBatch}-{lastVisibleBatch}</strong> of{' '}
-            <strong>{batches.length}</strong> batches
+            <strong>{displayedBatches.length}</strong> batches
+            {hasMore && (
+              <span className="ml-1">
+                (total: <strong>{batches.length}</strong>)
+              </span>
+            )}
           </p>
           <div className="h-1 w-32 bg-muted rounded-full overflow-hidden">
             <div
@@ -203,7 +213,7 @@ export const VirtualBatchList = ({
         >
           {virtualItems.map((virtualRow) => {
             const startIndex = virtualRow.index * columns;
-            const rowBatches = batches.slice(startIndex, startIndex + columns);
+            const rowBatches = displayedBatches.slice(startIndex, startIndex + columns);
 
             return (
               <div
@@ -247,6 +257,20 @@ export const VirtualBatchList = ({
           })}
         </div>
       </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="flex justify-center py-6 px-4">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setDisplayLimit(prev => prev + 18)}
+            className="min-w-[200px]"
+          >
+            Load More ({batches.length - displayLimit} remaining)
+          </Button>
+        </div>
+      )}
 
       {/* Scroll-to-top FAB */}
       {showScrollTop && (
