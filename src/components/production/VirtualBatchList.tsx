@@ -78,7 +78,7 @@ export const VirtualBatchList = ({
 }: VirtualBatchListProps) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [displayLimit, setDisplayLimit] = useState(18);
+  const [displayLimit, setDisplayLimit] = useState(15);
   
   // Calculate responsive columns
   const columns = useResponsiveColumns(layout);
@@ -264,7 +264,7 @@ export const VirtualBatchList = ({
           <Button
             variant="outline"
             size="lg"
-            onClick={() => setDisplayLimit(prev => prev + 18)}
+            onClick={() => setDisplayLimit(prev => prev + 15)}
             className="min-w-[200px]"
           >
             Load More ({batches.length - displayLimit} remaining)
