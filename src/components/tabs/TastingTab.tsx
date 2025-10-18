@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { TastingAnalysisCard } from '@/components/TastingAnalysisCard';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
+import { useBlendUsage } from '@/hooks/useBlendUsage';
 
 interface TastingTabProps {
   blendBatches: any[];
@@ -20,6 +21,17 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
   const { tastingSearchQuery, setTastingSearchQuery } = useAppStore();
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const [editingTasting, setEditingTasting] = useState<any>(null);
+  const { usageMap } = useBlendUsage();
+
+  // Filter to only show blend batches with available volume
+  const availableBlendBatches = useMemo(() => {
+    return blendBatches.filter((blend) => {
+      const totalVolume = Number(blend.total_volume) || 0;
+      const used = usageMap[blend.id] || 0;
+      const remaining = totalVolume - used;
+      return remaining > 0;
+    });
+  }, [blendBatches, usageMap]);
 
   // Fetch tasting analyses
   const { data: tastingAnalyses = [], isLoading, error } = useQuery({
@@ -280,7 +292,7 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
           if (!open) setEditingTasting(null);
         }}
         onSave={handleSaveTasting}
-        blendBatches={blendBatches}
+        blendBatches={availableBlendBatches}
         existingAnalysis={editingTasting}
       />
     </div>
