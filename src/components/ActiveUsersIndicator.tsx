@@ -8,8 +8,13 @@ export const ActiveUsersIndicator = () => {
 
   if (activeUsers.length === 0) return null;
 
-  const displayUsers = activeUsers.slice(0, 3);
-  const remainingCount = Math.max(0, activeUsers.length - 3);
+  // Remove duplicates based on user_id
+  const uniqueUsers = activeUsers.filter((user, index, self) => 
+    index === self.findIndex((u) => u.user_id === user.user_id)
+  );
+
+  const displayUsers = uniqueUsers.slice(0, 3);
+  const remainingCount = Math.max(0, uniqueUsers.length - 3);
 
   return (
     <TooltipProvider>
@@ -32,7 +37,7 @@ export const ActiveUsersIndicator = () => {
             </Tooltip>
           ))}
           {remainingCount > 0 && (
-            <Tooltip>
+            <Tooltip key="remaining-users">
               <TooltipTrigger>
                 <Avatar className="h-8 w-8 border-2 border-background">
                   <AvatarFallback className="bg-muted text-xs">
