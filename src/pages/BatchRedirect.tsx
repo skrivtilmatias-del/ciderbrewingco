@@ -35,11 +35,11 @@ const BatchRedirect = () => {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
-        // Authenticated - go to batch page
-        navigate(paths.batchWithId(id), { replace: true });
+        // Authenticated - go directly to production page with batch selected
+        navigate(`/production?batch=${id}`, { replace: true });
       } else {
         // Not authenticated - redirect to login with next parameter
-        navigate(paths.auth(paths.batchWithId(id)), { replace: true });
+        navigate(paths.auth(`/production?batch=${id}`), { replace: true });
       }
     };
 

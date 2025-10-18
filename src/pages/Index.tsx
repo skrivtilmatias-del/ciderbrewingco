@@ -194,13 +194,13 @@ const Index = () => {
       const batch = batches.find((b) => b.id === batchId);
       if (batch) {
         setSelectedBatchId(batch.id);
-        navigate("/production", { replace: true });
+        setDetailsOpen(true); // Open batch details when coming from QR
       } else {
         toast.error(`Batch ${batchId} not found`);
         navigate("/batches", { replace: true });
       }
     }
-  }, [location.search, batches, setSelectedBatchId, navigate]);
+  }, [location.search, batches, setSelectedBatchId, setDetailsOpen, navigate]);
 
   // Auto-select first batch on initial load with improved logic
   useEffect(() => {
