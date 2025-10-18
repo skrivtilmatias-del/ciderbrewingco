@@ -50,22 +50,32 @@ export const PrintQRCodes = ({ blendBatches = [] }: PrintQRCodesProps) => {
   // Selection states
   const [selectedBatches, setSelectedBatches] = useState<Set<string>>(new Set());
   const [selectedBlends, setSelectedBlends] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchBatches();
   }, []);
 
   const fetchBatches = async () => {
-    const { data, error } = await supabase
-      .from("batches")
-      .select("id, name, variety, volume, started_at, current_stage")
-      .order("started_at", { ascending: false });
-    
-    if (error) {
-      toast.error("Failed to load batches");
-      return;
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("batches")
+        .select("id, name, variety, volume, started_at, current_stage")
+        .order("started_at", { ascending: false });
+      
+      if (error) {
+        console.error("Failed to load batches:", error);
+        toast.error("Failed to load batches");
+        return;
+      }
+      setBatches(data || []);
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+      toast.error("An error occurred while loading batches");
+    } finally {
+      setIsLoading(false);
     }
-    setBatches(data || []);
   };
 
   // Utility functions for bulk download
@@ -412,16 +422,30 @@ export const PrintQRCodes = ({ blendBatches = [] }: PrintQRCodesProps) => {
     setSelectedBlends(new Set());
   };
 
-  const filteredBatches = batches.filter(b => 
-    b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.variety.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredBatches = batches?.filter(b => 
+    b?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b?.variety?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const filteredBlends = (blendBatches || []).filter(b =>
-    b.name.toLowerCase().includes(searchQuery.toLowerCase())
+    b?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const selectedCount = mode === "batch" ? selectedBatches.size : selectedBlends.size;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="p-12">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+          <p className="text-muted-foreground">Loading QR codes...</p>
+        </div>
+      </Card>
+    );
+  }
 
   // Show empty state if no data available
   if (mode === "blend" && (!blendBatches || blendBatches.length === 0)) {
