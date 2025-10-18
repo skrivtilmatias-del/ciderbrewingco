@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 import { NewBatchDialog } from '@/components/NewBatchDialog';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
@@ -51,7 +50,6 @@ export const AppHeader = ({
   }, [onTastingSaved]);
 
   const handleBatchCreated = useCallback(async (batchData: any) => {
-    // Create batch via mutation - invalidation is handled automatically by useBatches hook
     createBatch({
       name: batchData.name,
       variety: batchData.variety,
@@ -67,7 +65,6 @@ export const AppHeader = ({
       initial_temp_c: batchData.initial_temp_c,
     });
     
-    // Call parent handler if provided
     if (onBatchCreated) {
       onBatchCreated();
     }
@@ -95,10 +92,12 @@ export const AppHeader = ({
               {userProfile?.full_name || user?.email}
             </span>
             
+            {/* No Tooltip - use title attribute */}
             <Button 
               className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
               size="sm"
               onClick={handleOpenTastingDialog}
+              title="Create a new tasting analysis"
             >
               <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               <span className="hidden xs:inline">New </span>Tasting
@@ -108,11 +107,13 @@ export const AppHeader = ({
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
             )}
             
+            {/* No Tooltip - use title attribute */}
             <Button 
               variant="ghost" 
               size="icon" 
               className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
               onClick={onShowShortcuts}
+              title="Keyboard Shortcuts (?)"
             >
               <Keyboard className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
@@ -131,7 +132,6 @@ export const AppHeader = ({
         </div>
       </div>
 
-      {/* Tasting Analysis Dialog */}
       <TastingAnalysisDialog
         open={tastingDialogOpen}
         onOpenChange={setTastingDialogOpen}
