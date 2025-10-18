@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { Batch } from '@/components/BatchCard';
 import type { BatchFilters } from '@/components/BatchFilters';
 
@@ -33,11 +34,14 @@ export const useOptimizedBatches = ({
   // Performance tracking in development
   const startTime = performance.now();
 
+  // Debounce search query to prevent filtering on every keystroke
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   // Step 1: Filter by search query
   const searchFiltered = useMemo(() => {
-    if (!searchQuery.trim()) return batches;
+    if (!debouncedSearchQuery.trim()) return batches;
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
     return batches.filter(
       (batch) =>
         batch.name?.toLowerCase().includes(query) ||
@@ -45,7 +49,7 @@ export const useOptimizedBatches = ({
         batch.currentStage?.toLowerCase().includes(query) ||
         batch.apple_origin?.toLowerCase().includes(query)
     );
-  }, [batches, searchQuery]);
+  }, [batches, debouncedSearchQuery]);
 
   // Step 2: Apply advanced filters
   const filtered = useMemo(() => {
