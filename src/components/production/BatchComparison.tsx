@@ -283,9 +283,9 @@ export const BatchComparison = ({
                     </h4>
                     <BatchMeasurements
                       logs={batchLogs[batch.id] || []}
-                      targetPh={batch.target_ph}
-                      targetOg={batch.target_og}
-                      targetFg={batch.target_fg}
+                      targetPh={batch.targetPh}
+                      targetOg={batch.targetOg}
+                      targetFg={batch.targetFg}
                     />
                   </Card>
                 )}

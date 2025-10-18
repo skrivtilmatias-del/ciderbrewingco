@@ -47,7 +47,7 @@ export const useOptimizedBatches = ({
         batch.name?.toLowerCase().includes(query) ||
         batch.variety?.toLowerCase().includes(query) ||
         batch.currentStage?.toLowerCase().includes(query) ||
-        batch.apple_origin?.toLowerCase().includes(query)
+        batch.appleOrigin?.toLowerCase().includes(query)
     );
   }, [batches, debouncedSearchQuery]);
 

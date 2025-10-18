@@ -63,8 +63,8 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
       }
 
       // Estimate completion
-      if (batch.target_fg && latestOG > batch.target_fg && dailyRate > 0.5) {
-        const pointsToGo = (latestOG - batch.target_fg) * 1000;
+      if (batch.targetFg && latestOG > batch.targetFg && dailyRate > 0.5) {
+        const pointsToGo = (latestOG - batch.targetFg) * 1000;
         const daysToComplete = Math.ceil(pointsToGo / dailyRate);
         const estimatedDate = addDays(new Date(), daysToComplete);
         
@@ -80,16 +80,16 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
 
   // pH checks
   const phLogs = logs.filter(l => l.ph);
-  if (phLogs.length > 0 && batch.target_ph) {
+  if (phLogs.length > 0 && batch.targetPh) {
     const latestPH = phLogs[phLogs.length - 1].ph!;
-    const diff = Math.abs(latestPH - batch.target_ph);
+    const diff = Math.abs(latestPH - batch.targetPh);
     
     if (diff > 0.5) {
       insights.push({
         type: 'warning',
         icon: AlertCircle,
         title: 'pH Outside Target',
-        description: `Current pH ${latestPH} vs target ${batch.target_ph}. Consider adjustment.`
+        description: `Current pH ${latestPH} vs target ${batch.targetPh}. Consider adjustment.`
       });
     } else if (diff <= 0.2) {
       insights.push({

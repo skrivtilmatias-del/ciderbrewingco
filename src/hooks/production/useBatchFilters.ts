@@ -114,10 +114,10 @@ export const filterFunctions = {
     }
 
     // Fallback: Calculate ABV from target_og if available
-    if (batch.target_og) {
-      const estimatedABV = batch.target_fg 
-        ? (batch.target_og - batch.target_fg) * 131.25
-        : (batch.target_og - 1.005) * 131.25;
+    if (batch.targetOg) {
+      const estimatedABV = batch.targetFg 
+        ? (batch.targetOg - batch.targetFg) * 131.25
+        : (batch.targetOg - 1.005) * 131.25;
       return estimatedABV >= min && estimatedABV <= max;
     }
 

@@ -64,13 +64,9 @@ export const ProductionTab = ({
   const queryClient = useQueryClient();
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
   
-  // Convert to legacy format for components that need it
-  const legacyBatches = toLegacyBatches(batches);
-  const legacySelectedBatch = selectedBatch ? toLegacyBatch(selectedBatch) : null;
-  
   // Hooks - Business logic extracted
   const { logs, addLog, deleteLog, isLoading, isAdding } = useBatchLogs(selectedBatch?.id || null);
-  const { results: searchResults } = useBatchSearch(legacyBatches, batchSearchQuery);
+  const { results: searchResults } = useBatchSearch(batches as any, batchSearchQuery);
   
   // Local UI state
   const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped' | 'activity'>('grid');
@@ -85,25 +81,21 @@ export const ProductionTab = ({
       batchId: selectedBatch.id,
       title,
       role,
-      stage: selectedBatch.current_stage,
+      stage: selectedBatch.currentStage,
     });
   };
 
   /**
    * Handle batch selection from search results (legacy batch format)
    */
-  const handleSelectBatchFromSearch = createLegacyBatchCallback(batches, (dbBatch) => {
-    onSelectBatch(dbBatch);
+  const handleSelectBatchFromSearch = (batch: any) => {
+    onSelectBatch(batch);
     setBatchSearchQuery('');
-    
-    // Prefetch adjacent batches for smooth navigation
-    const currentIndex = batches.findIndex(b => b.id === dbBatch.id);
+    const currentIndex = (batches as any).findIndex((b: any) => b.id === batch.id);
     if (currentIndex >= 0) {
-      prefetchAdjacentBatches(queryClient, legacyBatches, currentIndex, 3).catch(() => {
-        // Silently fail - prefetch is optional optimization
-      });
+      prefetchAdjacentBatches(queryClient, batches as any, currentIndex, 3).catch(() => {});
     }
-  });
+  };
 
   // ========== RENDER: Empty State ==========
   if (!selectedBatch) {
@@ -198,8 +190,8 @@ export const ProductionTab = ({
         {/* ========== Content: View Mode Dependent ========== */}
         <TabsContent value="grouped" className="mt-4">
           <GroupedBatchView
-            batches={legacyBatches}
-            onSelectBatch={createLegacyBatchCallback(batches, onSelectBatch)}
+            batches={batches as any}
+            onSelectBatch={onSelectBatch as any}
             onDeleteBatch={(batchId: string) => {
               console.log('Delete batch:', batchId);
             }}
@@ -212,9 +204,9 @@ export const ProductionTab = ({
             batch={{
               id: selectedBatch.id,
               name: selectedBatch.name,
-              current_stage: selectedBatch.current_stage,
-              started_at: selectedBatch.started_at,
-              completed_at: selectedBatch.current_stage === 'Complete' ? new Date().toISOString() : null,
+              current_stage: selectedBatch.currentStage,
+              started_at: selectedBatch.startDate,
+              completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
             }}
             variant="standard"
             onStageClick={(stage) => {
@@ -231,7 +223,7 @@ export const ProductionTab = ({
 
           {/* Stage Progression UI */}
           <StageProgressionUI
-            currentStage={selectedBatch.current_stage as any}
+            currentStage={selectedBatch.currentStage as any}
             batchId={selectedBatch.id}
             batchName={selectedBatch.name}
             onAdvanceStage={onUpdateStage}
@@ -239,7 +231,7 @@ export const ProductionTab = ({
 
           {/* AI-Powered Smart Insights */}
           <SmartInsights
-            batch={legacySelectedBatch!}
+            batch={selectedBatch as any}
             logs={logs}
           />
 
@@ -253,7 +245,7 @@ export const ProductionTab = ({
               }))}
               color="hsl(var(--info))"
               unit="SG"
-              targetValue={selectedBatch.target_og ? selectedBatch.target_og / 1000 : undefined}
+              targetValue={selectedBatch.targetOg ? selectedBatch.targetOg / 1000 : undefined}
             />
             <ParameterTrendChart
               title="pH"
@@ -263,7 +255,7 @@ export const ProductionTab = ({
               }))}
               color="hsl(var(--warning))"
               unit=""
-              targetValue={selectedBatch.target_ph}
+              targetValue={selectedBatch.targetPh}
             />
             <ParameterTrendChart
               title="Temperature"

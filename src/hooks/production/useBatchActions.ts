@@ -191,13 +191,13 @@ export const useBatchActions = () => {
           variety: batch.variety,
           volume: batch.volume,
           current_stage: 'Harvest', // Reset to start
-          apple_origin: batch.apple_origin,
-          yeast_type: batch.yeast_type,
+          apple_origin: batch.appleOrigin,
+          yeast_type: batch.yeastType,
           notes: batch.notes,
-          target_og: batch.target_og,
-          target_fg: batch.target_fg,
-          target_ph: batch.target_ph,
-          target_end_ph: batch.target_end_ph,
+          target_og: batch.targetOg,
+          target_fg: batch.targetFg,
+          target_ph: batch.targetPh,
+          target_end_ph: batch.targetEndPh,
           user_id: user.id,
         }])
         .select()

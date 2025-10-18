@@ -111,6 +111,24 @@ export interface Batch {
   _justUpdated?: boolean;
   _deleting?: boolean;
   _updating?: boolean;
+
+  // Deprecated legacy fields for gradual migration (do not use in new code)
+  // These mirror old snake_case names to avoid TypeScript errors during transition
+  apple_origin?: string;
+  yeast_type?: string;
+  apple_mix?: string;
+  target_og?: number;
+  target_fg?: number;
+  target_ph?: number;
+  target_end_ph?: number;
+  target_ta?: number;
+  target_temp_c?: number;
+  current_stage?: string;
+  started_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  completed_at?: string | null;
+  estimated_completion_date?: string;
 }
 
 export interface CreateBatchInput {

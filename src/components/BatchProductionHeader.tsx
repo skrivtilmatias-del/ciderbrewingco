@@ -14,7 +14,7 @@ export const BatchProductionHeader = ({ batch, allBatches = [] }: BatchProductio
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const getDaysInProduction = () => {
-    const start = new Date(batch.started_at);
+    const start = new Date(batch.startDate);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -25,7 +25,7 @@ export const BatchProductionHeader = ({ batch, allBatches = [] }: BatchProductio
     {
       icon: Activity,
       label: "Current Stage",
-      value: batch.current_stage,
+      value: batch.currentStage,
       bgColor: "bg-orange-50 dark:bg-orange-950",
       iconColor: "text-orange-600 dark:text-orange-400",
     },
