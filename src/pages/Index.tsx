@@ -186,21 +186,29 @@ const Index = () => {
   // Handle batch selection from QR redirect
   useEffect(() => {
     if (batches.length === 0) return;
-    
+
     const params = new URLSearchParams(location.search);
     const batchId = params.get("batch");
+    if (!batchId) return;
 
-    if (batchId) {
-      const batch = batches.find((b) => b.id === batchId);
-      if (batch) {
-        setSelectedBatchId(batch.id);
-        setDetailsOpen(true); // Open batch details when coming from QR
-      } else {
-        toast.error(`Batch ${batchId} not found`);
-        navigate("/batches", { replace: true });
-      }
+    const batch = batches.find((b) => b.id === batchId);
+    if (!batch) {
+      toast.error(`Batch ${batchId} not found`);
+      navigate("/batches", { replace: true });
+      return;
     }
-  }, [location.search, batches, setSelectedBatchId, setDetailsOpen, navigate]);
+
+    setSelectedBatchId(batch.id);
+    setDetailsOpen(true);
+
+    // Always navigate to Production when a batch is specified (avoid loops)
+    if (location.pathname !== "/production") {
+      const next = new URLSearchParams(location.search);
+      next.set("batch", batch.id);
+      next.set("view", "production");
+      navigate(`/production?${next.toString()}`, { replace: true });
+    }
+  }, [location.pathname, location.search, batches, setSelectedBatchId, setDetailsOpen, navigate]);
 
   // Auto-select first batch on initial load with improved logic
   useEffect(() => {

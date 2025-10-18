@@ -48,7 +48,7 @@ export const makeBatchQrUrl = (batchId: string, ttlSec = 1800): string => {
   const signature = generateSignature(path, timestamp);
   const origin = getBaseUrl();
   
-  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}`;
+  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}&view=production`;
 };
 
 /**

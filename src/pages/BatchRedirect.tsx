@@ -37,7 +37,8 @@ const BatchRedirect = () => {
         // Auth check
         const { data: { session } } = await supabase.auth.getSession();
 
-        const target = `/production?batch=${encodeURIComponent(id)}`;
+        const view = searchParams.get("view") || "production";
+        const target = `/production?batch=${encodeURIComponent(id)}&view=${encodeURIComponent(view)}`;
         if (session) {
           navigate(target, { replace: true });
         } else {
