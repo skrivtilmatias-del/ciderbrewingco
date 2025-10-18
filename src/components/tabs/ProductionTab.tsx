@@ -23,6 +23,7 @@ import { BatchActivityFeed } from '@/components/production/BatchActivityFeed';
 import { ProductionMetricsWidget } from '@/components/production/ProductionMetricsWidget';
 import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuGuide';
 import { ProgressOverview } from '@/components/production/ProgressOverview';
+import { toLegacyBatch, toLegacyBatches, createLegacyBatchCallback } from '@/lib/batchTypeUtils';
 import type { Batch } from '@/types/batch.types';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
@@ -63,9 +64,13 @@ export const ProductionTab = ({
   const queryClient = useQueryClient();
   const { batchSearchQuery, setBatchSearchQuery } = useAppStore();
   
+  // Convert to legacy format for components that need it
+  const legacyBatches = toLegacyBatches(batches);
+  const legacySelectedBatch = selectedBatch ? toLegacyBatch(selectedBatch) : null;
+  
   // Hooks - Business logic extracted
   const { logs, addLog, deleteLog, isLoading, isAdding } = useBatchLogs(selectedBatch?.id || null);
-  const { results: searchResults } = useBatchSearch(batches as any, batchSearchQuery);
+  const { results: searchResults } = useBatchSearch(legacyBatches, batchSearchQuery);
   
   // Local UI state
   const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'grouped' | 'activity'>('grid');
@@ -85,20 +90,20 @@ export const ProductionTab = ({
   };
 
   /**
-   * Handle batch selection from search results
+   * Handle batch selection from search results (legacy batch format)
    */
-  const handleSelectBatch = (batch: Batch) => {
-    onSelectBatch(batch);
+  const handleSelectBatchFromSearch = createLegacyBatchCallback(batches, (dbBatch) => {
+    onSelectBatch(dbBatch);
     setBatchSearchQuery('');
     
     // Prefetch adjacent batches for smooth navigation
-    const currentIndex = batches.findIndex(b => b.id === batch.id);
+    const currentIndex = batches.findIndex(b => b.id === dbBatch.id);
     if (currentIndex >= 0) {
-      prefetchAdjacentBatches(queryClient, batches as any, currentIndex, 3).catch(() => {
+      prefetchAdjacentBatches(queryClient, legacyBatches, currentIndex, 3).catch(() => {
         // Silently fail - prefetch is optional optimization
       });
     }
-  };
+  });
 
   // ========== RENDER: Empty State ==========
   if (!selectedBatch) {
@@ -132,10 +137,10 @@ export const ProductionTab = ({
     <QueryErrorBoundary>
       <div className="space-y-4">
         {/* Production Metrics Widget */}
-        <ProductionMetricsWidget batches={batches as any} />
+        <ProductionMetricsWidget batches={legacyBatches} />
         
         {/* Progress Overview */}
-        <ProgressOverview batches={batches as any} />
+        <ProgressOverview batches={legacyBatches} />
         
 
       {/* ========== Search Results Dropdown ========== */}
@@ -147,7 +152,7 @@ export const ProductionTab = ({
                 key={batch.id}
                 role="option"
                 aria-selected={selectedBatch?.id === batch.id}
-                onClick={() => handleSelectBatch(batch as any)}
+                onClick={() => handleSelectBatchFromSearch(batch)}
                 className="w-full text-left p-2 rounded hover:bg-muted transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <FlaskConical className="h-4 w-4 text-primary flex-shrink-0" />
@@ -167,7 +172,7 @@ export const ProductionTab = ({
       )}
 
       {/* ========== Batch Header ========== */}
-      <BatchProductionHeader batch={selectedBatch as any} allBatches={batches as any} />
+      <BatchProductionHeader batch={selectedBatch} allBatches={batches} />
 
       {/* ========== View Mode Toggle ========== */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
@@ -193,8 +198,8 @@ export const ProductionTab = ({
         {/* ========== Content: View Mode Dependent ========== */}
         <TabsContent value="grouped" className="mt-4">
           <GroupedBatchView
-            batches={batches as any}
-            onSelectBatch={onSelectBatch as any}
+            batches={legacyBatches}
+            onSelectBatch={createLegacyBatchCallback(batches, onSelectBatch)}
             onDeleteBatch={(batchId: string) => {
               console.log('Delete batch:', batchId);
             }}
@@ -234,7 +239,7 @@ export const ProductionTab = ({
 
           {/* AI-Powered Smart Insights */}
           <SmartInsights
-            batch={selectedBatch as any}
+            batch={legacySelectedBatch!}
             logs={logs}
           />
 
