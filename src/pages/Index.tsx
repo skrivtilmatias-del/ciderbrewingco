@@ -872,6 +872,7 @@ const Index = () => {
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdateStage={handleUpdateStage}
+          onBatchUpdated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
           onGoToProduction={handleGoToProduction}
         />
       </Suspense>

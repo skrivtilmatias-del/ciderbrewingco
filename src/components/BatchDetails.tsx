@@ -63,10 +63,11 @@ interface BatchDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateStage: (batchId: string, newStage: Batch["currentStage"]) => void;
+  onBatchUpdated?: () => void;
   onGoToProduction?: (batch: Batch) => void;
 }
 
-export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onGoToProduction }: BatchDetailsProps) => {
+export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated, onGoToProduction }: BatchDetailsProps) => {
   const queryClient = useQueryClient();
   
   // Add null guard at the top
@@ -142,6 +143,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onGoToP
         queryKey: queryKeys.batches.all(),
         refetchType: 'none'
       });
+      
+      // Call parent handler if provided
+      if (onBatchUpdated) {
+        onBatchUpdated();
+      }
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
@@ -178,6 +184,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onGoToP
         queryKey: queryKeys.batches.all(),
         refetchType: 'none'
       });
+      
+      // Call parent handler if provided
+      if (onBatchUpdated) {
+        onBatchUpdated();
+      }
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
