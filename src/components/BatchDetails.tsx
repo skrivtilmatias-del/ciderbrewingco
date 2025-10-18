@@ -81,27 +81,27 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [batchName, setBatchName] = useState(batch?.name || "");
   const [variety, setVariety] = useState(batch?.variety || "");
-  const [appleOrigin, setAppleOrigin] = useState(batch?.apple_origin || "");
+  const [appleOrigin, setAppleOrigin] = useState(batch?.appleOrigin || "");
   const [volume, setVolume] = useState(batch?.volume?.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
-  const [yeastType, setYeastType] = useState(batch?.yeast_type || "");
-  const [targetOG, setTargetOG] = useState(batch?.target_og?.toString() || "");
-  const [targetFG, setTargetFG] = useState(batch?.target_fg?.toString() || "");
-  const [targetPH, setTargetPH] = useState(batch?.target_ph?.toString() || "");
-  const [targetEndPH, setTargetEndPH] = useState(batch?.target_end_ph?.toString() || "");
+  const [yeastType, setYeastType] = useState(batch?.yeastType || "");
+  const [targetOG, setTargetOG] = useState(batch?.targetOg?.toString() || "");
+  const [targetFG, setTargetFG] = useState(batch?.targetFg?.toString() || "");
+  const [targetPH, setTargetPH] = useState(batch?.targetPh?.toString() || "");
+  const [targetEndPH, setTargetEndPH] = useState(batch?.targetEndPh?.toString() || "");
 
   useEffect(() => {
     if (batch) {
       setBatchName(batch.name || "");
       setVariety(batch.variety || "");
-      setAppleOrigin(batch.apple_origin || "");
+      setAppleOrigin(batch.appleOrigin || "");
       setVolume(batch.volume?.toString() || "");
       setStartDate(batch.startDate || "");
-      setYeastType(batch.yeast_type || "");
-      setTargetOG(batch.target_og?.toString() || "");
-      setTargetFG(batch.target_fg?.toString() || "");
-      setTargetPH(batch.target_ph?.toString() || "");
-      setTargetEndPH(batch.target_end_ph?.toString() || "");
+      setYeastType(batch.yeastType || "");
+      setTargetOG(batch.targetOg?.toString() || "");
+      setTargetFG(batch.targetFg?.toString() || "");
+      setTargetPH(batch.targetPh?.toString() || "");
+      setTargetEndPH(batch.targetEndPh?.toString() || "");
       setNotes(batch.notes || "");
       setAttachments(batch.attachments || []);
     }
@@ -356,11 +356,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     setVariety(batch?.variety || "");
                     setVolume(batch?.volume?.toString() || "");
                     setStartDate(batch?.startDate || "");
-                    setYeastType(batch?.yeast_type || "");
-                    setTargetOG(batch?.target_og?.toString() || "");
-                    setTargetFG(batch?.target_fg?.toString() || "");
-                    setTargetPH(batch?.target_ph?.toString() || "");
-                    setTargetEndPH(batch?.target_end_ph?.toString() || "");
+                    setYeastType(batch?.yeastType || "");
+                    setTargetOG(batch?.targetOg?.toString() || "");
+                    setTargetFG(batch?.targetFg?.toString() || "");
+                    setTargetPH(batch?.targetPh?.toString() || "");
+                    setTargetEndPH(batch?.targetEndPh?.toString() || "");
                     setIsEditingDetails(false);
                   }}
                 >
@@ -380,10 +380,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     <p className="text-sm text-muted-foreground font-medium">Apple Variety</p>
                     <p className="text-lg font-semibold">{batch.variety}</p>
                   </div>
-                  {batch.apple_origin && (
+                  {batch.appleOrigin && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground font-medium">Apple Origin</p>
-                      <p className="text-lg font-semibold">{batch.apple_origin}</p>
+                      <p className="text-lg font-semibold">{batch.appleOrigin}</p>
                     </div>
                   )}
                 </div>
@@ -394,13 +394,13 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {batch.yeast_type && (
+                {batch.yeastType && (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <FlaskConical className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="text-xs sm:text-sm">Yeast Type</span>
                     </div>
-                    <p className="text-lg sm:text-xl font-semibold">{batch.yeast_type}</p>
+                    <p className="text-lg sm:text-xl font-semibold">{batch.yeastType}</p>
                   </div>
                 )}
                 <div className="space-y-1">
@@ -421,30 +421,30 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 </div>
               </div>
 
-              {(batch.target_og || batch.target_fg || batch.target_ph || batch.target_end_ph) && (
+              {(batch.targetOg || batch.targetFg || batch.targetPh || batch.targetEndPh) && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2 border-t">
-                  {batch.target_og && (
+                  {batch.targetOg && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">OG</p>
-                      <p className="text-sm font-semibold">{batch.target_og}</p>
+                      <p className="text-sm font-semibold">{batch.targetOg}</p>
                     </div>
                   )}
-                  {batch.target_fg && (
+                  {batch.targetFg && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">FG</p>
-                      <p className="text-sm font-semibold">{batch.target_fg}</p>
+                      <p className="text-sm font-semibold">{batch.targetFg}</p>
                     </div>
                   )}
-                  {batch.target_ph && (
+                  {batch.targetPh && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Start PH</p>
-                      <p className="text-sm font-semibold">{batch.target_ph}</p>
+                      <p className="text-sm font-semibold">{batch.targetPh}</p>
                     </div>
                   )}
-                  {batch.target_end_ph && (
+                  {batch.targetEndPh && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">End PH</p>
-                      <p className="text-sm font-semibold">{batch.target_end_ph}</p>
+                      <p className="text-sm font-semibold">{batch.targetEndPh}</p>
                     </div>
                   )}
                 </div>

@@ -36,8 +36,8 @@ export const BatchOverviewHeader = ({
     return { status: "alert", icon: TrendingDown, color: "text-destructive" };
   };
 
-  const ogStatus = getTargetStatus(latestMeasurements?.og, batch.target_og);
-  const phStatus = getTargetStatus(latestMeasurements?.ph, batch.target_ph);
+  const ogStatus = getTargetStatus(latestMeasurements?.og, batch.targetOg);
+  const phStatus = getTargetStatus(latestMeasurements?.ph, batch.targetPh);
 
   return (
     <Card className="p-4 sm:p-6 border-2">
@@ -93,9 +93,9 @@ export const BatchOverviewHeader = ({
         </div>
 
         {/* Target vs Actual */}
-        {(batch.target_og || batch.target_ph || latestMeasurements?.temp_c) && (
+        {(batch.targetOg || batch.targetPh || latestMeasurements?.temp_c) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t">
-            {batch.target_og && (
+            {batch.targetOg && (
               <div className="bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-muted-foreground">OG</span>
@@ -110,13 +110,13 @@ export const BatchOverviewHeader = ({
                       : "—"}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    / {batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}
+                    / {batch.targetOg >= 1.5 ? Math.round(batch.targetOg) : Math.round((batch.targetOg - 1) * 1000) + 1000}
                   </span>
                 </div>
               </div>
             )}
 
-            {batch.target_ph && (
+            {batch.targetPh && (
               <div className="bg-muted/30 p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-muted-foreground">pH Level</span>
@@ -124,7 +124,7 @@ export const BatchOverviewHeader = ({
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold">{latestMeasurements?.ph || "—"}</span>
-                  <span className="text-xs text-muted-foreground">/ {batch.target_ph}</span>
+                  <span className="text-xs text-muted-foreground">/ {batch.targetPh}</span>
                 </div>
               </div>
             )}
@@ -137,8 +137,8 @@ export const BatchOverviewHeader = ({
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold">{latestMeasurements.temp_c}°C</span>
-                  {batch.target_temp_c && (
-                    <span className="text-xs text-muted-foreground">/ {batch.target_temp_c}°C</span>
+                  {batch.targetTempC && (
+                    <span className="text-xs text-muted-foreground">/ {batch.targetTempC}°C</span>
                   )}
                 </div>
               </div>

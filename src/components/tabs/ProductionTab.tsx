@@ -23,7 +23,7 @@ import { BatchActivityFeed } from '@/components/production/BatchActivityFeed';
 import { ProductionMetricsWidget } from '@/components/production/ProductionMetricsWidget';
 import { BatchContextMenuGuide } from '@/components/production/BatchContextMenuGuide';
 import { ProgressOverview } from '@/components/production/ProgressOverview';
-import { toLegacyBatch, toLegacyBatches, createLegacyBatchCallback } from '@/lib/batchTypeUtils';
+
 import type { Batch } from '@/types/batch.types';
 import type { Batch as BatchType } from '@/types/batch.types';
 import type { BatchLog } from '@/types/batchLog.types';
