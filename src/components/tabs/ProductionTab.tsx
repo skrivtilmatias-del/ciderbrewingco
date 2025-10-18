@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -167,7 +167,7 @@ export const ProductionTab = ({
       <BatchProductionHeader batch={selectedBatch} allBatches={batches} />
 
       {/* ========== View Mode Toggle ========== */}
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+      <Tabs value={viewMode} onValueChange={(v) => startTransition(() => setViewMode(v as any))}>
         <TabsList role="tablist" aria-label="Production view modes">
           <TabsTrigger value="grid" className="gap-2" aria-label="Grid view">
             <LayoutGrid className="w-4 h-4" aria-hidden="true" />
