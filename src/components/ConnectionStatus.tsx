@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +37,10 @@ export const ConnectionStatus = () => {
     };
   }, []);
 
+  const handleReconnect = useCallback(() => {
+    window.location.reload();
+  }, []);
+
   if (status === 'connected') {
     return (
       <div className="flex items-center gap-2 text-xs text-green-600">
@@ -63,7 +67,7 @@ export const ConnectionStatus = () => {
         size="sm"
         variant="ghost"
         className="h-6 px-2"
-        onClick={() => window.location.reload()}
+        onClick={handleReconnect}
       >
         Reconnect
       </Button>

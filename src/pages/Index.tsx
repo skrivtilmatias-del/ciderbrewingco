@@ -553,8 +553,7 @@ const Index = () => {
           onOpenChange={setShowShortcuts} 
         />
         
-        {/* TEMPORARILY COMMENTED OUT TO DEBUG INFINITE LOOP */}
-        {/* <AppHeader 
+        <AppHeader 
           user={user}
           userProfile={userProfile}
           userRole={userRole}
@@ -566,7 +565,7 @@ const Index = () => {
           onTastingSaved={handleSaveTasting}
           blendBatches={blends}
           onShowShortcuts={() => setShowShortcuts(true)}
-        /> */}
+        />
 
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 md:pb-6">
           <Tabs value={activeTab} className="mb-6 sm:mb-8">
