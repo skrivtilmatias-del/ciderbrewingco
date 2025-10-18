@@ -103,7 +103,9 @@ export function CellarOverview({ blends, onBlendClick, onRefresh }: CellarOvervi
 
   // Filtered and sorted blends
   const filteredBlends = useMemo(() => {
-    let filtered = blends;
+    let filtered = blends.filter(b => 
+      (b.bottles_75cl || 0) > 0 || (b.bottles_150cl || 0) > 0
+    );
 
     // Search filter
     if (searchQuery) {
