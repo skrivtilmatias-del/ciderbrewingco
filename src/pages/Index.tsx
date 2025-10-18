@@ -585,6 +585,7 @@ const Index = () => {
                             onClick={() => startTransition(() => navigate(paths.batches()))} 
                             onMouseEnter={batchesTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
+                            aria-label={`All Batches (${batches.length})`}
                           >
                             <Package className="h-4 w-4 sm:mr-2" />
                             <span className="hidden sm:inline">All Batches</span>
