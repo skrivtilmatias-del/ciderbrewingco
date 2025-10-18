@@ -45,20 +45,24 @@ export const useParallelProductionData = (): ParallelProductionDataResult => {
           // Map database response to Batch type
           const formattedBatches: Batch[] = data.map((batch) => ({
             id: batch.id,
+            userId: batch.user_id,
             name: batch.name,
             variety: batch.variety,
-            apple_origin: batch.apple_origin || undefined,
             volume: parseFloat(batch.volume.toString()),
-            startDate: batch.started_at,
             currentStage: batch.current_stage as Batch['currentStage'],
             progress: batch.progress,
+            startDate: batch.started_at,
+            completedAt: batch.completed_at,
+            createdAt: batch.created_at,
+            updatedAt: batch.updated_at,
+            appleOrigin: batch.apple_origin || undefined,
+            yeastType: batch.yeast_type || undefined,
             notes: batch.notes || undefined,
             attachments: batch.attachments || undefined,
-            yeast_type: batch.yeast_type || undefined,
-            target_og: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
-            target_fg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
-            target_ph: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
-            target_end_ph: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
+            targetOg: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
+            targetFg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
+            targetPh: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
+            targetEndPh: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
           }));
 
           return formattedBatches;

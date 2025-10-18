@@ -129,10 +129,10 @@ export const ProductionTab = ({
     <QueryErrorBoundary>
       <div className="space-y-4">
         {/* Production Metrics Widget */}
-        <ProductionMetricsWidget batches={legacyBatches} />
+        <ProductionMetricsWidget batches={batches as any} />
         
         {/* Progress Overview */}
-        <ProgressOverview batches={legacyBatches} />
+        <ProgressOverview batches={batches as any} />
         
 
       {/* ========== Search Results Dropdown ========== */}
