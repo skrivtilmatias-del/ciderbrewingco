@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useTouchFriendlyPrefetch } from "@/hooks/useTouchFriendlyPrefetch";
+
 import { AppHeader } from "@/components/layout/AppHeader";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { TabLoadingFallback } from "@/components/ui/TabLoadingFallback";
@@ -294,71 +294,66 @@ const Index = () => {
     }
   }, [navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
 
-  // Touch-friendly prefetch hooks
-  const blendingTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
+  // Simple prefetch helpers
+  const prefetchBatchesTab = useCallback(() => {
+    if (isMountedRef.current) {
+      preloadComponent(BatchesTab).catch(() => {});
+    }
+  }, []);
+
+  const prefetchProductionTab = useCallback(() => {
+    if (isMountedRef.current) {
+      preloadComponent(ProductionTab).catch(() => {});
+    }
+  }, []);
+
+  const prefetchBlendingTab = useCallback(() => {
+    if (isMountedRef.current) {
       Promise.all([
         prefetchBlendData(queryClient),
         preloadComponent(BlendingTab)
       ]).catch(() => {});
-    }, [queryClient])
-  );
+    }
+  }, [queryClient]);
 
-  const analyticsTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
+  const prefetchCellarTab = useCallback(() => {
+    if (isMountedRef.current) {
       Promise.all([
-        prefetchAnalyticsData(queryClient),
-        preloadComponent(ProductionAnalytics)
+        prefetchBlendData(queryClient),
+        preloadComponent(CellarTab)
       ]).catch(() => {});
-    }, [queryClient])
-  );
+    }
+  }, [queryClient]);
 
-  const suppliersTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
+  const prefetchSuppliersTab = useCallback(() => {
+    if (isMountedRef.current) {
       Promise.all([
         prefetchSupplierData(queryClient),
         preloadComponent(SuppliersTab)
       ]).catch(() => {});
-    }, [queryClient])
-  );
+    }
+  }, [queryClient]);
 
-  const productionTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
-      preloadComponent(ProductionTab).catch(() => {});
-    }, [])
-  );
-
-  const batchesTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
-      preloadComponent(BatchesTab).catch(() => {});
-    }, [])
-  );
-
-  const tastingTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
+  const prefetchTastingTab = useCallback(() => {
+    if (isMountedRef.current) {
       preloadComponent(TastingTab).catch(() => {});
-    }, [])
-  );
+    }
+  }, []);
 
-  const toolsTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
+  const prefetchAnalyticsTab = useCallback(() => {
+    if (isMountedRef.current) {
+      Promise.all([
+        prefetchAnalyticsData(queryClient),
+        preloadComponent(ProductionAnalytics)
+      ]).catch(() => {});
+    }
+  }, [queryClient]);
+
+  const prefetchToolsTab = useCallback(() => {
+    if (isMountedRef.current) {
       preloadComponent(ToolsTab).catch(() => {});
-    }, [])
-  );
-
-  const cellarTabPrefetch = useTouchFriendlyPrefetch(
-    useCallback(() => {
-      if (!isMountedRef.current) return;
-      preloadComponent(CellarTab).catch(() => {});
-    }, [])
-  );
+    }
+  }, []);
 
   const handleSaveTasting = useCallback(async (data: any, analysisId?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -584,9 +579,8 @@ const Index = () => {
                       <>
                         <TabsTrigger value="batches" asChild>
                           <button 
-                            ref={batchesTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.batches()))} 
-                            onMouseEnter={batchesTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchBatchesTab}
                             className="py-1.5 px-3 transition-colors"
                             aria-label={`All Batches (${batches.length})`}
                           >
@@ -596,9 +590,8 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="production" asChild>
                           <button 
-                            ref={productionTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.production()))} 
-                            onMouseEnter={productionTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchProductionTab}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Activity className="h-4 w-4 sm:mr-2" />
@@ -607,9 +600,8 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="blending" asChild>
                           <button 
-                            ref={blendingTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.blending()))} 
-                            onMouseEnter={blendingTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchBlendingTab}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Wine className="h-4 w-4 sm:mr-2" />
@@ -618,9 +610,8 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="cellar" asChild>
                           <button 
-                            ref={cellarTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.cellar()))} 
-                            onMouseEnter={cellarTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchCellarTab}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Warehouse className="h-4 w-4 sm:mr-2" />
@@ -629,9 +620,8 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="suppliers" asChild>
                           <button 
-                            ref={suppliersTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.suppliers()))} 
-                            onMouseEnter={suppliersTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchSuppliersTab}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Truck className="h-4 w-4 sm:mr-2" />
@@ -642,9 +632,8 @@ const Index = () => {
                     )}
                     <TabsTrigger value="tasting" asChild>
                       <button 
-                        ref={tastingTabPrefetch.ref}
                         onClick={() => startTransition(() => navigate(paths.tasting()))} 
-                        onMouseEnter={tastingTabPrefetch.onMouseEnter}
+                        onMouseEnter={prefetchTastingTab}
                         className="py-1.5 px-3 transition-colors"
                       >
                         <Award className="h-4 w-4 sm:mr-2" />
@@ -653,9 +642,8 @@ const Index = () => {
                     </TabsTrigger>
                     <TabsTrigger value="analytics" asChild>
                       <button 
-                        ref={analyticsTabPrefetch.ref}
                         onClick={() => startTransition(() => navigate(paths.analytics()))} 
-                        onMouseEnter={analyticsTabPrefetch.onMouseEnter}
+                        onMouseEnter={prefetchAnalyticsTab}
                         className="py-1.5 px-3 transition-colors"
                       >
                         <TrendingUp className="h-4 w-4 sm:mr-2" />
@@ -666,8 +654,7 @@ const Index = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button 
-                            ref={toolsTabPrefetch.ref}
-                            onMouseEnter={toolsTabPrefetch.onMouseEnter}
+                            onMouseEnter={prefetchToolsTab}
                             variant={activeTab === "tools" ? "default" : "ghost"} 
                             size="sm" 
                             className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight"
