@@ -45,7 +45,7 @@ export const paths = {
   },
   
   // Batch with query params
-  batchWithId: (id: string) => `/?batch=${id}`,
+  batchWithId: (id: string) => `/batches?batch=${id}`,
 } as const;
 
 /**
