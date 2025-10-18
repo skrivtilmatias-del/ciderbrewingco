@@ -2,7 +2,7 @@ import { ReactNode, startTransition } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Apple, LogOut, Settings2, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download, TrendingUp } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -89,14 +89,9 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
               <span className="text-sm text-muted-foreground hidden sm:inline">
                 {userProfile?.full_name || 'User'}
               </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleSignOut} variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
-                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Sign out</TooltipContent>
-              </Tooltip>
+              <Button onClick={handleSignOut} variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" title="Sign out">
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+              </Button>
             </div>
           </div>
 

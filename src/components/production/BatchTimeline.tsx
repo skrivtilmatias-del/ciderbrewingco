@@ -8,7 +8,7 @@ import { Check, Clock, AlertCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STAGES } from '@/constants/ciderStages';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { format, differenceInDays } from 'date-fns';
 
 export interface StageHistory {
@@ -134,33 +134,25 @@ export const BatchTimeline = ({
   // Render compact variant
   if (variant === 'compact') {
     return (
-      <TooltipProvider>
-        <div className={cn('flex items-center gap-1', className)}>
-          {STAGES.slice(0, 8).map((stage, index) => {
-            const status = getStageStatus(stage);
-            return (
-              <Tooltip key={stage}>
-                <TooltipTrigger>
-                  <div
-                    className={cn(
-                      'w-3 h-3 rounded-full transition-all cursor-pointer',
-                      status === 'completed' && 'bg-green-500',
-                      status === 'current' && 'bg-accent animate-pulse',
-                      status === 'overdue' && 'bg-destructive animate-pulse',
-                      status === 'future' && 'bg-muted border border-muted-foreground'
-                    )}
-                    onClick={() => onStageClick?.(stage, getStageHistory(stage))}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="font-medium">{stage}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{status}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
-      </TooltipProvider>
+      <div className={cn('flex items-center gap-1', className)}>
+        {STAGES.slice(0, 8).map((stage) => {
+          const status = getStageStatus(stage);
+          return (
+            <div
+              key={stage}
+              className={cn(
+                'w-3 h-3 rounded-full transition-all cursor-pointer',
+                status === 'completed' && 'bg-green-500',
+                status === 'current' && 'bg-accent animate-pulse',
+                status === 'overdue' && 'bg-destructive animate-pulse',
+                status === 'future' && 'bg-muted border border-muted-foreground'
+              )}
+              title={`${stage} • ${status}`}
+              onClick={() => onStageClick?.(stage, getStageHistory(stage))}
+            />
+          );
+        })}
+      </div>
     );
   }
 
@@ -200,7 +192,7 @@ export const BatchTimeline = ({
       )}
 
       {/* Timeline */}
-      <TooltipProvider>
+      
         <div className="relative">
           {/* Desktop: Horizontal Timeline */}
           <div className="hidden md:flex items-start justify-between gap-2">
@@ -226,64 +218,30 @@ export const BatchTimeline = ({
                     )}
 
                     {/* Stage Node */}
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <div
-                          className={cn(
-                            'relative z-10 rounded-full transition-all cursor-pointer',
-                            'hover:scale-110 active:scale-95',
-                            status === 'completed' &&
-                              'w-10 h-10 bg-green-500 text-white flex items-center justify-center',
-                            status === 'current' &&
-                              'w-12 h-12 bg-accent text-accent-foreground flex items-center justify-center animate-pulse ring-4 ring-accent/20',
-                            status === 'overdue' &&
-                              'w-12 h-12 bg-destructive text-destructive-foreground flex items-center justify-center animate-pulse ring-4 ring-destructive/20',
-                            status === 'future' &&
-                              'w-10 h-10 border-2 border-muted-foreground bg-background'
-                          )}
-                          onClick={() => onStageClick?.(stage, history)}
-                          onMouseEnter={() => setHoveredStage(stage)}
-                          onMouseLeave={() => setHoveredStage(null)}
-                        >
-                          {status === 'completed' && <Check className="h-5 w-5" />}
-                          {status === 'current' && (
-                            <span className="text-sm font-bold">{metrics.progressPercentage}%</span>
-                          )}
-                          {status === 'overdue' && <AlertCircle className="h-5 w-5" />}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs">
-                        <div className="space-y-1">
-                          <p className="font-semibold">{stage}</p>
-                          <p className="text-xs capitalize text-muted-foreground">{status}</p>
-                          {history?.started_at && (
-                            <>
-                              <p className="text-xs">
-                                Started: {format(new Date(history.started_at), 'MMM d, yyyy')}
-                              </p>
-                              {history.completed_at && (
-                                <p className="text-xs">
-                                  Duration: {history.duration_days} days
-                                </p>
-                              )}
-                              {!history.completed_at && status === 'current' && (
-                                <p className="text-xs">
-                                  Days in stage:{' '}
-                                  {differenceInDays(new Date(), new Date(history.started_at))}
-                                </p>
-                              )}
-                            </>
-                          )}
-                          {status === 'overdue' && history?.started_at && (
-                            <p className="text-xs text-destructive font-medium">
-                              {differenceInDays(new Date(), new Date(history.started_at)) -
-                                (DEFAULT_STAGE_DURATIONS[stage]?.max || 0)}{' '}
-                              days overdue
-                            </p>
-                          )}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
+                    <div
+                      className={cn(
+                        'relative z-10 rounded-full transition-all cursor-pointer',
+                        'hover:scale-110 active:scale-95',
+                        status === 'completed' &&
+                          'w-10 h-10 bg-green-500 text-white flex items-center justify-center',
+                        status === 'current' &&
+                          'w-12 h-12 bg-accent text-accent-foreground flex items-center justify-center animate-pulse ring-4 ring-accent/20',
+                        status === 'overdue' &&
+                          'w-12 h-12 bg-destructive text-destructive-foreground flex items-center justify-center animate-pulse ring-4 ring-destructive/20',
+                        status === 'future' &&
+                          'w-10 h-10 border-2 border-muted-foreground bg-background'
+                      )}
+                      onClick={() => onStageClick?.(stage, history)}
+                      onMouseEnter={() => setHoveredStage(stage)}
+                      onMouseLeave={() => setHoveredStage(null)}
+                      title={`${stage} • ${status}${history?.started_at ? ` • Started: ${format(new Date(history.started_at), 'MMM d, yyyy')}` : ''}${history?.completed_at ? ` • Duration: ${history.duration_days} days` : ''}`}
+                    >
+                      {status === 'completed' && <Check className="h-5 w-5" />}
+                      {status === 'current' && (
+                        <span className="text-sm font-bold">{metrics.progressPercentage}%</span>
+                      )}
+                      {status === 'overdue' && <AlertCircle className="h-5 w-5" />}
+                    </div>
 
                     {/* Stage Label */}
                     <p
@@ -392,7 +350,7 @@ export const BatchTimeline = ({
             })}
           </div>
         </div>
-      </TooltipProvider>
+      
     </div>
   );
 };
