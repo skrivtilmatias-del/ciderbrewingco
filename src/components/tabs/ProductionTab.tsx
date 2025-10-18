@@ -159,7 +159,7 @@ export const ProductionTab = ({
                 <span className="font-medium text-sm">{batch.name}</span>
                 <span className="text-xs text-muted-foreground">• {batch.variety}</span>
                 <Badge variant="outline" className="text-xs ml-auto">
-                  {batch.current_stage}
+                  {batch.currentStage}
                 </Badge>
               </button>
             ))

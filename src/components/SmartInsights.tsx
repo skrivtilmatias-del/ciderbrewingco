@@ -103,7 +103,7 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
 
   // Production time analysis
   const daysInProduction = differenceInDays(new Date(), new Date(batch.startDate));
-  const currentStage = batch.currentStage || batch.current_stage || '';
+  const currentStage = batch.currentStage;
   if (daysInProduction > 30 && currentStage.includes('Fermentation')) {
     insights.push({
       type: 'info',

@@ -29,9 +29,6 @@ export function toLegacyBatch(batch: DBBatch): LegacyBatch {
     target_end_ph: batch.target_end_ph || undefined,
     target_temp_c: batch.target_temp_c || undefined,
     yeast_type: batch.yeast_type || undefined,
-    // Include database fields for components that accept both
-    started_at: batch.started_at,
-    current_stage: batch.current_stage,
   };
 }
 

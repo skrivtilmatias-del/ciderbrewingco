@@ -17,7 +17,7 @@ import { BatchProgressMini, ProgressBadge } from "@/components/production/BatchP
 import { LinearProgress } from "@/components/production/LinearProgress";
 import { calculateProgress } from "@/lib/progressUtils";
 
-// Legacy interface for backward compatibility
+// Normalized client-side Batch interface
 export interface Batch {
   id: string;
   name: string;
@@ -35,9 +35,6 @@ export interface Batch {
   target_end_ph?: number;
   target_temp_c?: number;
   yeast_type?: string;
-  // Allow database fields too
-  started_at?: string;
-  current_stage?: string;
 }
 
 const getStageIcon = (stage: string) => {
@@ -118,8 +115,8 @@ export const BatchCard = ({
   const queryClient = useQueryClient();
   const { selectedBatchIds, toggleBatchSelection } = useBatchComparisonStore();
   const isSelected = selectedBatchIds.includes(batch.id);
-  const currentStage = batch.currentStage || batch.current_stage || 'Planning';
-  const startDate = batch.startDate || batch.started_at;
+  const currentStage = batch.currentStage;
+  const startDate = batch.startDate;
   const StageIcon = getStageIcon(currentStage);
   const stageColor = getStageColor(currentStage);
   const isComplete = currentStage === 'Complete';
@@ -406,9 +403,9 @@ const batchCardPropsAreEqual = (prevProps: BatchCardProps, nextProps: BatchCardP
     prevProps.batch.name === nextProps.batch.name &&
     prevProps.batch.variety === nextProps.batch.variety &&
     prevProps.batch.volume === nextProps.batch.volume &&
-    (prevProps.batch.currentStage || prevProps.batch.current_stage) === (nextProps.batch.currentStage || nextProps.batch.current_stage) &&
+    prevProps.batch.currentStage === nextProps.batch.currentStage &&
     prevProps.batch.progress === nextProps.batch.progress &&
-    (prevProps.batch.startDate || prevProps.batch.started_at) === (nextProps.batch.startDate || nextProps.batch.started_at);
+    prevProps.batch.startDate === nextProps.batch.startDate;
 
   // Compare search query
   const searchEqual = prevProps.searchQuery === nextProps.searchQuery;
