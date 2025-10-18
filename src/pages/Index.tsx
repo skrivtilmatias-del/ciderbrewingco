@@ -180,7 +180,7 @@ const Index = () => {
     batches,
     searchQuery: batchSearchQuery,
     filters: batchFilters,
-    sortOrder: batchSortOrder,
+    sortOrder: batchSortOrder as any,
   });
 
   // Handle batch selection from QR redirect
