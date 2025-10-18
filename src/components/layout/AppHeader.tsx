@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
@@ -39,7 +39,7 @@ export const AppHeader = ({
     if (error) {
       toast.error('Failed to sign out');
     } else {
-      navigate('/auth');
+      startTransition(() => navigate('/auth'));
     }
   };
 

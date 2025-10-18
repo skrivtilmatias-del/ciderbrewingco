@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, startTransition } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package, Activity, Wine, Award, Grid, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -125,7 +125,7 @@ export const BottomNav = ({ batchBadgeCount = 0, userRole = 'production' }: Bott
   // Handle navigation with haptic feedback
   const handleNavigate = (path: string) => {
     triggerHaptic();
-    navigate(path);
+    startTransition(() => navigate(path));
   };
 
   // Auto-hide on scroll down, show on scroll up
