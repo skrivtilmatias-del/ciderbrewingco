@@ -93,14 +93,14 @@ export const AppHeader = ({
             
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
-                  size="sm"
-                  onClick={() => setTastingDialogOpen(true)}
-                >
-                  <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  <span className="hidden xs:inline">New </span>Tasting
-                </Button>
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
+              size="sm"
+              onClick={() => startTransition(() => setTastingDialogOpen(true))}
+            >
+              <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">New </span>Tasting
+            </Button>
               </TooltipTrigger>
               <TooltipContent>Create a new tasting analysis</TooltipContent>
             </Tooltip>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -199,7 +199,7 @@ export const TastingTab = ({ blendBatches }: TastingTabProps) => {
 
   const handleEditTasting = (analysis: any) => {
     setEditingTasting(analysis);
-    setTastingDialogOpen(true);
+    startTransition(() => setTastingDialogOpen(true));
   };
 
   // Filter analyses based on search query

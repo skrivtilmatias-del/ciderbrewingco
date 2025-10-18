@@ -76,13 +76,14 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   const handleBatchClick = (batch: Batch) => {
-    setSelectedBatchId(batch.id);
-    setDetailsOpen(false);
-    
-    if (onBatchClick) {
-      onBatchClick(batch);
-    }
-    startTransition(() => navigate(paths.production()));
+    startTransition(() => {
+      setSelectedBatchId(batch.id);
+      setDetailsOpen(false);
+      if (onBatchClick) {
+        onBatchClick(batch);
+      }
+      navigate(paths.production());
+    });
   };
 
   // Apply filters using custom hook

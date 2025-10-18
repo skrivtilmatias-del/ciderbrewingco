@@ -248,8 +248,10 @@ const Index = () => {
       return;
     }
     
-    setSelectedBatchId(batch.id);
-    setDetailsOpen(true);
+    startTransition(() => {
+      setSelectedBatchId(batch.id);
+      setDetailsOpen(true);
+    });
     
     // Prefetch adjacent batches
     const currentIndex = batchesRef.current.findIndex(b => b.id === batch.id);
