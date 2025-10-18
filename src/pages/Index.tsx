@@ -717,14 +717,14 @@ const Index = () => {
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dateDesc">Newest first</SelectItem>
-                        <SelectItem value="dateAsc">Oldest first</SelectItem>
-                        <SelectItem value="nameAsc">Name A-Z</SelectItem>
-                        <SelectItem value="nameDesc">Name Z-A</SelectItem>
-                        <SelectItem value="varietyAsc">Variety A-Z</SelectItem>
-                        <SelectItem value="stageProgress">Stage progress</SelectItem>
-                        <SelectItem value="volumeDesc">Volume high-low</SelectItem>
-                        <SelectItem value="volumeAsc">Volume low-high</SelectItem>
+                        <SelectItem value="newest">Newest first</SelectItem>
+                        <SelectItem value="oldest">Oldest first</SelectItem>
+                        <SelectItem value="name-asc">Name A-Z</SelectItem>
+                        <SelectItem value="name-desc">Name Z-A</SelectItem>
+                        <SelectItem value="volume-high">Volume high-low</SelectItem>
+                        <SelectItem value="volume-low">Volume low-high</SelectItem>
+                        <SelectItem value="progress-high">Progress high-low</SelectItem>
+                        <SelectItem value="progress-low">Progress low-high</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
