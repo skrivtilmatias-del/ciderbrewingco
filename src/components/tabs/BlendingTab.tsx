@@ -29,51 +29,40 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
-    // 1) Aggregate used volume per batch across all blends
-    const usageByBatchId = new Map<string, number>();
-
-    blendBatches.forEach((blend: any) => {
-      const components = Array.isArray(blend.components) ? blend.components : [];
-      const blendTotalVolume = Number(blend.total_volume ?? 0) || 0;
-
-      components.forEach((comp: any) => {
-        const batchId = comp.source_batch_id as string | undefined;
-        if (!batchId) return;
-
-        // Prefer literal volume; fallback to percentage of blend total
-        const volLiters = comp.volume_liters !== null && comp.volume_liters !== undefined && comp.volume_liters !== ''
-          ? Number(comp.volume_liters)
-          : (comp.percentage !== null && comp.percentage !== undefined
-              ? (Number(comp.percentage) / 100) * blendTotalVolume
-              : 0);
-
-        const spillage = comp.spillage !== null && comp.spillage !== undefined && comp.spillage !== ''
-          ? Number(comp.spillage)
-          : 0;
-
-        const add = (isNaN(volLiters) ? 0 : volLiters) + (isNaN(spillage) ? 0 : spillage);
-        usageByBatchId.set(batchId, (usageByBatchId.get(batchId) || 0) + add);
-      });
-    });
-
-    // 2) Build usage info per batch
-    return batches
-      .map((batch) => {
-        const volumeUsedInBlends = usageByBatchId.get(batch.id) || 0;
-        const remainingVolume = Math.max(0, batch.volume - volumeUsedInBlends);
-        const usagePercentage = batch.volume > 0
-          ? Math.min(100, (volumeUsedInBlends / batch.volume) * 100)
-          : 0;
-
-        return {
-          ...batch,
-          volumeUsed: volumeUsedInBlends,
-          volumeRemaining: remainingVolume,
-          usagePercentage,
-          isAvailable: remainingVolume > 0.1,
-        };
-      })
-      .sort((a, b) => b.volumeRemaining - a.volumeRemaining);
+    return batches.map(batch => {
+      const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+        // Ensure components array exists
+        if (!blend.components || !Array.isArray(blend.components)) {
+          return total;
+        }
+        
+        const componentVolume = blend.components
+          .filter((comp: any) => comp.source_batch_id === batch.id)
+          .reduce((sum: number, comp: any) => {
+            const volume = typeof comp.volume_liters === 'number' 
+              ? comp.volume_liters 
+              : parseFloat(comp.volume_liters || '0') || 0;
+            const spillage = typeof comp.spillage === 'number'
+              ? comp.spillage
+              : parseFloat(comp.spillage || '0') || 0;
+            return sum + volume + spillage; // Include spillage in total usage
+          }, 0);
+        return total + componentVolume;
+      }, 0);
+      
+      const remainingVolume = Math.max(0, batch.volume - volumeUsedInBlends);
+      const usagePercentage = batch.volume > 0 
+        ? Math.min(100, (volumeUsedInBlends / batch.volume) * 100)
+        : 0;
+      
+      return {
+        ...batch,
+        volumeUsed: volumeUsedInBlends,
+        volumeRemaining: remainingVolume,
+        usagePercentage,
+        isAvailable: remainingVolume > 0.1
+      };
+    }).sort((a, b) => b.volumeRemaining - a.volumeRemaining);
   }, [batches, blendBatches]);
 
   // Calculate available batches (exclude those fully used in blends)
