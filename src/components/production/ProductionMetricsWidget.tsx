@@ -131,7 +131,7 @@ const useProductionMetrics = (batches: Batch[]) => {
  * ProductionMetricsWidget - Comprehensive production analytics dashboard
  */
 export const ProductionMetricsWidget = ({ batches }: ProductionMetricsWidgetProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     volume: true,
     fermentation: false,
