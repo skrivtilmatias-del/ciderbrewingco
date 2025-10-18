@@ -1,8 +1,8 @@
-import { ReactNode, startTransition } from 'react';
+import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Apple, LogOut, Settings2, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download, TrendingUp } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
     try {
       await supabase.auth.signOut();
       toast.success("Logged out successfully");
-      startTransition(() => navigate(paths.auth()));
+      navigate(paths.auth());
     } catch (error) {
       toast.error("Failed to logout");
     }
@@ -52,31 +52,31 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Tools</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.calculators()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                       <FlaskConical className="h-4 w-4 mr-2" />
                       Calculators
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.printLabels()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                       <QrCode className="h-4 w-4 mr-2" />
                       Print Labels
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.floorPlan()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                       <Layout className="h-4 w-4 mr-2" />
                       Floor Plan
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.costCalculation()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       Cost Calculation
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.planning()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
                       <Settings2 className="h-4 w-4 mr-2" />
                       Planning Tool
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.webhooks()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                       <Webhook className="h-4 w-4 mr-2" />
                       Webhooks
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.install()))}>
+                    <DropdownMenuItem onClick={() => navigate(paths.tools.install())}>
                       <Download className="h-4 w-4 mr-2" />
                       Install
                     </DropdownMenuItem>
@@ -89,9 +89,14 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
               <span className="text-sm text-muted-foreground hidden sm:inline">
                 {userProfile?.full_name || 'User'}
               </span>
-              <Button onClick={handleSignOut} variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" title="Sign out">
-                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleSignOut} variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Sign out</TooltipContent>
+              </Tooltip>
             </div>
           </div>
 
@@ -108,31 +113,31 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Tools</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.calculators()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                     <FlaskConical className="h-4 w-4 mr-2" />
                     Calculators
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.printLabels()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                     <QrCode className="h-4 w-4 mr-2" />
                     Print Labels
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.floorPlan()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                     <Layout className="h-4 w-4 mr-2" />
                     Floor Plan
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.costCalculation()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                     <DollarSign className="h-4 w-4 mr-2" />
                     Cost Calculation
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.planning()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
                     <Settings2 className="h-4 w-4 mr-2" />
                     Planning Tool
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.webhooks()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                     <Webhook className="h-4 w-4 mr-2" />
                     Webhooks
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.install()))}>
+                  <DropdownMenuItem onClick={() => navigate(paths.tools.install())}>
                     <Download className="h-4 w-4 mr-2" />
                     Install
                   </DropdownMenuItem>

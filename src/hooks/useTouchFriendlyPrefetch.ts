@@ -79,7 +79,7 @@ export const useTouchFriendlyPrefetch = (
   }, [prefetchFn]);
 
   return {
-    ref: elementRef as React.RefObject<any>,
+    ref: elementRef,
     onMouseEnter: handleHover,
   };
 };

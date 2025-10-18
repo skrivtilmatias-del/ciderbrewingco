@@ -1,4 +1,4 @@
-import { useState, startTransition } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Batch } from '@/components/BatchCard';
 import { useAppStore } from '@/stores/appStore';
@@ -76,14 +76,13 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   const handleBatchClick = (batch: Batch) => {
-    startTransition(() => {
-      setSelectedBatchId(batch.id);
-      setDetailsOpen(false);
-      if (onBatchClick) {
-        onBatchClick(batch);
-      }
-      navigate(paths.production());
-    });
+    setSelectedBatchId(batch.id);
+    setDetailsOpen(false);
+    
+    if (onBatchClick) {
+      onBatchClick(batch);
+    }
+    navigate(paths.production());
   };
 
   // Apply filters using custom hook

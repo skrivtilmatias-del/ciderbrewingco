@@ -5,6 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   AlertCircle,
   Activity,
   TrendingUp,
@@ -148,15 +154,22 @@ export const ProgressBadge = ({ batch }: { batch: Batch }) => {
   // Action needed with specific reason
   if (actionStatus.needed) {
     badges.push(
-      <Badge
-        key="action"
-        variant="secondary"
-        className="bg-yellow-100 text-yellow-700 gap-1 cursor-help"
-        title={actionStatus.reason || 'Action needed'}
-      >
-        <Bell className="h-3 w-3" />
-        Action Needed
-      </Badge>
+      <TooltipProvider key="action">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="bg-yellow-100 text-yellow-700 gap-1 cursor-help"
+            >
+              <Bell className="h-3 w-3" />
+              Action Needed
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">{actionStatus.reason}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
@@ -184,14 +197,23 @@ export const BatchProgressMini = ({ batch }: { batch: Batch }) => {
   const progress = calculateProgress(batch);
 
   return (
-    <div className="cursor-help" title={`${batch.name} • ${batch.currentStage} • ${Math.round(progress.overallProgress)}%`}>
-      <CircularProgress
-        progress={progress.overallProgress}
-        size={40}
-        strokeWidth={4}
-        showText={false}
-      />
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="cursor-help">
+            <CircularProgress
+              progress={progress.overallProgress}
+              size={40}
+              strokeWidth={4}
+              showText={false}
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <ProgressTooltipContent progress={progress} batch={batch} />
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

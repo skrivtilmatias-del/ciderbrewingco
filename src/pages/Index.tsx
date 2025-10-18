@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, Suspense, useRef, startTransition, useDeferredValue } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef, startTransition } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,7 +6,6 @@ import { useBatches } from "@/hooks/useBatches";
 import { useRealtimeBatches } from "@/hooks/useRealtimeBatches";
 import { useParallelProductionData } from "@/hooks/useParallelProductionData";
 import { useOptimizedBatches } from "@/hooks/useOptimizedBatches";
-import type { SortOrder } from "@/hooks/useOptimizedBatches";
 import { useRenderTracking } from "@/hooks/useRenderTracking";
 import { useDerivedSelectedBatch } from "@/hooks/useDerivedSelectedBatch";
 import { useDerivedSelectedBlend } from "@/hooks/useDerivedSelectedBlend";
@@ -14,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { prefetchBlendData, prefetchAnalyticsData, prefetchSupplierData, prefetchAdjacentBatches } from "@/lib/prefetchUtils";
 import { useAppStore } from '@/stores/appStore';
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-
+import { useTouchFriendlyPrefetch } from "@/hooks/useTouchFriendlyPrefetch";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { TabLoadingFallback } from "@/components/ui/TabLoadingFallback";
@@ -133,9 +132,6 @@ const Index = () => {
     return 'batches';
   }, [location.pathname]);
 
-  // Defer the tab value to prevent suspension during navigation
-  const deferredTab = useDeferredValue(activeTab);
-
   // Initialize keyboard shortcuts
   useKeyboardShortcuts({
     onShowShortcuts: () => setShowShortcuts(true),
@@ -145,7 +141,7 @@ const Index = () => {
     },
     onFocusSearch: () => {
       const tabsWithSearch = ['batches', 'production', 'blending'];
-      if (!tabsWithSearch.includes(deferredTab)) {
+      if (!tabsWithSearch.includes(activeTab)) {
         toast.info('Search is available on Batches, Production, and Blending tabs');
         return;
       }
@@ -180,11 +176,11 @@ const Index = () => {
   }, [user]);
 
   // Use optimized batches hook
-  const { sorted: optimizedBatches } = useOptimizedBatches({
+  const { sorted: optimizedBatches, groupedByStage } = useOptimizedBatches({
     batches,
     searchQuery: batchSearchQuery,
     filters: batchFilters,
-    sortOrder: batchSortOrder,
+    sortOrder: batchSortOrder as any,
   });
 
   // Handle batch selection from QR redirect
@@ -251,10 +247,8 @@ const Index = () => {
       return;
     }
     
-    startTransition(() => {
-      setSelectedBatchId(batch.id);
-      setDetailsOpen(true);
-    });
+    setSelectedBatchId(batch.id);
+    setDetailsOpen(true);
     
     // Prefetch adjacent batches
     const currentIndex = batchesRef.current.findIndex(b => b.id === batch.id);
@@ -277,13 +271,6 @@ const Index = () => {
   const handleGoToProduction = useCallback((batch: Batch) => {
     if (!batch?.id) return;
     
-    // Verify batch exists in current batches array
-    const batchExists = batchesRef.current.some(b => b.id === batch.id);
-    if (!batchExists) {
-      toast.error('This batch is no longer available');
-      return;
-    }
-    
     setSelectedBatchId(batch.id);
     setDetailsOpen(false);
     navigate("/production");
@@ -297,66 +284,71 @@ const Index = () => {
     }
   }, [navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
 
-  // Simple prefetch helpers
-  const prefetchBatchesTab = useCallback(() => {
-    if (isMountedRef.current) {
-      preloadComponent(BatchesTab).catch(() => {});
-    }
-  }, []);
-
-  const prefetchProductionTab = useCallback(() => {
-    if (isMountedRef.current) {
-      preloadComponent(ProductionTab).catch(() => {});
-    }
-  }, []);
-
-  const prefetchBlendingTab = useCallback(() => {
-    if (isMountedRef.current) {
+  // Touch-friendly prefetch hooks
+  const blendingTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
       Promise.all([
         prefetchBlendData(queryClient),
         preloadComponent(BlendingTab)
       ]).catch(() => {});
-    }
-  }, [queryClient]);
+    }, [queryClient])
+  );
 
-  const prefetchCellarTab = useCallback(() => {
-    if (isMountedRef.current) {
-      Promise.all([
-        prefetchBlendData(queryClient),
-        preloadComponent(CellarTab)
-      ]).catch(() => {});
-    }
-  }, [queryClient]);
-
-  const prefetchSuppliersTab = useCallback(() => {
-    if (isMountedRef.current) {
-      Promise.all([
-        prefetchSupplierData(queryClient),
-        preloadComponent(SuppliersTab)
-      ]).catch(() => {});
-    }
-  }, [queryClient]);
-
-  const prefetchTastingTab = useCallback(() => {
-    if (isMountedRef.current) {
-      preloadComponent(TastingTab).catch(() => {});
-    }
-  }, []);
-
-  const prefetchAnalyticsTab = useCallback(() => {
-    if (isMountedRef.current) {
+  const analyticsTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
       Promise.all([
         prefetchAnalyticsData(queryClient),
         preloadComponent(ProductionAnalytics)
       ]).catch(() => {});
-    }
-  }, [queryClient]);
+    }, [queryClient])
+  );
 
-  const prefetchToolsTab = useCallback(() => {
-    if (isMountedRef.current) {
+  const suppliersTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
+      Promise.all([
+        prefetchSupplierData(queryClient),
+        preloadComponent(SuppliersTab)
+      ]).catch(() => {});
+    }, [queryClient])
+  );
+
+  const productionTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
+      preloadComponent(ProductionTab).catch(() => {});
+    }, [])
+  );
+
+  const batchesTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
+      preloadComponent(BatchesTab).catch(() => {});
+    }, [])
+  );
+
+  const tastingTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
+      preloadComponent(TastingTab).catch(() => {});
+    }, [])
+  );
+
+  const toolsTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
       preloadComponent(ToolsTab).catch(() => {});
-    }
-  }, []);
+    }, [])
+  );
+
+  const cellarTabPrefetch = useTouchFriendlyPrefetch(
+    useCallback(() => {
+      if (!isMountedRef.current) return;
+      preloadComponent(CellarTab).catch(() => {});
+    }, [])
+  );
 
   const handleSaveTasting = useCallback(async (data: any, analysisId?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -571,7 +563,7 @@ const Index = () => {
         />
 
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 md:pb-6">
-          <Tabs value={deferredTab} className="mb-6 sm:mb-8">
+          <Tabs value={activeTab} className="mb-6 sm:mb-8">
             {/* Tabs and Search/Sort Controls */}
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -582,10 +574,10 @@ const Index = () => {
                       <>
                         <TabsTrigger value="batches" asChild>
                           <button 
+                            ref={batchesTabPrefetch.ref as any}
                             onClick={() => startTransition(() => navigate(paths.batches()))} 
-                            onMouseEnter={prefetchBatchesTab}
+                            onMouseEnter={batchesTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
-                            aria-label={`All Batches (${batches.length})`}
                           >
                             <Package className="h-4 w-4 sm:mr-2" />
                             <span className="hidden sm:inline">All Batches</span>
@@ -593,8 +585,9 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="production" asChild>
                           <button 
+                            ref={productionTabPrefetch.ref as any}
                             onClick={() => startTransition(() => navigate(paths.production()))} 
-                            onMouseEnter={prefetchProductionTab}
+                            onMouseEnter={productionTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Activity className="h-4 w-4 sm:mr-2" />
@@ -603,8 +596,9 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="blending" asChild>
                           <button 
+                            ref={blendingTabPrefetch.ref as any}
                             onClick={() => startTransition(() => navigate(paths.blending()))} 
-                            onMouseEnter={prefetchBlendingTab}
+                            onMouseEnter={blendingTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Wine className="h-4 w-4 sm:mr-2" />
@@ -613,8 +607,9 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="cellar" asChild>
                           <button 
+                            ref={cellarTabPrefetch.ref as any}
                             onClick={() => startTransition(() => navigate(paths.cellar()))} 
-                            onMouseEnter={prefetchCellarTab}
+                            onMouseEnter={cellarTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Warehouse className="h-4 w-4 sm:mr-2" />
@@ -623,8 +618,9 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="suppliers" asChild>
                           <button 
+                            ref={suppliersTabPrefetch.ref as any}
                             onClick={() => startTransition(() => navigate(paths.suppliers()))} 
-                            onMouseEnter={prefetchSuppliersTab}
+                            onMouseEnter={suppliersTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
                           >
                             <Truck className="h-4 w-4 sm:mr-2" />
@@ -635,8 +631,9 @@ const Index = () => {
                     )}
                     <TabsTrigger value="tasting" asChild>
                       <button 
+                        ref={tastingTabPrefetch.ref as any}
                         onClick={() => startTransition(() => navigate(paths.tasting()))} 
-                        onMouseEnter={prefetchTastingTab}
+                        onMouseEnter={tastingTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
                       >
                         <Award className="h-4 w-4 sm:mr-2" />
@@ -645,8 +642,9 @@ const Index = () => {
                     </TabsTrigger>
                     <TabsTrigger value="analytics" asChild>
                       <button 
+                        ref={analyticsTabPrefetch.ref as any}
                         onClick={() => startTransition(() => navigate(paths.analytics()))} 
-                        onMouseEnter={prefetchAnalyticsTab}
+                        onMouseEnter={analyticsTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
                       >
                         <TrendingUp className="h-4 w-4 sm:mr-2" />
@@ -657,8 +655,9 @@ const Index = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button 
-                            onMouseEnter={prefetchToolsTab}
-                            variant={deferredTab === "tools" ? "default" : "ghost"}
+                            ref={toolsTabPrefetch.ref as any}
+                            onMouseEnter={toolsTabPrefetch.onMouseEnter}
+                            variant={activeTab === "tools" ? "default" : "ghost"} 
                             size="sm" 
                             className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight"
                           >
@@ -669,27 +668,27 @@ const Index = () => {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Tools</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.calculators()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
                             <FlaskConical className="h-4 w-4 mr-2" />
                             Calculators
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.printLabels()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
                             <QrCode className="h-4 w-4 mr-2" />
                             Print Labels
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.floorPlan()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
                             <Layout className="h-4 w-4 mr-2" />
                             Floor Plan
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.costCalculation()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                             <DollarSign className="h-4 w-4 mr-2" />
                             Cost Calculation
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.planning()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
                             <Settings2 className="h-4 w-4 mr-2" />
                             Economic Planning
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.webhooks()))}>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                             <Webhook className="h-4 w-4 mr-2" />
                             Webhooks
                           </DropdownMenuItem>
@@ -700,19 +699,19 @@ const Index = () => {
                 </div>
 
                 {/* Search and Sort - Desktop */}
-                {(deferredTab === "batches" || deferredTab === "production" || deferredTab === "blending") && (
+                {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
                   <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                     <BatchSearch
                       ref={searchInputRef}
                       value={batchSearchQuery}
-                      onChange={(v) => startTransition(() => setBatchSearchQuery(v))}
+                      onChange={setBatchSearchQuery}
                       totalCount={batches.length}
                       resultCount={optimizedBatches.length}
                       className="w-64"
                     />
                     <Select
                       value={batchSortOrder}
-                      onValueChange={(value) => startTransition(() => setBatchSortOrder(value as SortOrder))}
+                      onValueChange={(value: any) => setBatchSortOrder(value)}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Sort by" />
@@ -733,12 +732,12 @@ const Index = () => {
               </div>
 
               {/* Mobile Search */}
-              {(deferredTab === "batches" || deferredTab === "production" || deferredTab === "blending") && (
+              {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
                 <div className="md:hidden">
                   <BatchSearch
                     ref={searchInputRef}
                     value={batchSearchQuery}
-                    onChange={(v) => startTransition(() => setBatchSearchQuery(v))}
+                    onChange={setBatchSearchQuery}
                     totalCount={batches.length}
                     resultCount={optimizedBatches.length}
                     className="w-full"
@@ -760,10 +759,10 @@ const Index = () => {
             <TabsContent value="production" className="mt-0">
               <Suspense fallback={<TabLoadingFallback />}>
                 <ProductionTab
-                  batches={batches}
-                  selectedBatch={selectedBatch}
-                  onSelectBatch={handleBatchClick}
-                  onUpdateStage={handleUpdateStage}
+                  batches={batches as any}
+                  selectedBatch={selectedBatch as any}
+                  onSelectBatch={handleBatchClick as any}
+                  onUpdateStage={handleUpdateStage as any}
                 />
               </Suspense>
             </TabsContent>
@@ -785,7 +784,7 @@ const Index = () => {
 
             <TabsContent value="suppliers" className="mt-0">
               <Suspense fallback={<TabLoadingFallback />}>
-                <SuppliersTab />
+                <SuppliersTab suppliers={suppliers} />
               </Suspense>
             </TabsContent>
 

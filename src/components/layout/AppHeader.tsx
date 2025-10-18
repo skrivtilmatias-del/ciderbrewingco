@@ -1,8 +1,9 @@
-import { useState, useCallback, startTransition } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NewBatchDialog } from '@/components/NewBatchDialog';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
@@ -33,23 +34,24 @@ export const AppHeader = ({
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
   const { createBatch } = useBatches();
 
-  const handleSignOut = useCallback(async () => {
+  const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error('Failed to sign out');
     } else {
-      startTransition(() => navigate('/auth'));
+      navigate('/auth');
     }
-  }, [navigate]);
+  };
 
-  const handleTastingSave = useCallback(async (data: any, analysisId?: string) => {
+  const handleTastingSave = async (data: any, analysisId?: string) => {
     if (onTastingSaved) {
       await onTastingSaved(data, analysisId);
     }
     setTastingDialogOpen(false);
-  }, [onTastingSaved]);
+  };
 
-  const handleBatchCreated = useCallback(async (batchData: any) => {
+  const handleBatchCreated = async (batchData: any) => {
+    // Create batch via mutation - invalidation is handled automatically by useBatches hook
     createBatch({
       name: batchData.name,
       variety: batchData.variety,
@@ -65,14 +67,11 @@ export const AppHeader = ({
       initial_temp_c: batchData.initial_temp_c,
     });
     
+    // Call parent handler if provided
     if (onBatchCreated) {
       onBatchCreated();
     }
-  }, [createBatch, onBatchCreated]);
-
-  const handleOpenTastingDialog = useCallback(() => {
-    startTransition(() => setTastingDialogOpen(true));
-  }, []);
+  };
 
   return (
     <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50 shadow-sm">
@@ -92,46 +91,56 @@ export const AppHeader = ({
               {userProfile?.full_name || user?.email}
             </span>
             
-            {/* No Tooltip - use title attribute */}
-            <Button 
-              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
-              size="sm"
-              onClick={handleOpenTastingDialog}
-              title="Create a new tasting analysis"
-            >
-              <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">New </span>Tasting
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-10"
+                  size="sm"
+                  onClick={() => setTastingDialogOpen(true)}
+                >
+                  <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">New </span>Tasting
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Create a new tasting analysis</TooltipContent>
+            </Tooltip>
             
             {userRole !== "taster" && (
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
             )}
             
-            {/* No Tooltip - use title attribute */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
-              onClick={onShowShortcuts}
-              title="Keyboard Shortcuts (?)"
-            >
-              <Keyboard className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
+                  onClick={onShowShortcuts}
+                >
+                  <Keyboard className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Keyboard Shortcuts (?)</TooltipContent>
+            </Tooltip>
             
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
-              onClick={handleSignOut}
-              aria-label="Sign out"
-              title="Sign out"
-            >
-              <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Sign out</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
 
+      {/* Tasting Analysis Dialog */}
       <TastingAnalysisDialog
         open={tastingDialogOpen}
         onOpenChange={setTastingDialogOpen}

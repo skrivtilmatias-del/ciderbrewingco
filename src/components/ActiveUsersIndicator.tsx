@@ -1,5 +1,6 @@
 import { Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePresence } from '@/hooks/usePresence';
 
 export const ActiveUsersIndicator = () => {
@@ -11,31 +12,41 @@ export const ActiveUsersIndicator = () => {
   const remainingCount = Math.max(0, activeUsers.length - 3);
 
   return (
-    <div className="flex items-center gap-2">
-      <Users className="h-4 w-4 text-muted-foreground" />
-      <div className="flex -space-x-2">
-        {displayUsers.map((user) => (
-          <Avatar 
-            key={user.user_id} 
-            className="h-8 w-8 border-2 border-background"
-            title={`${user.name} • Online now`}
-          >
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-              {user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        ))}
-        {remainingCount > 0 && (
-          <Avatar 
-            className="h-8 w-8 border-2 border-background"
-            title={`${remainingCount} more user${remainingCount !== 1 ? 's' : ''} online`}
-          >
-            <AvatarFallback className="bg-muted text-xs">
-              +{remainingCount}
-            </AvatarFallback>
-          </Avatar>
-        )}
+    <TooltipProvider>
+      <div className="flex items-center gap-2">
+        <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="flex -space-x-2">
+          {displayUsers.map((user) => (
+            <Tooltip key={user.user_id}>
+              <TooltipTrigger>
+                <Avatar className="h-8 w-8 border-2 border-background">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground">Online now</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+          {remainingCount > 0 && (
+            <Tooltip>
+              <TooltipTrigger>
+                <Avatar className="h-8 w-8 border-2 border-background">
+                  <AvatarFallback className="bg-muted text-xs">
+                    +{remainingCount}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{remainingCount} more user{remainingCount !== 1 ? 's' : ''} online</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

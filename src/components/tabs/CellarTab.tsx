@@ -2,7 +2,6 @@ import { Card } from '@/components/ui/card';
 import { Warehouse } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { CellarOverview } from '@/components/CellarOverview';
-import { startTransition } from 'react';
 
 interface CellarTabProps {
   blendBatches: any[];
@@ -14,7 +13,7 @@ export const CellarTab = ({ blendBatches }: CellarTabProps) => {
   const handleBlendClick = (blend: any) => {
     // Set showInventoryControls flag for cellar view - store ID only
     setSelectedBlendId(blend.id);
-    startTransition(() => setBlendDetailsOpen(true));
+    setBlendDetailsOpen(true);
   };
 
   if (blendBatches.length === 0) {

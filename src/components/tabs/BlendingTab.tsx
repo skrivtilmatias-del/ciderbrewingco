@@ -1,4 +1,4 @@
-import { useMemo, useState, startTransition } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -88,7 +88,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
 
   const handleBlendClick = (blend: any) => {
     setSelectedBlendId(blend.id);
-    startTransition(() => setBlendDetailsOpen(true));
+    setBlendDetailsOpen(true);
   };
 
   const handleDeleteBlend = async (blendId: string) => {
