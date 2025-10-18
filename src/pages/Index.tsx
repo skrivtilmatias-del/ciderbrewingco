@@ -21,7 +21,6 @@ import { preloadComponent } from "@/lib/lazyPreload";
 import { BaseErrorBoundary, TabErrorBoundary } from "@/components/errors";
 
 // ============= Code-Split Tab Components =============
-// Lazy load all tabs to reduce initial bundle size from ~800KB to ~300KB
 import {
   BatchesTab,
   ProductionTab,
@@ -65,7 +64,6 @@ const Index = () => {
   useRealtimeBatches();
   
   // Use parallel data fetching hook for optimal performance
-  // This fetches batches, blends, and suppliers in parallel to eliminate request waterfalls
   const { 
     batches, 
     blends, 
@@ -77,9 +75,7 @@ const Index = () => {
     loadingStates 
   } = useParallelProductionData();
   
-  // Still use individual hooks for mutations and side effects
-  // Note: useBatches also fetches data but TanStack Query deduplicates it automatically
-  // since both use the same queryKey ['batches']. The hook's backfill logic still runs.
+  // Still use individual hooks for mutations
   const { updateStage } = useBatches();
   
   // Use state from useAppStore
@@ -99,7 +95,7 @@ const Index = () => {
     batchFilters,
   } = useAppStore();
   
-  // Derive selected batch and blend from React Query cache (single source of truth)
+  // Derive selected batch and blend from React Query cache
   const selectedBatch = useDerivedSelectedBatch();
   const selectedBlend = useDerivedSelectedBlend();
   
@@ -109,7 +105,7 @@ const Index = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // Track if component is mounted to prevent memory leaks from async operations
+  // Track if component is mounted
   const isMountedRef = useRef(true);
   useEffect(() => {
     isMountedRef.current = true;
@@ -118,44 +114,10 @@ const Index = () => {
     };
   }, []);
 
-  // Initialize keyboard shortcuts
-  useKeyboardShortcuts({
-    onShowShortcuts: () => setShowShortcuts(true),
-    onNewBatch: () => {
-      // Trigger new batch dialog via CustomEvent
-      // This allows components to listen and respond without tight coupling
-      const event = new CustomEvent('openNewBatch');
-      window.dispatchEvent(event);
-    },
-    onFocusSearch: () => {
-      // Only focus search on tabs where it's visible
-      const tabsWithSearch = ['batches', 'production', 'blending'];
-      if (!tabsWithSearch.includes(activeTab)) {
-        toast.info('Search is available on Batches, Production, and Blending tabs');
-        return;
-      }
-      
-      if (searchInputRef.current) {
-        searchInputRef.current.focus();
-      } else {
-        console.warn('Search input ref not available - ensure BatchSearch is rendered with ref');
-      }
-    },
-  });
+  // Keep a ref to the current batches array to avoid stale closures
+  const batchesRef = useRef(batches);
+  batchesRef.current = batches;
 
-  // Show visual feedback for keyboard shortcuts on first visit
-  useEffect(() => {
-    const hasSeenShortcutsHint = localStorage.getItem('hasSeenShortcutsHint');
-    if (!hasSeenShortcutsHint && user) {
-      setTimeout(() => {
-        toast.info('Press ? to view keyboard shortcuts', {
-          duration: 5000,
-        });
-        localStorage.setItem('hasSeenShortcutsHint', 'true');
-      }, 2000);
-    }
-  }, [user]);
-  
   // Memoize active tab computation
   const activeTab = useMemo((): "batches" | "production" | "blending" | "cellar" | "tasting" | "analytics" | "suppliers" | "tools" => {
     const path = location.pathname;
@@ -170,27 +132,67 @@ const Index = () => {
     return 'batches';
   }, [location.pathname]);
 
-  // This hook memoizes all expensive computations
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    onShowShortcuts: () => setShowShortcuts(true),
+    onNewBatch: () => {
+      const event = new CustomEvent('openNewBatch');
+      window.dispatchEvent(event);
+    },
+    onFocusSearch: () => {
+      const tabsWithSearch = ['batches', 'production', 'blending'];
+      if (!tabsWithSearch.includes(activeTab)) {
+        toast.info('Search is available on Batches, Production, and Blending tabs');
+        return;
+      }
+      
+      // Use setTimeout to ensure the search input is rendered
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select(); // Also select text for better UX
+        }
+      }, 0);
+    },
+  });
+
+  // Show keyboard shortcuts hint only once
+  useEffect(() => {
+    if (!user) return;
+    
+    const hasSeenShortcutsHint = localStorage.getItem('hasSeenShortcutsHint');
+    if (!hasSeenShortcutsHint) {
+      const timeoutId = setTimeout(() => {
+        if (isMountedRef.current) {
+          toast.info('Press ? to view keyboard shortcuts', {
+            duration: 5000,
+          });
+          localStorage.setItem('hasSeenShortcutsHint', 'true');
+        }
+      }, 2000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user]);
+
+  // Use optimized batches hook
   const { sorted: optimizedBatches, groupedByStage } = useOptimizedBatches({
     batches,
     searchQuery: batchSearchQuery,
-    filters: batchFilters, // From store
+    filters: batchFilters,
     sortOrder: batchSortOrder as any,
   });
 
-  // Handle batch selection from QR redirect via URL params
-  const qrRedirectHandled = useRef(false);
+  // Handle batch selection from QR redirect
   useEffect(() => {
-    // Only run once on mount when we have batches
-    if (qrRedirectHandled.current || batchesRef.current.length === 0) return;
+    if (batches.length === 0) return;
     
     const params = new URLSearchParams(location.search);
     const batchId = params.get("batch");
 
     if (batchId) {
-      const batch = batchesRef.current.find((b) => b.id === batchId);
+      const batch = batches.find((b) => b.id === batchId);
       if (batch) {
-        qrRedirectHandled.current = true;
         setSelectedBatchId(batch.id);
         navigate("/production", { replace: true });
       } else {
@@ -198,62 +200,49 @@ const Index = () => {
         navigate("/batches", { replace: true });
       }
     }
-  }, [location.search]); // Only depend on search params to avoid race conditions
+  }, [location.search, batches, setSelectedBatchId, navigate]);
 
-  // Track if initial batch selection has been made
-  const hasInitializedSelection = useRef(false);
-  // Keep a ref to the current batches array to avoid stale closures
-  const batchesRef = useRef(batches);
-  batchesRef.current = batches;
-  
-  // Auto-select first batch on initial load and handle edge cases
-  // Dependencies: Only batches.length and selectedBatchId to avoid unnecessary reruns
+  // Auto-select first batch on initial load with improved logic
   useEffect(() => {
-    const currentBatches = batchesRef.current;
-    
-    // No batches available - clear selection
-    if (currentBatches.length === 0) {
-      if (selectedBatchId) {
+    // Skip if loading or no batches
+    if (isLoading || batches.length === 0) {
+      if (selectedBatchId && batches.length === 0) {
         setSelectedBatchId(null);
       }
-      hasInitializedSelection.current = false;
       return;
     }
     
     // If we have a selected batch, verify it still exists
     if (selectedBatchId) {
-      const batchStillExists = currentBatches.some(b => b.id === selectedBatchId);
-      if (!batchStillExists) {
-        // Selected batch was deleted - select first batch
-        setSelectedBatchId(currentBatches[0].id);
-        hasInitializedSelection.current = true;
+      const batchExists = batches.some(b => b.id === selectedBatchId);
+      if (!batchExists) {
+        // Selected batch was deleted - select first batch if available
+        if (batches.length > 0) {
+          setSelectedBatchId(batches[0].id);
+        } else {
+          setSelectedBatchId(null);
+        }
       }
       return;
     }
     
-    // No selection and haven't initialized yet - select first batch
-    if (!hasInitializedSelection.current) {
-      setSelectedBatchId(currentBatches[0].id);
-      hasInitializedSelection.current = true;
+    // No selection and we have batches - select first one
+    if (batches.length > 0) {
+      setSelectedBatchId(batches[0].id);
     }
-  }, [batches.length, selectedBatchId]);
+  }, [batches, selectedBatchId, setSelectedBatchId, isLoading]);
 
-  // Memoize event handlers with useCallback to prevent unnecessary re-renders
+  // Memoize event handlers
   const handleBatchClick = useCallback((batch: Batch | null | undefined) => {
-    // Defensive: Early return for null/undefined batch
-    if (!batch) return;
-    
-    // Defensive: Validate batch has required id property
-    if (!batch.id) {
-      console.error('handleBatchClick: Batch missing required id property', batch);
+    if (!batch?.id) {
+      console.error('handleBatchClick: Invalid batch', batch);
       return;
     }
     
-    // Defensive: Verify batch exists in current batch list
-    // Use ref for latest data to avoid stale closures
+    // Verify batch exists
     const batchExists = batchesRef.current.some(b => b.id === batch.id);
     if (!batchExists) {
-      console.warn('handleBatchClick: Batch not found in current batch list', batch.id);
+      console.warn('handleBatchClick: Batch not found', batch.id);
       toast.error('This batch is no longer available');
       return;
     }
@@ -261,50 +250,41 @@ const Index = () => {
     setSelectedBatchId(batch.id);
     setDetailsOpen(true);
     
-    /**
-     * Smart Prefetching: Prefetch adjacent batches
-     * When user clicks a batch, anticipate they might view the next ones
-     * Prefetch the next 3 batches for smooth scrolling experience
-     */
+    // Prefetch adjacent batches
     const currentIndex = batchesRef.current.findIndex(b => b.id === batch.id);
-    if (currentIndex >= 0) {
+    if (currentIndex >= 0 && isMountedRef.current) {
       prefetchAdjacentBatches(queryClient, batchesRef.current, currentIndex, 3).catch(() => {
-        // Silently fail - prefetch is optional optimization
+        // Silent fail
       });
     }
-  }, [queryClient, setSelectedBatchId, setDetailsOpen]); // Removed batches dependency to fix stale closure
+  }, [queryClient, setSelectedBatchId, setDetailsOpen]);
 
   const handleUpdateStage = useCallback(async (batchId: string, newStage: Batch["currentStage"]) => {
-    // Use the mutation from useBatches hook
-    updateStage({ batchId, newStage });
+    try {
+      await updateStage({ batchId, newStage });
+    } catch (error) {
+      console.error('Failed to update stage:', error);
+      toast.error('Failed to update batch stage');
+    }
   }, [updateStage]);
 
-
   const handleGoToProduction = useCallback((batch: Batch) => {
+    if (!batch?.id) return;
+    
     setSelectedBatchId(batch.id);
     setDetailsOpen(false);
     navigate("/production");
     
-    /**
-     * Prefetch adjacent batches when entering production view
-     * User is likely to navigate between batches in production
-     */
-    const currentIndex = batches.findIndex(b => b.id === batch.id);
-    if (currentIndex >= 0) {
-      prefetchAdjacentBatches(queryClient, batches, currentIndex, 3).catch(() => {
-        // Silently fail
+    // Prefetch adjacent batches
+    const currentIndex = batchesRef.current.findIndex(b => b.id === batch.id);
+    if (currentIndex >= 0 && isMountedRef.current) {
+      prefetchAdjacentBatches(queryClient, batchesRef.current, currentIndex, 3).catch(() => {
+        // Silent fail
       });
     }
-  }, [batches, navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
+  }, [navigate, queryClient, setSelectedBatchId, setDetailsOpen]);
 
-  /**
-   * Touch-Friendly Tab Prefetching
-   * Strategy: 
-   * - Desktop: Prefetch on hover for instant navigation
-   * - Mobile: Prefetch when tab enters viewport (Intersection Observer)
-   * 
-   * This provides optimal UX across devices since mobile lacks hover states
-   */
+  // Touch-friendly prefetch hooks
   const blendingTabPrefetch = useTouchFriendlyPrefetch(
     useCallback(() => {
       if (!isMountedRef.current) return;
@@ -370,7 +350,7 @@ const Index = () => {
     }, [])
   );
 
-  const handleSaveTasting = async (data: any, analysisId?: string) => {
+  const handleSaveTasting = useCallback(async (data: any, analysisId?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast.error("Session expired. Please log in again");
@@ -379,19 +359,21 @@ const Index = () => {
     }
 
     try {
+      const tastingData = {
+        blend_batch_id: data.blend_batch_id || null,
+        competitor_brand: data.competitor_brand || null,
+        taste: data.taste || null,
+        colour: data.colour || null,
+        palate: data.palate || null,
+        overall_score: data.overall_score || null,
+        notes: data.notes || null,
+        attachments: data.attachments || null,
+      };
+
       if (analysisId) {
         const { error } = await supabase
           .from("tasting_analysis")
-          .update({
-            blend_batch_id: data.blend_batch_id || null,
-            competitor_brand: data.competitor_brand || null,
-            taste: data.taste || null,
-            colour: data.colour || null,
-            palate: data.palate || null,
-            overall_score: data.overall_score || null,
-            notes: data.notes || null,
-            attachments: data.attachments || null,
-          })
+          .update(tastingData)
           .eq("id", analysisId);
 
         if (error) throw error;
@@ -401,30 +383,25 @@ const Index = () => {
           .from("tasting_analysis")
           .insert([{
             user_id: user!.id,
-            blend_batch_id: data.blend_batch_id || null,
-            competitor_brand: data.competitor_brand || null,
-            taste: data.taste || null,
-            colour: data.colour || null,
-            palate: data.palate || null,
-            overall_score: data.overall_score || null,
-            notes: data.notes || null,
-            attachments: data.attachments || null,
+            ...tastingData
           }]);
 
         if (error) throw error;
         toast.success("Tasting analysis created");
       }
+      
+      // Invalidate tasting queries
+      queryClient.invalidateQueries({ queryKey: ['tasting-analysis'] });
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     }
-  };
+  }, [user, navigate, queryClient]);
 
-  // Retry function - uses the combined retry from parallel hook
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     retryParallelData();
-  };
+  }, [retryParallelData]);
 
-  // Show error state - handle partial failures gracefully
+  // Error state with improved UX
   if (hasError && !isLoading) {
     const failedResources = Object.entries(errors)
       .filter(([_, error]) => error)
@@ -432,7 +409,6 @@ const Index = () => {
     
     const hasAnyData = batches.length > 0 || blends.length > 0;
     
-    // Map failed resources to affected features
     const affectedFeatures = {
       batches: ['All Batches tab', 'Production tracking', 'Batch details'],
       blends: ['Blending tab', 'Cellar management', 'Tasting notes'],
@@ -444,7 +420,7 @@ const Index = () => {
     
     return (
       <div className="min-h-dvh bg-background">
-        <header className="border-b border-border bg-card/95 backdrop-blur">
+        <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
           <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
             <h1 className="text-xl font-bold">CiderTracker</h1>
           </div>
@@ -454,7 +430,6 @@ const Index = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error Loading Data</AlertTitle>
             <AlertDescription className="space-y-4">
-              {/* Show specific errors */}
               <div className="space-y-2">
                 {Object.entries(errors).map(([key, error]) => 
                   error ? (
@@ -466,7 +441,6 @@ const Index = () => {
                 )}
               </div>
               
-              {/* Show affected features */}
               {hasAnyData && limitedFeatures.length > 0 && (
                 <div className="text-sm">
                   <p className="font-semibold mb-1">Limited Features:</p>
@@ -485,14 +459,13 @@ const Index = () => {
             </AlertDescription>
           </Alert>
           
-          {/* Show available data even if some queries failed */}
           {hasAnyData && (
             <div className="mt-6">
               <p className="text-sm text-muted-foreground text-center mb-4">
                 Showing available data for: {[
-                  batches.length > 0 && 'Batches',
-                  blends.length > 0 && 'Blends',
-                  suppliers.length > 0 && 'Suppliers'
+                  batches.length > 0 && `${batches.length} Batches`,
+                  blends.length > 0 && `${blends.length} Blends`,
+                  suppliers.length > 0 && `${suppliers.length} Suppliers`
                 ].filter(Boolean).join(', ')}
               </p>
             </div>
@@ -502,13 +475,13 @@ const Index = () => {
     );
   }
 
-  // Show loading state with granular loading indicators
-  if (isLoading || !user) {
+  // Loading state with improved visual feedback
+  if (isLoading || authLoading || !user) {
     const hasPartialData = batches.length > 0 || blends.length > 0;
     
     return (
       <div className="min-h-dvh bg-background">
-        <header className="border-b border-border bg-card/95 backdrop-blur">
+        <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
           <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-screen-2xl">
             <Skeleton className="h-8 w-48" />
           </div>
@@ -523,7 +496,6 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* Show consolidated loading progress */}
                 {Object.entries(loadingStates).map(([key, loading]) => {
                   const counts = {
                     batches: batches.length,
@@ -551,7 +523,6 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            {/* Only show skeleton cards if no data loaded yet */}
             {!hasPartialData && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {[1, 2, 3].map(i => (
@@ -565,14 +536,6 @@ const Index = () => {
             )}
           </div>
         </main>
-      </div>
-    );
-  }
-
-  if (authLoading) {
-    return (
-      <div className="min-h-dvh bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -599,326 +562,131 @@ const Index = () => {
           onShowShortcuts={() => setShowShortcuts(true)}
         />
 
-        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <Tabs value={activeTab} className="mb-6 sm:mb-8">{/* ... keep existing code */}
-          {/* Tabs and Search/Sort Controls */}
-          <div className="flex flex-col gap-3 sm:gap-4 mb-4">
-            {/* Row 1: Tabs on left, Search/Sort on right (desktop) */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-              {/* Tabs - Hidden on Mobile (bottom nav used instead) */}
-              <div className="overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0 hidden md:block">
-                <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
-                  {userRole === "production" && (
-                    <>
-                      <TabsTrigger value="batches" asChild>
-                        <button 
-                          ref={batchesTabPrefetch.ref as any}
-                          onClick={() => navigate(paths.batches())} 
-                          onMouseEnter={batchesTabPrefetch.onMouseEnter}
-                          className="py-1.5 px-3"
-                        >
-                          <Package className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">All Batches</span>
-                        </button>
-                      </TabsTrigger>
-                      <TabsTrigger value="production" asChild>
-                        <button 
-                          ref={productionTabPrefetch.ref as any}
-                          onClick={() => navigate(paths.production())} 
-                          onMouseEnter={productionTabPrefetch.onMouseEnter}
-                          className="py-1.5 px-3"
-                        >
-                          <Activity className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Production</span>
-                        </button>
-                      </TabsTrigger>
-                      <TabsTrigger value="blending" asChild>
-                        <button 
-                          ref={blendingTabPrefetch.ref as any}
-                          onClick={() => navigate(paths.blending())} 
-                          onMouseEnter={blendingTabPrefetch.onMouseEnter}
-                          className="py-1.5 px-3"
-                        >
-                          <Wine className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Blending</span>
-                        </button>
-                      </TabsTrigger>
-                      <TabsTrigger value="cellar" asChild>
-                        <button 
-                          ref={cellarTabPrefetch.ref as any}
-                          onClick={() => navigate(paths.cellar())} 
-                          onMouseEnter={cellarTabPrefetch.onMouseEnter}
-                          className="py-1.5 px-3"
-                        >
-                          <Warehouse className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Cellar</span>
-                        </button>
-                      </TabsTrigger>
-                      <TabsTrigger value="suppliers" asChild>
-                        <button 
-                          ref={suppliersTabPrefetch.ref as any}
-                          onClick={() => navigate(paths.suppliers())} 
-                          onMouseEnter={suppliersTabPrefetch.onMouseEnter}
-                          className="py-1.5 px-3"
-                        >
-                          <Truck className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Suppliers</span>
-                        </button>
-                      </TabsTrigger>
-                    </>
-                  )}
-                  <TabsTrigger value="tasting" asChild>
-                    <button 
-                      ref={tastingTabPrefetch.ref as any}
-                      onClick={() => navigate(paths.tasting())} 
-                      onMouseEnter={tastingTabPrefetch.onMouseEnter}
-                      className="py-1.5 px-3"
-                    >
-                      <Award className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Tasting</span>
-                    </button>
-                  </TabsTrigger>
-                  <TabsTrigger value="analytics" asChild>
-                    <button 
-                      ref={analyticsTabPrefetch.ref as any}
-                      onClick={() => navigate(paths.analytics())} 
-                      onMouseEnter={analyticsTabPrefetch.onMouseEnter}
-                      className="py-1.5 px-3"
-                    >
-                      <TrendingUp className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Analytics</span>
-                    </button>
-                  </TabsTrigger>
-                  {userRole === "production" && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant={activeTab === "tools" ? "default" : "ghost"} 
-                          size="sm" 
-                          className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight"
-                        >
-                          <Settings2 className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Tools</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Tools</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
-                          <FlaskConical className="h-4 w-4 mr-2" />
-                          Calculators
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
-                          <QrCode className="h-4 w-4 mr-2" />
-                          Print Labels
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
-                          <Layout className="h-4 w-4 mr-2" />
-                          Floor Plan
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
-                          <DollarSign className="h-4 w-4 mr-2" />
-                          Cost Calculation
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
-                          <Settings2 className="h-4 w-4 mr-2" />
-                          Economic Planning Tool
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
-                          <Webhook className="h-4 w-4 mr-2" />
-                          Webhooks & API
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(paths.tools.install())}>
-                          <Download className="h-4 w-4 mr-2" />
-                          Install App
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </TabsList>
-              </div>
-
-              {/* Search and Sort Controls - Show on batches, production, and blending tabs */}
-              {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && userRole === "production" && (
-                <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
-                  <BatchSearch
-                    ref={searchInputRef}
-                    value={batchSearchQuery}
-                    onChange={setBatchSearchQuery}
-                    totalCount={batches.length}
-                    resultCount={optimizedBatches.length}
-                    className="w-full sm:w-[300px]"
-                  />
-                  <Select value={batchSortOrder} onValueChange={setBatchSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[180px] bg-background">
-                      <SelectValue placeholder="Sort by..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="volume-high">Volume (High-Low)</SelectItem>
-                      <SelectItem value="volume-low">Volume (Low-High)</SelectItem>
-                      <SelectItem value="progress-high">Progress (High-Low)</SelectItem>
-                      <SelectItem value="progress-low">Progress (Low-High)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {userRole === "production" && (
-            <TabsContent value="batches" className="mt-4 sm:mt-6">
-              <TabErrorBoundary tabName="All Batches">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <BatchesTab 
-                    batches={batches}
-                    onBatchClick={handleBatchClick}
-                    onUpdateStage={handleUpdateStage}
-                  />
-                </Suspense>
-              </TabErrorBoundary>
-            </TabsContent>
-          )}
-
-          {userRole === "production" && (
-            <TabsContent value="production" className="mt-4 sm:mt-6">
-              <TabErrorBoundary tabName="Production">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <ProductionTab 
-                    batches={optimizedBatches as any}
-                    selectedBatch={selectedBatch as any}
-                    onSelectBatch={(batch) => setSelectedBatchId(batch.id)}
-                    onUpdateStage={handleUpdateStage}
-                  />
-                </Suspense>
-              </TabErrorBoundary>
-            </TabsContent>
-          )}
-
-          {userRole === "production" && (
-            <TabsContent value="tools" className="mt-4 sm:mt-6">
-              <TabErrorBoundary tabName="Tools">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <ToolsTab 
-                    batches={batches}
-                    blendBatches={blends || []}
-                    toolView={toolView}
-                  />
-                </Suspense>
-              </TabErrorBoundary>
-            </TabsContent>
-          )}
-
-          {userRole === "production" && (
-            <>
-              <TabsContent value="blending" className="mt-4 sm:mt-6">
-                <TabErrorBoundary tabName="Blending">
-                  <Suspense fallback={<TabLoadingFallback />}>
-                    <BlendingTab 
-                      batches={batches}
-                      blendBatches={blends || []}
-                    />
-                  </Suspense>
-                </TabErrorBoundary>
-              </TabsContent>
-
-              <TabsContent value="cellar" className="mt-4 sm:mt-6">
-                <TabErrorBoundary tabName="Cellar">
-                  <Suspense fallback={<TabLoadingFallback />}>
-                    <CellarTab blendBatches={blends || []} />
-                  </Suspense>
-                </TabErrorBoundary>
-              </TabsContent>
-            </>
-          )}
-
-          {userRole === "production" && (
-            <TabsContent value="suppliers" className="mt-4 sm:mt-6">
-              <TabErrorBoundary tabName="Suppliers">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <SuppliersTab />
-                </Suspense>
-              </TabErrorBoundary>
-            </TabsContent>
-          )}
-
-          <TabsContent value="tasting" className="mt-4 sm:mt-6">
-            <TabErrorBoundary tabName="Tasting">
-              <Suspense fallback={<TabLoadingFallback />}>
-                <TastingTab blendBatches={blends || []} />
-              </Suspense>
-            </TabErrorBoundary>
-          </TabsContent>
-
-          {userRole === "production" && (
-            <TabsContent value="analytics" className="mt-4 sm:mt-6">
-              <TabErrorBoundary tabName="Analytics">
-                <Suspense fallback={<TabLoadingFallback />}>
-                  <ProductionAnalytics batches={batches} />
-                </Suspense>
-              </TabErrorBoundary>
-            </TabsContent>
-          )}
-        </Tabs>
-      </main>
-
-      {/* Lazy-load modals with Suspense - they're not needed until opened */}
-      <Suspense fallback={null}>
-        <BatchDetails
-          batch={selectedBatch}
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          onUpdateStage={handleUpdateStage}
-          onBatchUpdated={() => queryClient.invalidateQueries({ queryKey: ['batches'] })}
-          onGoToProduction={handleGoToProduction}
-        />
-      </Suspense>
-      
-      <Suspense fallback={null}>
-        <BlendBatchDetailsTabbed
-          blend={selectedBlend}
-          open={blendDetailsOpen}
-          onOpenChange={setBlendDetailsOpen}
-          onBlendUpdated={() => queryClient.invalidateQueries({ queryKey: ['blend-batches'] })}
-          onAddTastingNote={(blendId) => {
-            setBlendDetailsOpen(false);
-            setSelectedBlendIdForTasting(blendId);
-            setTastingDialogOpen(true);
-          }}
-        />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <TastingAnalysisDialog
-          open={tastingDialogOpen}
-          onOpenChange={(open) => {
-            setTastingDialogOpen(open);
-            if (!open) {
-              setSelectedBlendIdForTasting(null);
-              setEditingTasting(null);
-            }
-          }}
-          blendBatches={(blends || [])
-            .filter(b => (b.bottles_75cl || 0) > 0 || (b.bottles_150cl || 0) > 0)
-            .map(b => ({ id: b.id, name: b.name }))
-          }
-          existingAnalysis={editingTasting}
-          onSave={handleSaveTasting}
-          preSelectedBlendId={selectedBlendIdForTasting}
-        />
-      </Suspense>
-
-      {/* Mobile Bottom Navigation */}
-      <BottomNav
-        batchBadgeCount={batches.filter(b => b.progress < 100).length}
-        userRole={userRole}
-      />
-      </div>
-    </BaseErrorBoundary>
-  );
-};
-
-export default Index;
+        <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 md:pb-6">
+          <Tabs value={activeTab} className="mb-6 sm:mb-8">
+            {/* Tabs and Search/Sort Controls */}
+            <div className="flex flex-col gap-3 sm:gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                {/* Desktop Tabs */}
+                <div className="hidden md:block overflow-x-auto sm:overflow-x-visible -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <TabsList className="w-full sm:w-auto inline-flex min-w-full sm:min-w-0 h-auto p-1">
+                    {userRole === "production" && (
+                      <>
+                        <TabsTrigger value="batches" asChild>
+                          <button 
+                            ref={batchesTabPrefetch.ref as any}
+                            onClick={() => navigate(paths.batches())} 
+                            onMouseEnter={batchesTabPrefetch.onMouseEnter}
+                            className="py-1.5 px-3 transition-colors"
+                          >
+                            <Package className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">All Batches</span>
+                          </button>
+                        </TabsTrigger>
+                        <TabsTrigger value="production" asChild>
+                          <button 
+                            ref={productionTabPrefetch.ref as any}
+                            onClick={() => navigate(paths.production())} 
+                            onMouseEnter={productionTabPrefetch.onMouseEnter}
+                            className="py-1.5 px-3 transition-colors"
+                          >
+                            <Activity className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Production</span>
+                          </button>
+                        </TabsTrigger>
+                        <TabsTrigger value="blending" asChild>
+                          <button 
+                            ref={blendingTabPrefetch.ref as any}
+                            onClick={() => navigate(paths.blending())} 
+                            onMouseEnter={blendingTabPrefetch.onMouseEnter}
+                            className="py-1.5 px-3 transition-colors"
+                          >
+                            <Wine className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Blending</span>
+                          </button>
+                        </TabsTrigger>
+                        <TabsTrigger value="cellar" asChild>
+                          <button 
+                            ref={cellarTabPrefetch.ref as any}
+                            onClick={() => navigate(paths.cellar())} 
+                            onMouseEnter={cellarTabPrefetch.onMouseEnter}
+                            className="py-1.5 px-3 transition-colors"
+                          >
+                            <Warehouse className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Cellar</span>
+                          </button>
+                        </TabsTrigger>
+                        <TabsTrigger value="suppliers" asChild>
+                          <button 
+                            ref={suppliersTabPrefetch.ref as any}
+                            onClick={() => navigate(paths.suppliers())} 
+                            onMouseEnter={suppliersTabPrefetch.onMouseEnter}
+                            className="py-1.5 px-3 transition-colors"
+                          >
+                            <Truck className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Suppliers</span>
+                          </button>
+                        </TabsTrigger>
+                      </>
+                    )}
+                    <TabsTrigger value="tasting" asChild>
+                      <button 
+                        ref={tastingTabPrefetch.ref as any}
+                        onClick={() => navigate(paths.tasting())} 
+                        onMouseEnter={tastingTabPrefetch.onMouseEnter}
+                        className="py-1.5 px-3 transition-colors"
+                      >
+                        <Award className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Tasting</span>
+                      </button>
+                    </TabsTrigger>
+                    <TabsTrigger value="analytics" asChild>
+                      <button 
+                        ref={analyticsTabPrefetch.ref as any}
+                        onClick={() => navigate(paths.analytics())} 
+                        onMouseEnter={analyticsTabPrefetch.onMouseEnter}
+                        className="py-1.5 px-3 transition-colors"
+                      >
+                        <TrendingUp className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Analytics</span>
+                      </button>
+                    </TabsTrigger>
+                    {userRole === "production" && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            ref={toolsTabPrefetch.ref as any}
+                            onMouseEnter={toolsTabPrefetch.onMouseEnter}
+                            variant={activeTab === "tools" ? "default" : "ghost"} 
+                            size="sm" 
+                            className="inline-flex items-center justify-center text-xs sm:text-sm whitespace-nowrap py-1.5 px-3 h-9 leading-tight"
+                          >
+                            <Settings2 className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Tools</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel>Tools</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.calculators())}>
+                            <FlaskConical className="h-4 w-4 mr-2" />
+                            Calculators
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.printLabels())}>
+                            <QrCode className="h-4 w-4 mr-2" />
+                            Print Labels
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.floorPlan())}>
+                            <Layout className="h-4 w-4 mr-2" />
+                            Floor Plan
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Cost Calculation
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
+                            <Settings2 className="h-4 w-4 mr-2" />
+                            Economic Planning
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
+                            <Webhook className="h-4
