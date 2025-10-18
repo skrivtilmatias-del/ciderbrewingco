@@ -584,7 +584,7 @@ const Index = () => {
                       <>
                         <TabsTrigger value="batches" asChild>
                           <button 
-                            ref={batchesTabPrefetch.ref as any}
+                            ref={batchesTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.batches()))} 
                             onMouseEnter={batchesTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
@@ -596,7 +596,7 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="production" asChild>
                           <button 
-                            ref={productionTabPrefetch.ref as any}
+                            ref={productionTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.production()))} 
                             onMouseEnter={productionTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
@@ -607,7 +607,7 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="blending" asChild>
                           <button 
-                            ref={blendingTabPrefetch.ref as any}
+                            ref={blendingTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.blending()))} 
                             onMouseEnter={blendingTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
@@ -618,7 +618,7 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="cellar" asChild>
                           <button 
-                            ref={cellarTabPrefetch.ref as any}
+                            ref={cellarTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.cellar()))} 
                             onMouseEnter={cellarTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
@@ -629,7 +629,7 @@ const Index = () => {
                         </TabsTrigger>
                         <TabsTrigger value="suppliers" asChild>
                           <button 
-                            ref={suppliersTabPrefetch.ref as any}
+                            ref={suppliersTabPrefetch.ref}
                             onClick={() => startTransition(() => navigate(paths.suppliers()))} 
                             onMouseEnter={suppliersTabPrefetch.onMouseEnter}
                             className="py-1.5 px-3 transition-colors"
@@ -642,7 +642,7 @@ const Index = () => {
                     )}
                     <TabsTrigger value="tasting" asChild>
                       <button 
-                        ref={tastingTabPrefetch.ref as any}
+                        ref={tastingTabPrefetch.ref}
                         onClick={() => startTransition(() => navigate(paths.tasting()))} 
                         onMouseEnter={tastingTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
@@ -653,7 +653,7 @@ const Index = () => {
                     </TabsTrigger>
                     <TabsTrigger value="analytics" asChild>
                       <button 
-                        ref={analyticsTabPrefetch.ref as any}
+                        ref={analyticsTabPrefetch.ref}
                         onClick={() => startTransition(() => navigate(paths.analytics()))} 
                         onMouseEnter={analyticsTabPrefetch.onMouseEnter}
                         className="py-1.5 px-3 transition-colors"
@@ -666,7 +666,7 @@ const Index = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button 
-                            ref={toolsTabPrefetch.ref as any}
+                            ref={toolsTabPrefetch.ref}
                             onMouseEnter={toolsTabPrefetch.onMouseEnter}
                             variant={activeTab === "tools" ? "default" : "ghost"} 
                             size="sm" 
