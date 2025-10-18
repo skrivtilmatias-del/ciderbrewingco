@@ -689,4 +689,162 @@ const Index = () => {
                             Economic Planning
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
-                            <Webhook className="h-4
+                            <Webhook className="h-4 w-4 mr-2" />
+                            Webhooks
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </TabsList>
+                </div>
+
+                {/* Search and Sort - Desktop */}
+                {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
+                  <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                    <BatchSearch
+                      ref={searchInputRef}
+                      value={batchSearchQuery}
+                      onChange={setBatchSearchQuery}
+                      totalCount={batches.length}
+                      resultCount={optimizedBatches.length}
+                      className="w-64"
+                    />
+                    <Select
+                      value={batchSortOrder}
+                      onValueChange={(value: any) => setBatchSortOrder(value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dateDesc">Newest first</SelectItem>
+                        <SelectItem value="dateAsc">Oldest first</SelectItem>
+                        <SelectItem value="nameAsc">Name A-Z</SelectItem>
+                        <SelectItem value="nameDesc">Name Z-A</SelectItem>
+                        <SelectItem value="varietyAsc">Variety A-Z</SelectItem>
+                        <SelectItem value="stageProgress">Stage progress</SelectItem>
+                        <SelectItem value="volumeDesc">Volume high-low</SelectItem>
+                        <SelectItem value="volumeAsc">Volume low-high</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Search */}
+              {(activeTab === "batches" || activeTab === "production" || activeTab === "blending") && (
+                <div className="md:hidden">
+                  <BatchSearch
+                    ref={searchInputRef}
+                    value={batchSearchQuery}
+                    onChange={setBatchSearchQuery}
+                    totalCount={batches.length}
+                    resultCount={optimizedBatches.length}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Tab Content */}
+            <TabsContent value="batches" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <BatchesTab
+                  batches={optimizedBatches}
+                  onBatchClick={handleBatchClick}
+                />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="production" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ProductionTab
+                  batches={batches as any}
+                  selectedBatch={selectedBatch as any}
+                  onSelectBatch={handleBatchClick as any}
+                  onUpdateStage={handleUpdateStage as any}
+                />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="blending" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <BlendingTab 
+                  batches={batches as any}
+                  blendBatches={blends}
+                />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="cellar" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <CellarTab blendBatches={blends} />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="suppliers" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <SuppliersTab suppliers={suppliers} />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="tasting" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <TastingTab blendBatches={blends} />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="analytics" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ProductionAnalytics batches={batches} />
+              </Suspense>
+            </TabsContent>
+
+            <TabsContent value="tools" className="mt-0">
+              <Suspense fallback={<TabLoadingFallback />}>
+                <ToolsTab 
+                  batches={batches}
+                  blendBatches={blends}
+                  toolView={toolView as any} 
+                />
+              </Suspense>
+            </TabsContent>
+          </Tabs>
+        </main>
+
+        <BottomNav userRole={userRole} />
+
+        {selectedBatch && (
+          <BatchDetails
+            batch={selectedBatch}
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            onGoToProduction={handleGoToProduction}
+            onUpdateStage={handleUpdateStage}
+          />
+        )}
+
+        {selectedBlend && (
+          <BlendBatchDetailsTabbed
+            blend={selectedBlend}
+            open={blendDetailsOpen}
+            onOpenChange={setBlendDetailsOpen}
+            onBlendUpdated={() => {
+              queryClient.invalidateQueries({ queryKey: ['blends'] });
+            }}
+          />
+        )}
+
+        <TastingAnalysisDialog
+          open={tastingDialogOpen}
+          onOpenChange={setTastingDialogOpen}
+          onSave={handleSaveTasting}
+          blendBatches={blends}
+          preSelectedBlendId={selectedBlendIdForTasting || undefined}
+        />
+      </div>
+    </BaseErrorBoundary>
+  );
+};
+
+export default Index;
