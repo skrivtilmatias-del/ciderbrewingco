@@ -32,7 +32,7 @@ export const useOptimizedBatches = ({
   sortOrder,
 }: UseOptimizedBatchesOptions) => {
   // Performance tracking in development
-  const startTime = performance.now();
+  const startTime = process.env.NODE_ENV === 'development' ? performance.now() : 0;
 
   // Debounce search query to prevent filtering on every keystroke
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
