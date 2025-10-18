@@ -3,12 +3,57 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import { queryKeys, queryConfigs } from '@/lib/queryConfig';
-import type { Batch } from '@/components/BatchCard';
+import type { Batch, DatabaseBatch } from '@/types/batch.types';
 import { useEffect } from 'react';
+
+/**
+ * Maps database batch (snake_case) to client batch (camelCase)
+ * This is the single normalization point for all batch data
+ */
+const mapDatabaseBatchToClient = (dbBatch: DatabaseBatch): Batch => ({
+  id: dbBatch.id,
+  userId: dbBatch.user_id,
+  name: dbBatch.name,
+  variety: dbBatch.variety,
+  volume: parseFloat(dbBatch.volume.toString()),
+  currentStage: dbBatch.current_stage as Batch['currentStage'],
+  progress: dbBatch.progress,
+  startDate: dbBatch.started_at,
+  completedAt: dbBatch.completed_at,
+  createdAt: dbBatch.created_at,
+  updatedAt: dbBatch.updated_at,
+  
+  // Optional fields (convert null to undefined for cleaner API)
+  appleOrigin: dbBatch.apple_origin || undefined,
+  yeastType: dbBatch.yeast_type || undefined,
+  style: dbBatch.style || undefined,
+  appleMix: dbBatch.apple_mix || undefined,
+  notes: dbBatch.notes || undefined,
+  attachments: dbBatch.attachments || undefined,
+  
+  // Target parameters
+  targetOg: dbBatch.target_og ? parseFloat(dbBatch.target_og.toString()) : undefined,
+  targetFg: dbBatch.target_fg ? parseFloat(dbBatch.target_fg.toString()) : undefined,
+  targetPh: dbBatch.target_ph ? parseFloat(dbBatch.target_ph.toString()) : undefined,
+  targetEndPh: dbBatch.target_end_ph ? parseFloat(dbBatch.target_end_ph.toString()) : undefined,
+  targetTa: dbBatch.target_ta ? parseFloat(dbBatch.target_ta.toString()) : undefined,
+  targetTempC: dbBatch.target_temp_c ? parseFloat(dbBatch.target_temp_c.toString()) : undefined,
+  
+  // Timeline fields
+  stageHistory: dbBatch.stage_history,
+  estimatedCompletionDate: dbBatch.estimated_completion_date || undefined,
+  expectedStageDurations: dbBatch.expected_stage_durations,
+  
+  // Version control
+  version: dbBatch.version,
+  updatedById: dbBatch.updated_by_id || undefined,
+  deletedById: dbBatch.deleted_by_id || undefined,
+});
+
 export const useBatches = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all batches with optimized caching
+  // Fetch all batches with normalization at the data layer
   const { data: batches = [], isLoading, error } = useQuery({
     queryKey: queryKeys.batches.all(),
     ...queryConfigs.batches,
@@ -20,26 +65,8 @@ export const useBatches = () => {
 
       if (error) throw error;
 
-      // Map database response to Batch type
-      const formattedBatches: Batch[] = data.map((batch) => ({
-        id: batch.id,
-        name: batch.name,
-        variety: batch.variety,
-        apple_origin: batch.apple_origin || undefined,
-        volume: parseFloat(batch.volume.toString()),
-        startDate: batch.started_at,
-        currentStage: batch.current_stage as Batch['currentStage'],
-        progress: batch.progress,
-        notes: batch.notes || undefined,
-        attachments: batch.attachments || undefined,
-        yeast_type: batch.yeast_type || undefined,
-        target_og: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
-        target_fg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
-        target_ph: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
-        target_end_ph: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
-      }));
-
-      return formattedBatches;
+      // Normalize database batches to client format here
+      return (data as DatabaseBatch[]).map(mapDatabaseBatchToClient);
     },
   });
 
@@ -68,8 +95,8 @@ export const useBatches = () => {
             role: 'Lab',
             title: 'Initial Batch Setup (Backfill)',
             content: b.notes || '',
-            og: (b as any).target_og ?? null,
-            ph: (b as any).target_ph ?? null,
+            og: b.targetOg ?? null,
+            ph: b.targetPh ?? null,
             temp_c: null,
             tags: [] as string[],
           }));

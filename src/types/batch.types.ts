@@ -1,23 +1,29 @@
 /**
- * Batch type definitions
+ * Batch type definitions - Single source of truth
  */
+
+import { CiderStage } from '@/constants/ciderStages';
 
 export interface StageHistory {
   stage: string;
-  started_at: string;
-  completed_at?: string;
-  duration_days?: number;
+  startedAt: string;
+  completedAt?: string;
+  durationDays?: number;
   notes?: string;
   photos?: string[];
-  user_id: string;
+  userId: string;
   measurements?: {
     temperature?: number;
     ph?: number;
-    specific_gravity?: number;
+    specificGravity?: number;
   };
 }
 
-export interface Batch {
+/**
+ * Database Batch type (as stored in Supabase with snake_case)
+ * This is the raw format from the database
+ */
+export interface DatabaseBatch {
   id: string;
   user_id: string;
   name: string;
@@ -55,6 +61,50 @@ export interface Batch {
   version?: number;
   updated_by_id?: string | null;
   deleted_by_id?: string | null;
+}
+
+/**
+ * Client-side Batch type (normalized with camelCase)
+ * This is used throughout the app - single source of truth for components
+ */
+export interface Batch {
+  id: string;
+  userId: string;
+  name: string;
+  variety: string;
+  volume: number;
+  currentStage: CiderStage | 'Complete';
+  progress: number;
+  startDate: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Optional fields
+  appleOrigin?: string;
+  yeastType?: string;
+  style?: string;
+  appleMix?: string;
+  notes?: string;
+  attachments?: string[];
+  
+  // Target parameters
+  targetOg?: number;
+  targetFg?: number;
+  targetPh?: number;
+  targetEndPh?: number;
+  targetTa?: number;
+  targetTempC?: number;
+  
+  // Timeline fields
+  stageHistory?: StageHistory[];
+  estimatedCompletionDate?: string;
+  expectedStageDurations?: Record<string, { min: number; max: number }>;
+  
+  // Version control for optimistic locking
+  version?: number;
+  updatedById?: string;
+  deletedById?: string;
   
   // Real-time animation flags (client-side only)
   _justAdded?: boolean;

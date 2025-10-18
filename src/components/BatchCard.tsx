@@ -16,26 +16,10 @@ import { cn } from "@/lib/utils";
 import { BatchProgressMini, ProgressBadge } from "@/components/production/BatchProgress";
 import { LinearProgress } from "@/components/production/LinearProgress";
 import { calculateProgress } from "@/lib/progressUtils";
+import type { Batch } from "@/types/batch.types";
 
-// Normalized client-side Batch interface
-export interface Batch {
-  id: string;
-  name: string;
-  variety: string;
-  apple_origin?: string;
-  volume: number;
-  startDate: string;
-  currentStage: CiderStage | 'Complete';
-  progress: number;
-  notes?: string;
-  attachments?: string[];
-  target_og?: number;
-  target_fg?: number;
-  target_ph?: number;
-  target_end_ph?: number;
-  target_temp_c?: number;
-  yeast_type?: string;
-}
+// Re-export Batch for backward compatibility
+export type { Batch };
 
 const getStageIcon = (stage: string) => {
   if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
@@ -309,7 +293,7 @@ export const BatchCard = ({
         {/* Recipe/Subtitle */}
         <CardDescription className="text-sm line-clamp-1 mb-3">
           {highlightText(batch.variety, searchQuery)}
-          {batch.apple_origin && <> from {batch.apple_origin}</>}
+          {batch.appleOrigin && <> from {batch.appleOrigin}</>}
         </CardDescription>
         
         {/* Bottom Row: Metadata */}
@@ -360,27 +344,27 @@ export const BatchCard = ({
         {/* Progress badges */}
         <ProgressBadge batch={batch} />
 
-        {(batch.target_og || batch.target_ph || batch.yeast_type) && (
+        {(batch.targetOg || batch.targetPh || batch.yeastType) && (
           <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
-            {batch.target_og && (
+            {batch.targetOg && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
                 <Droplets className="w-3.5 h-3.5 text-primary" />
                 <span className="text-muted-foreground">OG:</span>
-                <span className="text-foreground">{batch.target_og >= 1.5 ? Math.round(batch.target_og) : Math.round((batch.target_og - 1) * 1000) + 1000}</span>
+                <span className="text-foreground">{batch.targetOg >= 1.5 ? Math.round(batch.targetOg) : Math.round((batch.targetOg - 1) * 1000) + 1000}</span>
               </div>
             )}
-            {batch.target_ph && (
+            {batch.targetPh && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
                 <FlaskConical className="w-3.5 h-3.5 text-primary" />
                 <span className="text-muted-foreground">PH:</span>
-                <span className="text-foreground">{batch.target_ph}</span>
+                <span className="text-foreground">{batch.targetPh}</span>
               </div>
             )}
-            {batch.yeast_type && (
+            {batch.yeastType && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs font-medium">
                 <Beaker className="w-3.5 h-3.5 text-primary" />
                 <span className="text-muted-foreground">Yeast:</span>
-                <span className="text-foreground">{batch.yeast_type}</span>
+                <span className="text-foreground">{batch.yeastType}</span>
               </div>
             )}
           </div>
