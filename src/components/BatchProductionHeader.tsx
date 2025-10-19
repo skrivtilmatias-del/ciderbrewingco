@@ -54,25 +54,25 @@ export const BatchProductionHeader = ({ batch }: BatchProductionHeaderProps) => 
   ];
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold">{batch.name}</h2>
-        <p className="text-sm text-muted-foreground">Production Overview</p>
+    <div className="space-y-2 sm:space-y-4">
+      <div className="mb-2 sm:mb-0">
+        <h2 className="text-lg sm:text-2xl font-bold">{batch.name}</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Production Overview</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-4">
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
           return (
             <Card key={index} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className={`p-2.5 rounded-lg ${metric.bgColor} flex-shrink-0`}>
-                    <Icon className={`h-5 w-5 ${metric.iconColor}`} />
+              <CardContent className="p-2 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className={`p-1.5 sm:p-2.5 rounded-lg ${metric.bgColor} flex-shrink-0`}>
+                    <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${metric.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1 truncate">{metric.label}</p>
-                    <p className="text-lg font-bold truncate" title={metric.value}>{metric.value}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1 truncate">{metric.label}</p>
+                    <p className="text-sm sm:text-lg font-bold truncate" title={metric.value}>{metric.value}</p>
                   </div>
                 </div>
               </CardContent>
