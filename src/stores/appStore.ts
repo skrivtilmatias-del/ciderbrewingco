@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { BatchFilterState, DEFAULT_FILTER_STATE } from '@/types/filters';
+import type { SortOrder } from '@/hooks/useOptimizedBatches';
 
 interface AppState {
   // Selected items (store IDs only, derive full objects from React Query)
@@ -16,7 +17,7 @@ interface AppState {
   tastingSearchQuery: string;
   
   // Filters and sorting
-  batchSortOrder: string;
+  batchSortOrder: SortOrder;
   stageFilter: string;
   batchFilters: BatchFilterState;
   
@@ -28,7 +29,7 @@ interface AppState {
   setBatchSearchQuery: (query: string) => void;
   setBlendSearchQuery: (query: string) => void;
   setTastingSearchQuery: (query: string) => void;
-  setBatchSortOrder: (order: string) => void;
+  setBatchSortOrder: (order: SortOrder) => void;
   setStageFilter: (filter: string) => void;
   setBatchFilters: (filters: BatchFilterState) => void;
   clearBatchFilters: () => void;
