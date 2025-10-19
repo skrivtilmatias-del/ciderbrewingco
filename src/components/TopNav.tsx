@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { paths } from '@/routes/paths';
-import { Package, Activity, Wine, Warehouse, TrendingUp, Award } from 'lucide-react';
+import { Package, Activity, Wine, Warehouse, Truck, Award } from 'lucide-react';
 
 interface TopNavProps {
   userRole: string | null;
@@ -44,7 +44,7 @@ export const TopNav = ({ userRole, isMobile = false }: TopNavProps) => {
     },
     {
       to: paths.suppliers(),
-      icon: TrendingUp,
+      icon: Truck,
       label: 'Suppliers',
       show: isProduction,
     },
