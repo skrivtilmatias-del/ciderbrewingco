@@ -300,6 +300,12 @@ export const useBatches = () => {
       toast.error(`Failed to update stage: ${getUserFriendlyError(error)}`);
     },
     onSuccess: (data, variables) => {
+      // Normalize returned row and update cache immediately to avoid undefined fields
+      const normalized = mapDatabaseBatchToClient(data as unknown as DatabaseBatch);
+      queryClient.setQueryData<Batch[]>(queryKeys.batches.all(), (old) => {
+        if (!old) return old;
+        return old.map((b) => (b.id === normalized.id ? { ...b, ...normalized } : b));
+      });
       toast.success(`Stage updated to ${variables.newStage}`);
     },
     onSettled: () => {
