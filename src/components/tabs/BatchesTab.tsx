@@ -18,7 +18,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
     setBatchSearchQuery,
     batchSortOrder,
     setBatchSortOrder,
-    setSelectedBatch,
+    setSelectedBatchId,
     setDetailsOpen
   } = useAppStore();
   const { deleteBatch, isDeleting } = useBatches();
@@ -29,7 +29,7 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   };
 
   const handleBatchClick = (batch: Batch) => {
-    setSelectedBatch(batch);
+    setSelectedBatchId(batch.id);
     setDetailsOpen(false);
     
     if (onBatchClick) {

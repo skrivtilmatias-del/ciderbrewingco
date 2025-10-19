@@ -1,10 +1,9 @@
 import { create } from 'zustand';
-import { Batch } from '@/components/BatchCard';
 
 interface AppState {
-  // Selected items
-  selectedBatch: Batch | null;
-  selectedBlend: any | null;
+  // Selected items (now using IDs for better performance)
+  selectedBatchId: string | null;
+  selectedBlendId: string | null;
   
   // UI state
   detailsOpen: boolean;
@@ -20,8 +19,8 @@ interface AppState {
   stageFilter: string;
   
   // Setters
-  setSelectedBatch: (batch: Batch | null) => void;
-  setSelectedBlend: (blend: any | null) => void;
+  setSelectedBatchId: (id: string | null) => void;
+  setSelectedBlendId: (id: string | null) => void;
   setDetailsOpen: (open: boolean) => void;
   setBlendDetailsOpen: (open: boolean) => void;
   setBatchSearchQuery: (query: string) => void;
@@ -34,8 +33,8 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   // Initial state
-  selectedBatch: null,
-  selectedBlend: null,
+  selectedBatchId: null,
+  selectedBlendId: null,
   detailsOpen: false,
   blendDetailsOpen: false,
   batchSearchQuery: '',
@@ -45,8 +44,8 @@ export const useAppStore = create<AppState>((set) => ({
   stageFilter: 'All',
   
   // Setters
-  setSelectedBatch: (batch) => set({ selectedBatch: batch }),
-  setSelectedBlend: (blend) => set({ selectedBlend: blend }),
+  setSelectedBatchId: (id) => set({ selectedBatchId: id }),
+  setSelectedBlendId: (id) => set({ selectedBlendId: id }),
   setDetailsOpen: (open) => set({ detailsOpen: open }),
   setBlendDetailsOpen: (open) => set({ blendDetailsOpen: open }),
   setBatchSearchQuery: (query) => set({ batchSearchQuery: query }),
@@ -55,8 +54,8 @@ export const useAppStore = create<AppState>((set) => ({
   setBatchSortOrder: (order) => set({ batchSortOrder: order }),
   setStageFilter: (filter) => set({ stageFilter: filter }),
   clearSelection: () => set({ 
-    selectedBatch: null, 
-    selectedBlend: null,
+    selectedBatchId: null, 
+    selectedBlendId: null,
     detailsOpen: false,
     blendDetailsOpen: false
   }),
