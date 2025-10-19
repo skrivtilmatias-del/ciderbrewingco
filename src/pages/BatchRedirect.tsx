@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { paths } from "@/routes/paths";
+import { Loader2 } from "lucide-react";
 
 const BatchRedirect = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ const BatchRedirect = () => {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
-        // Authenticated - go to batch page
+        // Authenticated - go to production page with batch selected
         navigate(paths.batchWithId(id), { replace: true });
       } else {
         // Not authenticated - redirect to login with next parameter
@@ -57,7 +58,14 @@ const BatchRedirect = () => {
     );
   }
 
-  return null;
+  return (
+    <div className="min-h-dvh flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Redirecting to batch...</p>
+      </div>
+    </div>
+  );
 };
 
 export default BatchRedirect;
