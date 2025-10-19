@@ -44,8 +44,8 @@ export const paths = {
     blend: (id: string) => `/r/l/${id}`,
   },
   
-  // Batch with query params
-  batchWithId: (id: string) => `/?batch=${id}`,
+  // Batch with query params - directs to production page
+  batchWithId: (id: string) => `/production?batch=${id}`,
 } as const;
 
 /**
