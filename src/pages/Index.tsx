@@ -137,6 +137,9 @@ const Index = () => {
   const batchesRef = useRef(batches);
   batchesRef.current = batches;
 
+  // Ref to track ongoing stage updates
+  const updateStageRef = useRef<Promise<void> | null>(null);
+
   const activeTab = useMemo(():
     | "batches"
     | "production"
@@ -280,11 +283,31 @@ const Index = () => {
 
   const handleUpdateStage = useCallback(
     async (batchId: string, newStage: Batch["currentStage"]) => {
+      // Prevent multiple simultaneous updates
+      if (updateStageRef.current) {
+        console.log('Stage update already in progress, skipping...');
+        return;
+      }
+
       try {
-        await updateStage({ batchId, newStage });
+        updateStageRef.current = (async () => {
+          await updateStage({ batchId, newStage });
+        })();
+        await updateStageRef.current;
+        
+        // Only show success toast if component is still mounted
+        if (isMountedRef.current) {
+          toast.success('Stage updated successfully');
+        }
       } catch (error) {
         console.error("Failed to update stage:", error);
-        toast.error("Failed to update batch stage");
+        
+        // Only show error toast if component is still mounted
+        if (isMountedRef.current) {
+          toast.error("Failed to update batch stage");
+        }
+      } finally {
+        updateStageRef.current = null;
       }
     },
     [updateStage],
