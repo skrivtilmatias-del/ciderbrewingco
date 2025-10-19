@@ -21,7 +21,8 @@ import type { Batch } from "@/types/batch.types";
 // Re-export Batch for backward compatibility
 export type { Batch };
 
-const getStageIcon = (stage: string) => {
+const getStageIcon = (stage: string | undefined) => {
+  if (!stage) return Beaker;  // Default icon for undefined/null
   if (stage.includes('Harvest') || stage.includes('Washing')) return Apple;
   if (stage.includes('Fermentation') || stage.includes('Pitching')) return Droplets;
   if (stage.includes('Aging') || stage.includes('Conditioning')) return Clock;
@@ -31,7 +32,8 @@ const getStageIcon = (stage: string) => {
   return Beaker;
 };
 
-const getStageColor = (stage: string) => {
+const getStageColor = (stage: string | undefined) => {
+  if (!stage) return 'bg-muted';  // Default color for undefined/null
   if (stage === 'Complete') return 'bg-muted';
   if (stage.includes('Harvest')) return 'bg-success';
   if (stage.includes('Fermentation') || stage.includes('Pitching')) return 'bg-info';
@@ -99,7 +101,7 @@ export const BatchCard = ({
   const queryClient = useQueryClient();
   const { selectedBatchIds, toggleBatchSelection } = useBatchComparisonStore();
   const isSelected = selectedBatchIds.includes(batch.id);
-  const currentStage = batch.currentStage;
+  const currentStage = batch.currentStage || 'Harvest';  // Default to Harvest if undefined
   const startDate = batch.startDate;
   const StageIcon = getStageIcon(currentStage);
   const stageColor = getStageColor(currentStage);
