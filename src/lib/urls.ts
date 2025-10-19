@@ -4,18 +4,28 @@
  * In development, falls back to window.location.origin
  */
 export const getBaseUrl = (): string => {
-  // Prefer the current origin to ensure QR codes work across preview, staging, and custom domains
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin.replace(/\/+$/, '');
-  }
-
-  // Fallback to configured base URL (e.g., when running without a window context)
   const envUrl = import.meta.env.VITE_APP_BASE_URL;
+  
+  // In production, fail fast if VITE_APP_BASE_URL is not set
+  if (import.meta.env.PROD && !envUrl) {
+    const error = new Error(
+      'CRITICAL: VITE_APP_BASE_URL is required in production. ' +
+      'Please set it in your environment variables before deploying.'
+    );
+    console.error(error);
+    throw error;
+  }
+  
   if (envUrl) {
     return envUrl.replace(/\/+$/, '');
   }
-
-  // Final fallback
+  
+  // In development, fall back to window.location.origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  
+  // Final fallback (shouldn't reach here in normal operation)
   return '';
 };
 
@@ -48,7 +58,7 @@ export const makeBatchQrUrl = (batchId: string, ttlSec = 1800): string => {
   const signature = generateSignature(path, timestamp);
   const origin = getBaseUrl();
   
-  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}&view=production`;
+  return `${origin}${path}?ts=${timestamp}&sig=${signature}&ttl=${ttlSec}`;
 };
 
 /**

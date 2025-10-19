@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryConfig";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,12 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Apple, Droplets, Clock, Wine, Calendar, Beaker, CheckCircle2, FlaskConical, Package, Pencil, Save, Activity } from "lucide-react";
 import { Batch } from "./BatchCard";
 import { StageProgressionCard } from "./StageProgressionCard";
 import { ImageUpload } from "./ImageUpload";
-import { BatchActivityFeed } from "@/components/production/BatchActivityFeed";
 import { STAGES } from "@/constants/ciderStages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -68,8 +64,6 @@ interface BatchDetailsProps {
 }
 
 export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatchUpdated, onGoToProduction }: BatchDetailsProps) => {
-  const queryClient = useQueryClient();
-  
   // Add null guard at the top
   if (!batch) return null;
 
@@ -81,27 +75,27 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [batchName, setBatchName] = useState(batch?.name || "");
   const [variety, setVariety] = useState(batch?.variety || "");
-  const [appleOrigin, setAppleOrigin] = useState(batch?.appleOrigin || "");
+  const [appleOrigin, setAppleOrigin] = useState(batch?.apple_origin || "");
   const [volume, setVolume] = useState(batch?.volume?.toString() || "");
   const [startDate, setStartDate] = useState(batch?.startDate || "");
-  const [yeastType, setYeastType] = useState(batch?.yeastType || "");
-  const [targetOG, setTargetOG] = useState(batch?.targetOg?.toString() || "");
-  const [targetFG, setTargetFG] = useState(batch?.targetFg?.toString() || "");
-  const [targetPH, setTargetPH] = useState(batch?.targetPh?.toString() || "");
-  const [targetEndPH, setTargetEndPH] = useState(batch?.targetEndPh?.toString() || "");
+  const [yeastType, setYeastType] = useState(batch?.yeast_type || "");
+  const [targetOG, setTargetOG] = useState(batch?.target_og?.toString() || "");
+  const [targetFG, setTargetFG] = useState(batch?.target_fg?.toString() || "");
+  const [targetPH, setTargetPH] = useState(batch?.target_ph?.toString() || "");
+  const [targetEndPH, setTargetEndPH] = useState(batch?.target_end_ph?.toString() || "");
 
   useEffect(() => {
     if (batch) {
       setBatchName(batch.name || "");
       setVariety(batch.variety || "");
-      setAppleOrigin(batch.appleOrigin || "");
+      setAppleOrigin(batch.apple_origin || "");
       setVolume(batch.volume?.toString() || "");
       setStartDate(batch.startDate || "");
-      setYeastType(batch.yeastType || "");
-      setTargetOG(batch.targetOg?.toString() || "");
-      setTargetFG(batch.targetFg?.toString() || "");
-      setTargetPH(batch.targetPh?.toString() || "");
-      setTargetEndPH(batch.targetEndPh?.toString() || "");
+      setYeastType(batch.yeast_type || "");
+      setTargetOG(batch.target_og?.toString() || "");
+      setTargetFG(batch.target_fg?.toString() || "");
+      setTargetPH(batch.target_ph?.toString() || "");
+      setTargetEndPH(batch.target_end_ph?.toString() || "");
       setNotes(batch.notes || "");
       setAttachments(batch.attachments || []);
     }
@@ -115,17 +109,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
     if (currentStageIndex < allStages.length - 1) {
       const nextStage = allStages[currentStageIndex + 1] as Batch["currentStage"];
       onUpdateStage(batch.id, nextStage);
-      
-      // Invalidate queries to sync with production page
-      queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
     }
   };
 
   const handleSkipToStage = (stage: Batch["currentStage"]) => {
     onUpdateStage(batch.id, stage);
-    
-    // Invalidate queries to sync with production page
-    queryClient.invalidateQueries({ queryKey: queryKeys.batches.all() });
   };
 
   const handleSaveNotes = async () => {
@@ -143,17 +131,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
       toast.success("Notes updated successfully");
       setIsEditingNotes(false);
-      
-      // Deduplicated query invalidation with background refetch
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.batches.all(),
-        refetchType: 'none'
-      });
-      
-      // Call parent handler if provided
-      if (onBatchUpdated) {
-        onBatchUpdated();
-      }
+      if (onBatchUpdated) onBatchUpdated();
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
@@ -184,17 +162,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
 
       toast.success("Batch details updated successfully");
       setIsEditingDetails(false);
-      
-      // Deduplicated query invalidation with background refetch
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.batches.all(),
-        refetchType: 'none'
-      });
-      
-      // Call parent handler if provided
-      if (onBatchUpdated) {
-        onBatchUpdated();
-      }
+      if (onBatchUpdated) onBatchUpdated();
     } catch (error: any) {
       toast.error(getUserFriendlyError(error));
     } finally {
@@ -221,14 +189,7 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="progression">Progression</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details" className="space-y-6">
+        <div className="space-y-6">
           {isEditingDetails ? (
             <div className="space-y-4 p-4 border rounded-lg">
               <div>
@@ -356,11 +317,11 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     setVariety(batch?.variety || "");
                     setVolume(batch?.volume?.toString() || "");
                     setStartDate(batch?.startDate || "");
-                    setYeastType(batch?.yeastType || "");
-                    setTargetOG(batch?.targetOg?.toString() || "");
-                    setTargetFG(batch?.targetFg?.toString() || "");
-                    setTargetPH(batch?.targetPh?.toString() || "");
-                    setTargetEndPH(batch?.targetEndPh?.toString() || "");
+                    setYeastType(batch?.yeast_type || "");
+                    setTargetOG(batch?.target_og?.toString() || "");
+                    setTargetFG(batch?.target_fg?.toString() || "");
+                    setTargetPH(batch?.target_ph?.toString() || "");
+                    setTargetEndPH(batch?.target_end_ph?.toString() || "");
                     setIsEditingDetails(false);
                   }}
                 >
@@ -380,10 +341,10 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                     <p className="text-sm text-muted-foreground font-medium">Apple Variety</p>
                     <p className="text-lg font-semibold">{batch.variety}</p>
                   </div>
-                  {batch.appleOrigin && (
+                  {batch.apple_origin && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground font-medium">Apple Origin</p>
-                      <p className="text-lg font-semibold">{batch.appleOrigin}</p>
+                      <p className="text-lg font-semibold">{batch.apple_origin}</p>
                     </div>
                   )}
                 </div>
@@ -394,13 +355,13 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {batch.yeastType && (
+                {batch.yeast_type && (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <FlaskConical className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="text-xs sm:text-sm">Yeast Type</span>
                     </div>
-                    <p className="text-lg sm:text-xl font-semibold">{batch.yeastType}</p>
+                    <p className="text-lg sm:text-xl font-semibold">{batch.yeast_type}</p>
                   </div>
                 )}
                 <div className="space-y-1">
@@ -421,30 +382,30 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 </div>
               </div>
 
-              {(batch.targetOg || batch.targetFg || batch.targetPh || batch.targetEndPh) && (
+              {(batch.target_og || batch.target_fg || batch.target_ph || batch.target_end_ph) && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2 border-t">
-                  {batch.targetOg && (
+                  {batch.target_og && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">OG</p>
-                      <p className="text-sm font-semibold">{batch.targetOg}</p>
+                      <p className="text-sm font-semibold">{batch.target_og}</p>
                     </div>
                   )}
-                  {batch.targetFg && (
+                  {batch.target_fg && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">FG</p>
-                      <p className="text-sm font-semibold">{batch.targetFg}</p>
+                      <p className="text-sm font-semibold">{batch.target_fg}</p>
                     </div>
                   )}
-                  {batch.targetPh && (
+                  {batch.target_ph && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Start PH</p>
-                      <p className="text-sm font-semibold">{batch.targetPh}</p>
+                      <p className="text-sm font-semibold">{batch.target_ph}</p>
                     </div>
                   )}
-                  {batch.targetEndPh && (
+                  {batch.target_end_ph && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">End PH</p>
-                      <p className="text-sm font-semibold">{batch.targetEndPh}</p>
+                      <p className="text-sm font-semibold">{batch.target_end_ph}</p>
                     </div>
                   )}
                 </div>
@@ -535,34 +496,27 @@ export const BatchDetails = ({ batch, open, onOpenChange, onUpdateStage, onBatch
                 )}
               </div>
             )}
-            </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="activity">
-            <BatchActivityFeed batchId={batch.id} compact={false} />
-          </TabsContent>
+          {/* Go to Production Button */}
+          {onGoToProduction && (
+            <Button 
+              onClick={() => onGoToProduction(batch)}
+              className="w-full text-center"
+              size="lg"
+            >
+              <Activity className="h-4 w-4 mr-2" />
+              Go to Production
+            </Button>
+          )}
 
-          <TabsContent value="progression" className="space-y-6">
-            {/* Go to Production Button */}
-            {onGoToProduction && (
-              <Button 
-                onClick={() => onGoToProduction(batch)}
-                className="w-full text-center"
-                size="lg"
-              >
-                <Activity className="h-4 w-4 mr-2" />
-                Go to Production
-              </Button>
-            )}
-
-            {/* Stage Progression Card */}
-            <StageProgressionCard
-              batch={batch}
-              onAdvanceStage={handleAdvanceStage}
-              onSkipToStage={handleSkipToStage}
-            />
-          </TabsContent>
-        </Tabs>
+          {/* Stage Progression Card */}
+          <StageProgressionCard
+            batch={batch}
+            onAdvanceStage={handleAdvanceStage}
+            onSkipToStage={handleSkipToStage}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

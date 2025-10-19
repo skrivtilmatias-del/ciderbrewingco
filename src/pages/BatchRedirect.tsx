@@ -11,42 +11,35 @@ const BatchRedirect = () => {
 
   useEffect(() => {
     const handleRedirect = async () => {
-      try {
-        if (!id) {
-          navigate(paths.batches(), { replace: true });
+      if (!id) {
+        navigate(paths.batches(), { replace: true });
+        return;
+      }
+
+      // Validate signature and timestamp
+      const timestamp = searchParams.get("ts");
+      const signature = searchParams.get("sig");
+      const ttl = parseInt(searchParams.get("ttl") || "1800");
+
+      if (timestamp && signature) {
+        const now = Math.floor(Date.now() / 1000);
+        const age = now - parseInt(timestamp);
+
+        if (age > ttl) {
+          setError("This QR code has expired. Please request a new one.");
           return;
         }
+      }
 
-        // Validate timestamp/ttl if present
-        const timestamp = searchParams.get("ts");
-        const signature = searchParams.get("sig");
-        const ttl = parseInt(searchParams.get("ttl") || "1800", 10);
+      // Check authentication
+      const { data: { session } } = await supabase.auth.getSession();
 
-        if (timestamp && signature) {
-          const now = Math.floor(Date.now() / 1000);
-          const tsNum = parseInt(timestamp, 10);
-          if (!Number.isNaN(tsNum) && !Number.isNaN(ttl)) {
-            const age = now - tsNum;
-            if (age > ttl) {
-              setError("This QR code has expired. Please request a new one.");
-              return;
-            }
-          }
-        }
-
-        // Auth check
-        const { data: { session } } = await supabase.auth.getSession();
-
-        const view = searchParams.get("view") || "production";
-        const target = `/production?batch=${encodeURIComponent(id)}&view=${encodeURIComponent(view)}`;
-        if (session) {
-          navigate(target, { replace: true });
-        } else {
-          navigate(paths.auth(target), { replace: true });
-        }
-      } catch (e) {
-        console.error('BatchRedirect failed', e);
-        setError('We could not open this batch. Please scan again or open the app and navigate to Production.');
+      if (session) {
+        // Authenticated - go to batch page
+        navigate(paths.batchWithId(id), { replace: true });
+      } else {
+        // Not authenticated - redirect to login with next parameter
+        navigate(paths.auth(paths.batchWithId(id)), { replace: true });
       }
     };
 

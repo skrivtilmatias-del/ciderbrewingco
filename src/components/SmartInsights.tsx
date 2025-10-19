@@ -63,8 +63,8 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
       }
 
       // Estimate completion
-      if (batch.targetFg && latestOG > batch.targetFg && dailyRate > 0.5) {
-        const pointsToGo = (latestOG - batch.targetFg) * 1000;
+      if (batch.target_fg && latestOG > batch.target_fg && dailyRate > 0.5) {
+        const pointsToGo = (latestOG - batch.target_fg) * 1000;
         const daysToComplete = Math.ceil(pointsToGo / dailyRate);
         const estimatedDate = addDays(new Date(), daysToComplete);
         
@@ -80,16 +80,16 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
 
   // pH checks
   const phLogs = logs.filter(l => l.ph);
-  if (phLogs.length > 0 && batch.targetPh) {
+  if (phLogs.length > 0 && batch.target_ph) {
     const latestPH = phLogs[phLogs.length - 1].ph!;
-    const diff = Math.abs(latestPH - batch.targetPh);
+    const diff = Math.abs(latestPH - batch.target_ph);
     
     if (diff > 0.5) {
       insights.push({
         type: 'warning',
         icon: AlertCircle,
         title: 'pH Outside Target',
-        description: `Current pH ${latestPH} vs target ${batch.targetPh}. Consider adjustment.`
+        description: `Current pH ${latestPH} vs target ${batch.target_ph}. Consider adjustment.`
       });
     } else if (diff <= 0.2) {
       insights.push({
@@ -103,8 +103,7 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
 
   // Production time analysis
   const daysInProduction = differenceInDays(new Date(), new Date(batch.startDate));
-  const currentStage = batch.currentStage;
-  if (daysInProduction > 30 && currentStage && currentStage.includes('Fermentation')) {
+  if (daysInProduction > 30 && batch.currentStage.includes('Fermentation')) {
     insights.push({
       type: 'info',
       icon: Lightbulb,
@@ -114,7 +113,7 @@ export const SmartInsights = ({ batch, logs }: SmartInsightsProps) => {
   }
 
   // Progress-based insights
-  if (batch.progress >= 80 && currentStage && !currentStage.includes('Bottling') && currentStage !== 'Complete') {
+  if (batch.progress >= 80 && !batch.currentStage.includes('Bottling') && batch.currentStage !== 'Complete') {
     insights.push({
       type: 'info',
       icon: Lightbulb,

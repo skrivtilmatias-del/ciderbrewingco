@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Apple, Award, LogOut, Keyboard } from 'lucide-react';
+import { Apple, Award, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NewBatchDialog } from '@/components/NewBatchDialog';
 import { TastingAnalysisDialog } from '@/components/TastingAnalysisDialog';
 import { toast } from 'sonner';
 import { useBatches } from '@/hooks/useBatches';
-import { ActiveUsersIndicator } from '@/components/ActiveUsersIndicator';
-import { ConnectionStatus } from '@/components/ConnectionStatus';
 
 interface AppHeaderProps {
   user: any;
@@ -18,7 +16,6 @@ interface AppHeaderProps {
   onBatchCreated?: () => void;
   onTastingSaved?: (data: any, analysisId?: string) => void;
   blendBatches?: any[];
-  onShowShortcuts?: () => void;
 }
 
 export const AppHeader = ({ 
@@ -27,8 +24,7 @@ export const AppHeader = ({
   userRole,
   onBatchCreated,
   onTastingSaved,
-  blendBatches = [],
-  onShowShortcuts
+  blendBatches = []
 }: AppHeaderProps) => {
   const navigate = useNavigate();
   const [tastingDialogOpen, setTastingDialogOpen] = useState(false);
@@ -51,7 +47,6 @@ export const AppHeader = ({
   };
 
   const handleBatchCreated = async (batchData: any) => {
-    // Create batch via mutation - invalidation is handled automatically by useBatches hook
     createBatch({
       name: batchData.name,
       variety: batchData.variety,
@@ -67,7 +62,6 @@ export const AppHeader = ({
       initial_temp_c: batchData.initial_temp_c,
     });
     
-    // Call parent handler if provided
     if (onBatchCreated) {
       onBatchCreated();
     }
@@ -85,8 +79,6 @@ export const AppHeader = ({
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <ConnectionStatus />
-            <ActiveUsersIndicator />
             <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-none">
               {userProfile?.full_name || user?.email}
             </span>
@@ -108,20 +100,6 @@ export const AppHeader = ({
             {userRole !== "taster" && (
               <NewBatchDialog onBatchCreated={handleBatchCreated} />
             )}
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" 
-                  onClick={onShowShortcuts}
-                >
-                  <Keyboard className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Keyboard Shortcuts (?)</TooltipContent>
-            </Tooltip>
             
             <Tooltip>
               <TooltipTrigger asChild>

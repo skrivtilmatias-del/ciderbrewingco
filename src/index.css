@@ -1,69 +1,6 @@
-/* Import external stylesheets FIRST - must precede all other statements */
-@import './styles/progress-animations.css';
-@import './styles/realtime-animations.css';
-
-/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ========== Accessibility: Reduced Motion ========== */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ========== Accessibility: Screen Reader Only ========== */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-
-/* ========== Accessibility: Focus Visible ========== */
-.focus-visible-ring {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
-}
-
-/* ========== Accessibility: High Contrast Mode ========== */
-@media (prefers-contrast: high) {
-  :root {
-    --primary: 220 100% 30%;
-    --secondary: 210 40% 40%;
-    --border: 220 13% 25%;
-    --ring: 220 100% 40%;
-  }
-  
-  .dark {
-    --primary: 220 100% 70%;
-    --secondary: 210 40% 60%;
-    --border: 220 13% 75%;
-    --ring: 220 100% 60%;
-  }
-}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -109,15 +46,6 @@ All colors MUST be HSL.
 
     --info: 200 70% 50%;
     --info-foreground: 0 0% 100%;
-
-    /* Z-index hierarchy for consistent stacking contexts */
-    --z-base: 0;
-    --z-dropdown: 50;
-    --z-sticky: 100;
-    --z-modal: 1000;
-    --z-popover: 1050;
-    --z-toast: 1100;
-    --z-tooltip: 1150;
   }
 
   .dark {

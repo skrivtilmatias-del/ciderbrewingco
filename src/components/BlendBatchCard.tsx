@@ -95,13 +95,13 @@ export function BlendBatchCard({ blend, onDelete, onClick, onAddTastingNote }: B
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Components:</p>
             <div className="flex flex-wrap gap-2">
-              {blend.components?.map((comp) => (
+              {blend.components.map((comp) => (
                 <Badge key={comp.id} variant="secondary" className="text-xs">
                   {comp.batch_name}
                   {comp.percentage ? ` (${comp.percentage}%)` : ''}
                   {comp.volume_liters ? ` (${comp.volume_liters}L)` : ''}
                 </Badge>
-              )) || <span className="text-sm text-muted-foreground">No components</span>}
+              ))}
             </div>
           </div>
 

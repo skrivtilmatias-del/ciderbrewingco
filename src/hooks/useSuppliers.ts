@@ -2,15 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Supplier, CreateSupplierInput, UpdateSupplierInput } from '@/types/supplier.types';
 import { toast } from 'sonner';
-import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 
 export const useSuppliers = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all suppliers with optimized caching
+  // Fetch all suppliers
   const { data: suppliers = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.suppliers.all(),
-    ...queryConfigs.suppliers,
+    queryKey: ['suppliers'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('suppliers')
@@ -38,7 +36,7 @@ export const useSuppliers = () => {
       return data as Supplier;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all() });
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Supplier created successfully');
     },
     onError: (error: Error) => {
@@ -60,7 +58,7 @@ export const useSuppliers = () => {
       return data as Supplier;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all() });
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Supplier updated successfully');
     },
     onError: (error: Error) => {
@@ -79,7 +77,7 @@ export const useSuppliers = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all() });
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Supplier deleted successfully');
     },
     onError: (error: Error) => {

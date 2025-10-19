@@ -10,7 +10,6 @@ import { useAppStore } from '@/stores/appStore';
 import { useBlends } from '@/hooks/useBlends';
 import { BlendBatchCard } from '@/components/BlendBatchCard';
 import { NewBlendDialog } from '@/components/NewBlendDialog';
-import { useBlendUsage } from '@/hooks/useBlendUsage';
 import type { Batch } from '@/components/BatchCard';
 
 interface BlendingTabProps {
@@ -23,17 +22,34 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   const { 
     blendSearchQuery,
     setBlendSearchQuery, 
-    setSelectedBlendId,
+    setSelectedBlend,
     setBlendDetailsOpen 
   } = useAppStore();
-  const { blends: liveBlends, deleteBlend, createBlend, isLoading, isDeleting } = useBlends();
-  const { usageMap } = useBlendUsage();
+  const { deleteBlend, isLoading, isDeleting } = useBlends();
 
   // Calculate batch usage and remaining volumes
   const batchUsageInfo = useMemo(() => {
     return batches.map(batch => {
-      const volumeUsedInBlends = usageMap[batch.id] || 0;
-
+      const volumeUsedInBlends = blendBatches.reduce((total, blend) => {
+        // Ensure components array exists
+        if (!blend.components || !Array.isArray(blend.components)) {
+          return total;
+        }
+        
+        const componentVolume = blend.components
+          .filter((comp: any) => comp.source_batch_id === batch.id)
+          .reduce((sum: number, comp: any) => {
+            const volume = typeof comp.volume_liters === 'number' 
+              ? comp.volume_liters 
+              : parseFloat(comp.volume_liters || '0') || 0;
+            const spillage = typeof comp.spillage === 'number'
+              ? comp.spillage
+              : parseFloat(comp.spillage || '0') || 0;
+            return sum + volume + spillage; // Include spillage in total usage
+          }, 0);
+        return total + componentVolume;
+      }, 0);
+      
       const remainingVolume = Math.max(0, batch.volume - volumeUsedInBlends);
       const usagePercentage = batch.volume > 0 
         ? Math.min(100, (volumeUsedInBlends / batch.volume) * 100)
@@ -47,7 +63,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
         isAvailable: remainingVolume > 0.1
       };
     }).sort((a, b) => b.volumeRemaining - a.volumeRemaining);
-  }, [batches, usageMap]);
+  }, [batches, blendBatches]);
 
   // Calculate available batches (exclude those fully used in blends)
   const availableBatchesForBlending = useMemo(() => {
@@ -57,7 +73,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   }, [batchUsageInfo]);
 
   // Filter blends based on search query
-  const filteredBlends = ((liveBlends && liveBlends.length) ? liveBlends : blendBatches).filter((blend) => {
+  const filteredBlends = blendBatches.filter((blend) => {
     if (!blendSearchQuery) return true;
     const query = blendSearchQuery.toLowerCase();
     return (
@@ -71,7 +87,7 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
   });
 
   const handleBlendClick = (blend: any) => {
-    setSelectedBlendId(blend.id);
+    setSelectedBlend(blend);
     setBlendDetailsOpen(true);
   };
 
@@ -185,21 +201,8 @@ export const BlendingTab = ({ batches, blendBatches }: BlendingTabProps) => {
             </div>
             <NewBlendDialog 
               availableBatches={availableBatchesForBlending}
-              onBlendCreated={(data) => {
-                createBlend({
-                  name: data.name,
-                  total_volume: data.total_volume,
-                  storage_location: data.storage_location || undefined,
-                  bottles_75cl: data.bottles_75cl ?? 0,
-                  bottles_150cl: data.bottles_150cl ?? 0,
-                  notes: data.notes || undefined,
-                  components: data.components.map((c: any) => ({
-                    source_batch_id: c.source_batch_id,
-                    percentage: c.percentage ?? undefined,
-                    volume_liters: c.volume_liters ?? undefined,
-                    spillage: c.spillage ?? 0,
-                  })),
-                });
+              onBlendCreated={() => {
+                // Refresh handled by React Query
               }}
             />
           </div>

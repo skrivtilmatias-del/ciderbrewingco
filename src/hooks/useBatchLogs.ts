@@ -2,16 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
-import { queryKeys, queryConfigs } from '@/lib/queryConfig';
 import type { BatchLog } from '@/components/BatchLogCard';
 
 export const useBatchLogs = (batchId: string | null) => {
   const queryClient = useQueryClient();
 
-  // Fetch batch logs with optimized caching
+  // Fetch batch logs
   const { data: logs = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.batchLogs.byBatch(batchId || ''),
-    ...queryConfigs.batchLogs,
+    queryKey: ['batch-logs', batchId],
     queryFn: async () => {
       if (!batchId) return [];
 
@@ -78,16 +76,13 @@ export const useBatchLogs = (batchId: string | null) => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.byBatch(variables.batchId) });
+      queryClient.invalidateQueries({ queryKey: ['batch-logs', variables.batchId] });
       toast.success('Log entry created');
     },
     onError: (error: any) => {
       if (error?.code === '42501') {
         toast.error('Permission denied while creating note. Please refresh and try again.');
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.batches.all(),
-          refetchType: 'none'
-        });
+        queryClient.invalidateQueries({ queryKey: ['batches'] });
       } else {
         toast.error(getUserFriendlyError(error));
       }
@@ -108,7 +103,7 @@ export const useBatchLogs = (batchId: string | null) => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
+      queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
       toast.success('Log updated successfully');
     },
     onError: (error: any) => {
@@ -127,7 +122,7 @@ export const useBatchLogs = (batchId: string | null) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
+      queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
       toast.success('Log deleted successfully');
     },
     onError: (error: any) => {

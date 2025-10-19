@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
-import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -14,13 +13,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // Bundle size analyzer - generates stats.html after build
-    mode === "development" && visualizer({
-      filename: './dist/stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png'],
@@ -90,30 +82,5 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  build: {
-    // Code splitting configuration for optimal bundle sizes
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separate vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'query-vendor': ['@tanstack/react-query', '@tanstack/react-virtual'],
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-          ],
-          // Heavy libraries in separate chunks
-          'chart-vendor': ['recharts'],
-          'canvas-vendor': ['konva', 'react-konva'],
-          'export-vendor': ['jspdf', 'html2canvas', 'xlsx', 'jszip'],
-        },
-      },
-    },
-    // Increase chunk size warning limit
-    chunkSizeWarningLimit: 1000,
   },
 }));

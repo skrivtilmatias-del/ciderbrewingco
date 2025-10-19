@@ -350,21 +350,13 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Variety Trends Over Time
             </h3>
-            <ChartContainer config={{}} className="h-[280px] sm:h-[300px]">
-              <BarChart data={varietyTrendsChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+            <ChartContainer config={{}} className="h-[250px]">
+              <BarChart data={varietyTrendsChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--foreground))" fontSize={12} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Legend 
-                  wrapperStyle={{ 
-                    paddingTop: '10px',
-                    fontSize: '11px',
-                    maxHeight: '80px',
-                    overflow: 'auto'
-                  }}
-                  iconSize={8}
-                />
+                <Legend />
                 {Object.keys(varietyBreakdown).map((variety, index) => (
                   <Bar key={variety} dataKey={variety} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
                 ))}
@@ -378,8 +370,8 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Quality Score Evolution
             </h3>
-            <ChartContainer config={{}} className="h-[300px] sm:h-[350px]">
-              <LineChart data={qualityEvolutionData} margin={{ top: 5, right: 10, left: 10, bottom: 20 }}>
+            <ChartContainer config={{}} className="h-[250px]">
+              <LineChart data={qualityEvolutionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" stroke="hsl(var(--foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--foreground))" fontSize={12} domain={[0, 100]} />

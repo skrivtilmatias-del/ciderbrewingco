@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,16 +27,6 @@ export const NewBatchDialog = ({ onBatchCreated }: NewBatchDialogProps) => {
     initial_temp_c: "",
     notes: "",
   });
-
-  // Listen for keyboard shortcut event to open dialog
-  useEffect(() => {
-    const handleOpenEvent = () => {
-      setOpen(true);
-    };
-    
-    window.addEventListener('openNewBatch', handleOpenEvent);
-    return () => window.removeEventListener('openNewBatch', handleOpenEvent);
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

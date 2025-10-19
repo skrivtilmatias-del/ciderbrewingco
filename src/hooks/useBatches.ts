@@ -2,61 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getUserFriendlyError } from '@/lib/errorHandler';
-import { queryKeys, queryConfigs } from '@/lib/queryConfig';
-import type { Batch, DatabaseBatch } from '@/types/batch.types';
+import type { Batch } from '@/components/BatchCard';
 import { useEffect } from 'react';
-
-/**
- * Maps database batch (snake_case) to client batch (camelCase)
- * This is the single normalization point for all batch data
- */
-const mapDatabaseBatchToClient = (dbBatch: DatabaseBatch): Batch => ({
-  id: dbBatch.id,
-  userId: dbBatch.user_id,
-  name: dbBatch.name,
-  variety: dbBatch.variety,
-  volume: parseFloat(dbBatch.volume.toString()),
-  currentStage: dbBatch.current_stage as Batch['currentStage'],
-  progress: dbBatch.progress,
-  startDate: dbBatch.started_at,
-  completedAt: dbBatch.completed_at,
-  createdAt: dbBatch.created_at,
-  updatedAt: dbBatch.updated_at,
-  
-  // Optional fields (convert null to undefined for cleaner API)
-  appleOrigin: dbBatch.apple_origin || undefined,
-  yeastType: dbBatch.yeast_type || undefined,
-  style: dbBatch.style || undefined,
-  appleMix: dbBatch.apple_mix || undefined,
-  notes: dbBatch.notes || undefined,
-  attachments: dbBatch.attachments || undefined,
-  
-  // Target parameters
-  targetOg: dbBatch.target_og ? parseFloat(dbBatch.target_og.toString()) : undefined,
-  targetFg: dbBatch.target_fg ? parseFloat(dbBatch.target_fg.toString()) : undefined,
-  targetPh: dbBatch.target_ph ? parseFloat(dbBatch.target_ph.toString()) : undefined,
-  targetEndPh: dbBatch.target_end_ph ? parseFloat(dbBatch.target_end_ph.toString()) : undefined,
-  targetTa: dbBatch.target_ta ? parseFloat(dbBatch.target_ta.toString()) : undefined,
-  targetTempC: dbBatch.target_temp_c ? parseFloat(dbBatch.target_temp_c.toString()) : undefined,
-  
-  // Timeline fields
-  stageHistory: dbBatch.stage_history,
-  estimatedCompletionDate: dbBatch.estimated_completion_date || undefined,
-  expectedStageDurations: dbBatch.expected_stage_durations,
-  
-  // Version control
-  version: dbBatch.version,
-  updatedById: dbBatch.updated_by_id || undefined,
-  deletedById: dbBatch.deleted_by_id || undefined,
-});
-
 export const useBatches = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all batches with normalization at the data layer
+  // Fetch all batches
   const { data: batches = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.batches.all(),
-    ...queryConfigs.batches,
+    queryKey: ['batches'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('batches')
@@ -65,8 +18,26 @@ export const useBatches = () => {
 
       if (error) throw error;
 
-      // Normalize database batches to client format here
-      return (data as DatabaseBatch[]).map(mapDatabaseBatchToClient);
+      // Map database response to Batch type
+      const formattedBatches: Batch[] = data.map((batch) => ({
+        id: batch.id,
+        name: batch.name,
+        variety: batch.variety,
+        apple_origin: batch.apple_origin || undefined,
+        volume: parseFloat(batch.volume.toString()),
+        startDate: batch.started_at,
+        currentStage: batch.current_stage as Batch['currentStage'],
+        progress: batch.progress,
+        notes: batch.notes || undefined,
+        attachments: batch.attachments || undefined,
+        yeast_type: batch.yeast_type || undefined,
+        target_og: batch.target_og ? parseFloat(batch.target_og.toString()) : undefined,
+        target_fg: batch.target_fg ? parseFloat(batch.target_fg.toString()) : undefined,
+        target_ph: batch.target_ph ? parseFloat(batch.target_ph.toString()) : undefined,
+        target_end_ph: batch.target_end_ph ? parseFloat(batch.target_end_ph.toString()) : undefined,
+      }));
+
+      return formattedBatches;
     },
   });
 
@@ -95,8 +66,8 @@ export const useBatches = () => {
             role: 'Lab',
             title: 'Initial Batch Setup (Backfill)',
             content: b.notes || '',
-            og: b.targetOg ?? null,
-            ph: b.targetPh ?? null,
+            og: (b as any).target_og ?? null,
+            ph: (b as any).target_ph ?? null,
             temp_c: null,
             tags: [] as string[],
           }));
@@ -106,7 +77,7 @@ export const useBatches = () => {
           if (insertErr) {
             console.error('Backfill initial logs failed:', insertErr);
           } else {
-            queryClient.invalidateQueries({ queryKey: queryKeys.batchLogs.all() });
+            queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
           }
         }
       } catch (e) {
@@ -188,20 +159,13 @@ export const useBatches = () => {
            console.error('Failed to create initial log:', logError);
          }
        }
-         
-         // Deduplicated query invalidation - TanStack Query handles deduplication automatically
-         // Use 'none' refetchType to avoid showing loading states while background refetch happens
-         queryClient.invalidateQueries({ 
-           queryKey: queryKeys.batches.all(),
-           refetchType: 'none'
-         });
-         queryClient.invalidateQueries({ 
-           queryKey: queryKeys.batchLogs.all(),
-           refetchType: 'none'
-         });
-         
-         toast.success('Batch created successfully');
-      },
+       
+       // Invalidate queries
+       queryClient.invalidateQueries({ queryKey: ['batches'] });
+       queryClient.invalidateQueries({ queryKey: ['batch-logs'] });
+       
+       toast.success('Batch created successfully');
+     },
     onError: (error: any) => {
       toast.error(getUserFriendlyError(error));
     },
@@ -218,11 +182,7 @@ export const useBatches = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      // Deduplicated invalidation with background refetch
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.batches.all(),
-        refetchType: 'none'
-      });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
       toast.success('Batch deleted successfully');
     },
     onError: (error: any) => {
@@ -265,56 +225,33 @@ export const useBatches = () => {
       return data;
     },
     onMutate: async (variables) => {
-      // Cancel any outgoing refetches to avoid overwriting our optimistic update
-      await queryClient.cancelQueries({ queryKey: queryKeys.batches.all() });
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['batches'] });
       
-      // Snapshot the previous value for rollback
-      const previousBatches = queryClient.getQueryData<Batch[]>(queryKeys.batches.all());
+      // Snapshot the previous value
+      const previousBatches = queryClient.getQueryData(['batches']);
       
-      // Optimistically update the cache immediately
-      queryClient.setQueryData<Batch[]>(queryKeys.batches.all(), (old) => {
-        if (!old) return old;
-        
-        return old.map((batch) => {
-          if (batch.id === variables.batchId) {
-            const progress = calculateProgress(variables.newStage);
-            return {
-              ...batch,
-              currentStage: variables.newStage as Batch['currentStage'],
-              progress,
-            };
-          }
-          return batch;
-        });
-      });
+      // Optimistically update to the new value
+      queryClient.setQueryData(['batches'], (old: any) => 
+        old?.map((b: any) => b.id === variables.batchId 
+          ? { ...b, currentStage: variables.newStage, progress: calculateProgress(variables.newStage) } 
+          : b
+        )
+      );
       
-      // Return context with previous state for potential rollback
       return { previousBatches };
     },
-    onError: (error, variables, context) => {
-      // Rollback to the previous cached state
+    onError: (err, variables, context) => {
+      // Rollback to the previous value on error
       if (context?.previousBatches) {
-        queryClient.setQueryData(queryKeys.batches.all(), context.previousBatches);
+        queryClient.setQueryData(['batches'], context.previousBatches);
       }
-      
-      toast.error(`Failed to update stage: ${getUserFriendlyError(error)}`);
+      toast.error(getUserFriendlyError(err));
     },
-    onSuccess: (data, variables) => {
-      // Normalize returned row and update cache immediately to avoid undefined fields
-      const normalized = mapDatabaseBatchToClient(data as unknown as DatabaseBatch);
-      queryClient.setQueryData<Batch[]>(queryKeys.batches.all(), (old) => {
-        if (!old) return old;
-        return old.map((b) => (b.id === normalized.id ? { ...b, ...normalized } : b));
-      });
-      toast.success(`Stage updated to ${variables.newStage}`);
-    },
-    onSettled: () => {
-      // Always refetch after mutation completes to ensure data consistency
-      // Use 'none' to prevent showing loading state during background refetch
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.batches.all(),
-        refetchType: 'none'
-      });
+    onSuccess: () => {
+      // Refetch to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+      toast.success('Batch stage updated');
     },
   });
 
@@ -324,7 +261,7 @@ export const useBatches = () => {
     error,
     createBatch: createBatchMutation.mutate,
     deleteBatch: deleteBatchMutation.mutate,
-    updateStage: updateStageMutation.mutateAsync,
+    updateStage: updateStageMutation.mutate,
     isCreating: createBatchMutation.isPending,
     isDeleting: deleteBatchMutation.isPending,
     isUpdating: updateStageMutation.isPending,
