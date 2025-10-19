@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Apple, LogOut, Settings2, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download, TrendingUp } from 'lucide-react';
+import { Apple, LogOut, Settings2, FlaskConical, QrCode, Layout, DollarSign, Webhook, Download, Truck } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
