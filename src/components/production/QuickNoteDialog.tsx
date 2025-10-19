@@ -48,9 +48,10 @@ export const QuickNoteDialog = ({
         if (draft) {
           setNote(draft);
         }
-      } catch (error) {
-        console.error('Failed to load draft:', error);
+      } catch {
+        // Silent fail - not critical
       }
+      
       
       // Auto-focus textarea
       setTimeout(() => {
@@ -67,8 +68,8 @@ export const QuickNoteDialog = ({
       if (note.trim()) {
         try {
           localStorage.setItem(draftKey, note);
-        } catch (error) {
-          console.error('Failed to save draft:', error);
+        } catch {
+          // Silent fail - not critical
         }
       }
     }, 2000); // Auto-save after 2 seconds
@@ -84,9 +85,10 @@ export const QuickNoteDialog = ({
       // Clear draft
       try {
         localStorage.removeItem(draftKey);
-      } catch (error) {
-        console.error('Failed to clear draft:', error);
+      } catch {
+        // Silent fail - not critical
       }
+      
       
       onOpenChange(false);
     }

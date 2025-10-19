@@ -138,8 +138,8 @@ export const GroupedBatchView = ({
   const saveExpandedState = (newState: Record<string, boolean>) => {
     try {
       localStorage.setItem("groupedBatchView_expanded", JSON.stringify(newState));
-    } catch (e) {
-      console.error("Failed to save expanded state:", e);
+    } catch {
+      // Silent fail - not critical
     }
   };
 
@@ -631,10 +631,10 @@ export const GroupedBatchView = ({
                           onClick={() => onSelectBatch(batch)}
                           onDelete={() => onDeleteBatch(batch.id)}
                           onUpdateStage={onUpdateStage}
-                          onAddNote={(batchId, note) => console.log('Add note:', note)}
-                          onClone={(batch) => console.log('Clone batch:', batch)}
+                          onAddNote={() => {}}
+                          onClone={() => {}}
                           onArchive={(batchId) => onDeleteBatch(batchId)}
-                          onExport={(batch) => console.log('Export batch:', batch)}
+                          onExport={() => {}}
                         />
                       </div>
                     ))}
@@ -662,10 +662,10 @@ export const GroupedBatchView = ({
                           onClick={() => onSelectBatch(batch)}
                           onDelete={() => onDeleteBatch(batch.id)}
                           onUpdateStage={onUpdateStage}
-                          onAddNote={(batchId, note) => console.log('Add note:', note)}
-                          onClone={(batch) => console.log('Clone batch:', batch)}
+                          onAddNote={() => {}}
+                          onClone={() => {}}
                           onArchive={(batchId) => onDeleteBatch(batchId)}
-                          onExport={(batch) => console.log('Export batch:', batch)}
+                          onExport={() => {}}
                         />
                       </div>
                     ))}

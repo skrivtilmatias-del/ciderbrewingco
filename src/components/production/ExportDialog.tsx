@@ -194,7 +194,6 @@ export const ExportDialog = ({
 
       onOpenChange(false);
     } catch (error) {
-      console.error('Export failed:', error);
       toast({
         title: 'Export failed',
         description: error instanceof Error ? error.message : 'Unknown error',

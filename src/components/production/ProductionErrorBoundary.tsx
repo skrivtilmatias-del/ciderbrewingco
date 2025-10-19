@@ -60,9 +60,6 @@ export const ProductionErrorBoundary: React.FC<ProductionErrorBoundaryProps> = (
           </Card>
         </div>
       )}
-      onError={(error, errorInfo) => {
-        console.error('[Production] Error:', error, errorInfo);
-      }}
     >
       {children}
     </BaseErrorBoundary>
