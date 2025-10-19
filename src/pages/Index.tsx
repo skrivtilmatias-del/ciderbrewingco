@@ -38,7 +38,7 @@ const BlendingTab = lazy(() => import('@/components/tabs/BlendingTab').then(m =>
 const CellarTab = lazy(() => import('@/components/tabs/CellarTab').then(m => ({ default: m.CellarTab })));
 const SuppliersTab = lazy(() => import('@/components/tabs/SuppliersTab').then(m => ({ default: m.SuppliersTab })));
 const TastingTab = lazy(() => import('@/components/tabs/TastingTab').then(m => ({ default: m.TastingTab })));
-const ToolsTab = lazy(() => import('@/components/tabs/ToolsTab').then(m => ({ default: m.ToolsTab })));
+const ToolsTabLazy = lazy(() => import('@/components/tabs/ToolsTab').then(m => ({ default: m.ToolsTab })));
 const ProductionAnalytics = lazy(() => import('@/components/ProductionAnalytics').then(m => ({ default: m.ProductionAnalytics })));
 const BlendBatchDetailsTabbed = lazy(() => import('@/components/BlendBatchDetailsTabbed').then(m => ({ default: m.BlendBatchDetailsTabbed })));
 const TastingAnalysisDialog = lazy(() => import('@/components/TastingAnalysisDialog').then(m => ({ default: m.TastingAnalysisDialog })));
@@ -550,7 +550,7 @@ const Index = () => {
 
                 <TabsContent value="tools">
                   <Suspense fallback={<TabLoadingSkeleton />}>
-                    <ToolsTab 
+                    <ToolsTabLazy 
                       batches={batches}
                       blendBatches={blends || []}
                       toolView={toolView}
