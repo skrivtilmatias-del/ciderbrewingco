@@ -318,7 +318,7 @@ export const useBatches = () => {
     error,
     createBatch: createBatchMutation.mutate,
     deleteBatch: deleteBatchMutation.mutate,
-    updateStage: updateStageMutation.mutate,
+    updateStage: updateStageMutation.mutateAsync,
     isCreating: createBatchMutation.isPending,
     isDeleting: deleteBatchMutation.isPending,
     isUpdating: updateStageMutation.isPending,

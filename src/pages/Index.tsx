@@ -138,7 +138,7 @@ const Index = () => {
   batchesRef.current = batches;
 
   // Ref to track ongoing stage updates
-  const updateStageRef = useRef<Promise<void> | null>(null);
+  const updateStageRef = useRef<Promise<any> | null>(null);
 
   const activeTab = useMemo(():
     | "batches"
@@ -290,9 +290,7 @@ const Index = () => {
       }
 
       try {
-        updateStageRef.current = (async () => {
-          await updateStage({ batchId, newStage });
-        })();
+        updateStageRef.current = updateStage({ batchId, newStage });
         await updateStageRef.current;
         
         // Only show success toast if component is still mounted
