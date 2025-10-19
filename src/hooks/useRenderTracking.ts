@@ -14,12 +14,14 @@ const renderMetrics = new Map<string, RenderMetrics>();
  */
 export const useRenderTracking = (componentName: string, props?: Record<string, any>) => {
   const renderCount = useRef(0);
-  const startTime = useRef(performance.now());
   const renderTimes = useRef<number[]>([]);
+  
+  // ✅ FIX: Measure render time properly - capture time at start of render
+  const renderStartTime = performance.now();
 
   useEffect(() => {
-    const endTime = performance.now();
-    const duration = endTime - startTime.current;
+    const renderEndTime = performance.now();
+    const duration = renderEndTime - renderStartTime;
     
     renderCount.current++;
     renderTimes.current.push(duration);
@@ -75,9 +77,6 @@ export const useRenderTracking = (componentName: string, props?: Record<string, 
         (window as any).__lastProps[componentName] = { ...props };
       }
     }
-
-    // Reset start time for next render
-    startTime.current = performance.now();
   });
 
   const currentMetrics = renderMetrics.get(componentName);

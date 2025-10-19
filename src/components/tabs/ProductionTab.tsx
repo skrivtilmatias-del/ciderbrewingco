@@ -192,9 +192,7 @@ export const ProductionTab = ({
           <GroupedBatchView
             batches={batches as any}
             onSelectBatch={onSelectBatch as any}
-            onDeleteBatch={(batchId: string) => {
-              console.log('Delete batch:', batchId);
-            }}
+            onDeleteBatch={() => {}}
             onUpdateStage={onUpdateStage}
           />
         </TabsContent>
@@ -209,9 +207,7 @@ export const ProductionTab = ({
               completed_at: selectedBatch.currentStage === 'Complete' ? new Date().toISOString() : null,
             }}
             variant="standard"
-            onStageClick={(stage) => {
-              console.log('Stage clicked:', stage);
-            }}
+            onStageClick={() => {}}
           />
         </TabsContent>
 

@@ -256,14 +256,10 @@ const Index = () => {
 
   const handleBatchClick = useCallback(
     (batch: Batch | null | undefined) => {
-      if (!batch?.id) {
-        console.error("handleBatchClick: Invalid batch", batch);
-        return;
-      }
+      if (!batch?.id) return;
 
       const batchExists = batchesRef.current.some((b) => b.id === batch.id);
       if (!batchExists) {
-        console.warn("handleBatchClick: Batch not found", batch.id);
         toast.error("This batch is no longer available");
         return;
       }
@@ -283,24 +279,16 @@ const Index = () => {
 
   const handleUpdateStage = useCallback(
     async (batchId: string, newStage: Batch["currentStage"]) => {
-      // Prevent multiple simultaneous updates
-      if (updateStageRef.current) {
-        console.log('Stage update already in progress, skipping...');
-        return;
-      }
+      if (updateStageRef.current) return;
 
       try {
         updateStageRef.current = updateStage({ batchId, newStage });
         await updateStageRef.current;
         
-        // Only show success toast if component is still mounted
         if (isMountedRef.current) {
           toast.success('Stage updated successfully');
         }
       } catch (error) {
-        console.error("Failed to update stage:", error);
-        
-        // Only show error toast if component is still mounted
         if (isMountedRef.current) {
           toast.error("Failed to update batch stage");
         }

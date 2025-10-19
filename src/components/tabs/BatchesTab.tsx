@@ -21,7 +21,6 @@ interface BatchesTabProps {
 }
 
 export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabProps) => {
-  console.log('BatchesTab received batches:', batches?.length, batches);
   // Safety check: Loading state
   if (!batches) {
     return (
@@ -88,7 +87,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
   // Apply filters using custom hook
   const normalizedQuery = (batchSearchQuery || '').trim();
   const filteredBatches = useBatchFilters(batches, filters, normalizedQuery);
-  console.log('After filtering:', filteredBatches.length, 'search query:', normalizedQuery, 'filters:', filters);
 
   // Then apply sorting
   const filteredAndSortedBatches = filteredBatches.sort((a, b) => {
@@ -124,17 +122,6 @@ export const BatchesTab = ({ batches, onBatchClick, onUpdateStage }: BatchesTabP
 
   return (
     <div className="space-y-4">
-      {/* Debug Info */}
-      <div className="text-xs text-muted-foreground">
-        Total: {batches.length} | Filtered: {filteredBatches.length} | Search: "{normalizedQuery}" 
-        {filteredBatches.length === 0 && batches.length > 0 && (
-          <Button onClick={handleClearAll} size="sm" variant="outline" className="ml-2">
-            Clear All Filters
-          </Button>
-        )}
-      </div>
-
-
       {/* Comprehensive Filter Panel */}
       <BatchFilters
         filters={filters}
