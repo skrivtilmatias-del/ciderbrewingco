@@ -7,6 +7,7 @@ import { paths } from "@/routes/paths";
 import { useAuth } from "@/hooks/useAuth";
 import { useBatches } from "@/hooks/useBatches";
 import { useBlends } from "@/hooks/useBlends";
+import { useTastingAnalysis } from "@/hooks/useTastingAnalysis";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from '@/stores/appStore';
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -91,6 +92,7 @@ const Index = () => {
   
   const { batches, isLoading: batchesLoading, error: batchesError, updateStage } = useBatches();
   const { blends, isLoading: blendsLoading, error: blendsError } = useBlends();
+  const { analyses: tastingAnalyses } = useTastingAnalysis();
   
   const {
     selectedBatchId,
@@ -569,7 +571,11 @@ const Index = () => {
             {userRole === "production" && (
               <TabsContent value="analytics">
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ProductionAnalytics batches={batches} />
+                  <ProductionAnalytics 
+                    batches={batches} 
+                    blendBatches={blends || []}
+                    tastingAnalyses={tastingAnalyses || []}
+                  />
                 </Suspense>
               </TabsContent>
             )}
