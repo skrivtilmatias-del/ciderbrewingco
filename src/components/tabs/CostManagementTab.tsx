@@ -3,15 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Play, Save, Copy, Download, TrendingUp, DollarSign, Percent, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Play, AlertTriangle, TrendingUp, DollarSign, Clock, Zap } from 'lucide-react';
 import { useCostTemplates, useCreateCostTemplate, useCostScenarios, useCreateCostScenario, useSaveSimulationResult, useCostAlerts } from '@/hooks/useCostManagement';
 import { runSimulation, formatCurrency, formatPercent, generateRecommendations } from '@/lib/costSimulation';
+import { CostInputForm } from '@/components/cost/CostInputForm';
+import { ScenarioManager } from '@/components/cost/ScenarioManager';
+import { SimulationCharts } from '@/components/cost/SimulationCharts';
+import { ExportTools } from '@/components/cost/ExportTools';
 import type { CostTemplate, CostScenario } from '@/types/costManagement.types';
 
 const DEFAULT_TEMPLATE: Partial<CostTemplate> = {
@@ -63,6 +65,7 @@ export function CostManagementTab() {
   const [template, setTemplate] = useState<Partial<CostTemplate>>(DEFAULT_TEMPLATE);
   const [scenario, setScenario] = useState<Partial<CostScenario>>(DEFAULT_SCENARIO);
   const [baseVolume, setBaseVolume] = useState(1000);
+  const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
   
   const { data: templates } = useCostTemplates();
   const { data: scenarios } = useCostScenarios();
@@ -79,9 +82,34 @@ export function CostManagementTab() {
   const recommendations = useMemo(() => {
     return simulation ? generateRecommendations(simulation) : [];
   }, [simulation]);
-  
+
+  const handleRunSimulation = () => {
+    if (simulation) {
+      setActiveView('results');
+    }
+  };
+
+  const handleSaveTemplate = () => {
+    createTemplate.mutate(template);
+  };
+
+  const handleSaveScenario = () => {
+    if (!scenario.template_id) {
+      // Need to save template first or select existing
+      handleSaveTemplate();
+    }
+    createScenario.mutate(scenario);
+  };
+
+  const handleSaveSimulation = () => {
+    if (simulation) {
+      saveSimulation.mutate(simulation);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
+      {/* Alerts */}
       {alerts && alerts.length > 0 && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
@@ -90,161 +118,262 @@ export function CostManagementTab() {
           </AlertDescription>
         </Alert>
       )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      {/* Key Metrics Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-primary" />
+              Total Revenue
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{simulation ? formatCurrency(simulation.total_revenue) : '-'}</div>
-            <p className="text-xs text-muted-foreground">11-year projection</p>
+            <p className="text-xs text-muted-foreground mt-1">11-year projection</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">EBITDA Margin</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+              EBITDA Margin
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{simulation ? formatPercent(simulation.avg_ebitda_margin_percent) : '-'}</div>
-            <p className="text-xs text-muted-foreground">Average</p>
+            <p className="text-xs text-muted-foreground mt-1">Average</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Breakeven</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-500" />
+              Breakeven
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {simulation?.breakeven_year !== undefined ? `Year ${simulation.breakeven_year + 1}` : 'N/A'}
             </div>
-            <p className="text-xs text-muted-foreground">Time to profitability</p>
+            <p className="text-xs text-muted-foreground mt-1">Time to profitability</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Zap className="w-4 h-4 text-orange-500" />
+              ROI
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {simulation?.roi_percent ? formatPercent(simulation.roi_percent) : 'N/A'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Return on investment</p>
           </CardContent>
         </Card>
       </div>
-      
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Cost Management & Simulation</CardTitle>
-              <CardDescription>Configure costs, run scenarios, and analyze profitability</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => createTemplate.mutate(template)}>
-                <Save className="w-4 h-4 mr-2" />
-                Save Template
-              </Button>
-              <Button size="sm" onClick={() => simulation && saveSimulation.mutate(simulation)}>
-                <Download className="w-4 h-4 mr-2" />
-                Save Results
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="inputs" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="inputs">Inputs</TabsTrigger>
-              <TabsTrigger value="scenario">Scenario</TabsTrigger>
-              <TabsTrigger value="results">Results</TabsTrigger>
-              <TabsTrigger value="charts">Charts</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="inputs" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Base Production Volume (L)</Label>
-                  <Input type="number" value={baseVolume} onChange={(e) => setBaseVolume(Number(e.target.value))} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Juice Cost per Liter (DKK)</Label>
-                  <Input type="number" value={template.juice_per_liter} onChange={(e) => setTemplate({...template, juice_per_liter: Number(e.target.value)})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bottle 75cl Price (DKK)</Label>
-                  <Input type="number" value={template.bottle_75cl_price} onChange={(e) => setTemplate({...template, bottle_75cl_price: Number(e.target.value)})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Monthly Overhead (DKK)</Label>
-                  <Input type="number" value={template.monthly_fixed_overhead} onChange={(e) => setTemplate({...template, monthly_fixed_overhead: Number(e.target.value)})} />
-                </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Inputs & Scenario */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuration</CardTitle>
+              <CardDescription>Set up costs and scenario parameters</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Base Production Volume (L)</Label>
+                <Input
+                  type="number"
+                  value={baseVolume}
+                  onChange={(e) => setBaseVolume(Number(e.target.value))}
+                  placeholder="e.g., 1000"
+                />
+                <p className="text-xs text-muted-foreground">Starting volume for year 1</p>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="scenario" className="space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <Label>Demand Growth (% yearly)</Label>
-                  <Slider value={[scenario.demand_growth_yearly || 50]} onValueChange={([v]) => setScenario({...scenario, demand_growth_yearly: v})} max={200} />
-                  <p className="text-sm text-muted-foreground mt-1">{scenario.demand_growth_yearly}%</p>
-                </div>
-                <div>
-                  <Label>Price Multiplier</Label>
-                  <Slider value={[scenario.price_multiplier! * 100]} onValueChange={([v]) => setScenario({...scenario, price_multiplier: v / 100})} max={200} />
-                  <p className="text-sm text-muted-foreground mt-1">{scenario.price_multiplier}x</p>
-                </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Template Name</Label>
+                <Input
+                  value={template.name || ''}
+                  onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+                  placeholder="e.g., Standard Cost Model"
+                />
               </div>
-            </TabsContent>
-            
-            <TabsContent value="results">
-              {simulation && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-2">Year</th>
-                        <th className="text-right p-2">Revenue</th>
-                        <th className="text-right p-2">COGS</th>
-                        <th className="text-right p-2">EBITDA</th>
-                        <th className="text-right p-2">Net Income</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {simulation.yearly_projections.slice(0, 5).map((p) => (
-                        <tr key={p.year} className="border-b">
-                          <td className="p-2">{p.year}</td>
-                          <td className="text-right p-2">{formatCurrency(p.total_revenue)}</td>
-                          <td className="text-right p-2">{formatCurrency(p.total_cogs)}</td>
-                          <td className="text-right p-2">{formatCurrency(p.ebitda)}</td>
-                          <td className="text-right p-2">{formatCurrency(p.net_income)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+
+              <Button onClick={handleRunSimulation} className="w-full" disabled={!template.juice_per_liter}>
+                <Play className="w-4 h-4 mr-2" />
+                Run Simulation
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Quick Summary */}
+          {simulation && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quick Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Revenue:</span>
+                  <span className="font-medium">{formatCurrency(simulation.total_revenue)}</span>
                 </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="charts">
-              {simulation && (
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={simulation.yearly_projections}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area type="monotone" dataKey="total_revenue" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" name="Revenue" />
-                    <Area type="monotone" dataKey="ebitda" stackId="2" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" name="EBITDA" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="insights" className="space-y-4">
-              {recommendations.map((rec, i) => (
-                <Alert key={i}>
-                  <AlertDescription>{rec}</AlertDescription>
-                </Alert>
-              ))}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total EBITDA:</span>
+                  <span className="font-medium">{formatCurrency(simulation.total_ebitda)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Net Income:</span>
+                  <span className="font-medium">{formatCurrency(simulation.total_net_income)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Gross Margin:</span>
+                  <span className="font-medium">{formatPercent(simulation.avg_gross_margin_percent)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">EBITDA Margin:</span>
+                  <span className="font-medium">{formatPercent(simulation.avg_ebitda_margin_percent)}</span>
+                </div>
+                {simulation.payback_period_years && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payback Period:</span>
+                    <span className="font-medium">{simulation.payback_period_years.toFixed(1)} years</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Right Column - Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Cost Management & Simulation</CardTitle>
+                  <CardDescription>Configure all cost parameters and run profitability scenarios</CardDescription>
+                </div>
+                <ExportTools
+                  simulation={simulation}
+                  onSave={handleSaveSimulation}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="costs">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="costs">Cost Inputs</TabsTrigger>
+                  <TabsTrigger value="scenario">Scenario</TabsTrigger>
+                  <TabsTrigger value="charts">Visualizations</TabsTrigger>
+                  <TabsTrigger value="table">Data Table</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="costs" className="space-y-4">
+                  <CostInputForm template={template} onChange={setTemplate} />
+                  <Button onClick={handleSaveTemplate} variant="outline" className="w-full">
+                    Save Cost Template
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="scenario" className="space-y-4">
+                  <ScenarioManager
+                    scenario={scenario}
+                    onChange={setScenario}
+                    savedScenarios={scenarios}
+                    onSave={handleSaveScenario}
+                  />
+                </TabsContent>
+
+                <TabsContent value="charts">
+                  {simulation ? (
+                    <SimulationCharts simulation={simulation} />
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Run a simulation to see visualizations
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="table">
+                  {simulation ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted">
+                          <tr>
+                            <th className="text-left p-2">Year</th>
+                            <th className="text-right p-2">Volume (L)</th>
+                            <th className="text-right p-2">Revenue</th>
+                            <th className="text-right p-2">COGS</th>
+                            <th className="text-right p-2">EBITDA</th>
+                            <th className="text-right p-2">EBITDA %</th>
+                            <th className="text-right p-2">Net Income</th>
+                            <th className="text-right p-2">Cash Flow</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {simulation.yearly_projections.map((p) => (
+                            <tr key={p.year} className="border-b hover:bg-muted/50">
+                              <td className="p-2 font-medium">{p.year}</td>
+                              <td className="text-right p-2">{p.production_liters.toFixed(0)}</td>
+                              <td className="text-right p-2">{formatCurrency(p.total_revenue, 0)}</td>
+                              <td className="text-right p-2">{formatCurrency(p.total_cogs, 0)}</td>
+                              <td className="text-right p-2">{formatCurrency(p.ebitda, 0)}</td>
+                              <td className="text-right p-2">
+                                <Badge variant={p.ebitda_margin_percent > 20 ? 'default' : 'secondary'}>
+                                  {formatPercent(p.ebitda_margin_percent)}
+                                </Badge>
+                              </td>
+                              <td className="text-right p-2">{formatCurrency(p.net_income, 0)}</td>
+                              <td className="text-right p-2">
+                                <span className={p.cumulative_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                  {formatCurrency(p.cumulative_cash_flow, 0)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Run a simulation to see detailed data
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Recommendations */}
+          {recommendations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">AI Insights & Recommendations</CardTitle>
+                <CardDescription>Strategic guidance based on your simulation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {recommendations.map((rec, i) => (
+                  <Alert key={i}>
+                    <AlertDescription>{rec}</AlertDescription>
+                  </Alert>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
