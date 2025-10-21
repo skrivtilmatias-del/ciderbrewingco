@@ -4,8 +4,7 @@ import { PrimingCalculator } from '@/components/calculators/PrimingCalculator';
 import { SO2Calculator } from '@/components/calculators/SO2Calculator';
 import { PrintQRCodes } from '@/components/PrintQRCodes';
 import { FloorPlan } from '@/pages/FloorPlan';
-import { CostCalculation } from '@/components/CostCalculation';
-import PlanningTool from '@/pages/PlanningTool';
+import { CostManagementTab } from '@/components/tabs/CostManagementTab';
 import Webhooks from '@/pages/Webhooks';
 import Install from '@/pages/Install';
 import { Card } from '@/components/ui/card';
@@ -45,14 +44,9 @@ export const ToolsTab = ({ batches, blendBatches, toolView }: ToolsTabProps) => 
     return <FloorPlan />;
   }
 
-  // Show cost calculation
-  if (toolView === 'cost-calculation') {
-    return <CostCalculation />;
-  }
-
-  // Show planning tool
-  if (toolView === 'planning') {
-    return <PlanningTool />;
+  // Show unified cost management
+  if (toolView === 'cost-calculation' || toolView === 'planning') {
+    return <CostManagementTab />;
   }
 
   // Show webhooks

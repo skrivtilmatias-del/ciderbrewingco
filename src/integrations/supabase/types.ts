@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_comments: {
+        Row: {
+          activity_id: string
+          comment: string
+          created_at: string | null
+          id: string
+          parent_comment_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          comment: string
+          created_at?: string | null
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          comment?: string
+          created_at?: string | null
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_comments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "batch_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "activity_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_tokens: {
         Row: {
           created_at: string
@@ -46,6 +91,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      batch_activities: {
+        Row: {
+          activity_data: Json
+          activity_type: string
+          batch_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json
+          activity_type: string
+          batch_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json
+          activity_type?: string
+          batch_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_activities_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       batch_bom: {
         Row: {
@@ -209,13 +289,18 @@ export type Database = {
       }
       batches: {
         Row: {
+          abv: number | null
           apple_mix: string | null
           apple_origin: string | null
+          archived: boolean | null
           attachments: string[] | null
           completed_at: string | null
           created_at: string
           current_stage: string
+          deleted_by_id: string | null
+          expected_completion_date: string | null
           id: string
+          location: string | null
           name: string
           notes: string | null
           progress: number
@@ -228,19 +313,26 @@ export type Database = {
           target_ta: number | null
           target_temp_c: number | null
           updated_at: string
+          updated_by_id: string | null
           user_id: string
           variety: string
+          version: number | null
           volume: number
           yeast_type: string | null
         }
         Insert: {
+          abv?: number | null
           apple_mix?: string | null
           apple_origin?: string | null
+          archived?: boolean | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage: string
+          deleted_by_id?: string | null
+          expected_completion_date?: string | null
           id?: string
+          location?: string | null
           name: string
           notes?: string | null
           progress?: number
@@ -253,19 +345,26 @@ export type Database = {
           target_ta?: number | null
           target_temp_c?: number | null
           updated_at?: string
+          updated_by_id?: string | null
           user_id: string
           variety: string
+          version?: number | null
           volume: number
           yeast_type?: string | null
         }
         Update: {
+          abv?: number | null
           apple_mix?: string | null
           apple_origin?: string | null
+          archived?: boolean | null
           attachments?: string[] | null
           completed_at?: string | null
           created_at?: string
           current_stage?: string
+          deleted_by_id?: string | null
+          expected_completion_date?: string | null
           id?: string
+          location?: string | null
           name?: string
           notes?: string | null
           progress?: number
@@ -278,8 +377,10 @@ export type Database = {
           target_ta?: number | null
           target_temp_c?: number | null
           updated_at?: string
+          updated_by_id?: string | null
           user_id?: string
           variety?: string
+          version?: number | null
           volume?: number
           yeast_type?: string | null
         }
@@ -427,6 +528,330 @@ export type Database = {
           },
         ]
       }
+      cost_alerts: {
+        Row: {
+          actual_percent: number | null
+          alert_type: string
+          batch_id: string | null
+          blend_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          resolved_at: string | null
+          severity: string
+          threshold_percent: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_percent?: number | null
+          alert_type: string
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          resolved_at?: string | null
+          severity?: string
+          threshold_percent?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_percent?: number | null
+          alert_type?: string
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          resolved_at?: string | null
+          severity?: string
+          threshold_percent?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_alerts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_alerts_blend_id_fkey"
+            columns: ["blend_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_scenarios: {
+        Row: {
+          cost_multiplier: number
+          created_at: string
+          demand_growth_yearly: number
+          direct_sales_percent: number
+          holding_cost_per_bottle_monthly: number
+          id: string
+          labor_multiplier: number
+          max_production_liters_yearly: number | null
+          max_storage_bottles: number | null
+          name: string
+          notes: string | null
+          price_multiplier: number
+          retail_discount_percent: number
+          retail_percent: number
+          scenario_type: string
+          seasonal_demand_factors: Json | null
+          template_id: string | null
+          updated_at: string
+          user_id: string
+          volume_multiplier: number
+          wholesale_discount_percent: number
+          wholesale_percent: number
+        }
+        Insert: {
+          cost_multiplier?: number
+          created_at?: string
+          demand_growth_yearly?: number
+          direct_sales_percent?: number
+          holding_cost_per_bottle_monthly?: number
+          id?: string
+          labor_multiplier?: number
+          max_production_liters_yearly?: number | null
+          max_storage_bottles?: number | null
+          name: string
+          notes?: string | null
+          price_multiplier?: number
+          retail_discount_percent?: number
+          retail_percent?: number
+          scenario_type?: string
+          seasonal_demand_factors?: Json | null
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+          volume_multiplier?: number
+          wholesale_discount_percent?: number
+          wholesale_percent?: number
+        }
+        Update: {
+          cost_multiplier?: number
+          created_at?: string
+          demand_growth_yearly?: number
+          direct_sales_percent?: number
+          holding_cost_per_bottle_monthly?: number
+          id?: string
+          labor_multiplier?: number
+          max_production_liters_yearly?: number | null
+          max_storage_bottles?: number | null
+          name?: string
+          notes?: string | null
+          price_multiplier?: number
+          retail_discount_percent?: number
+          retail_percent?: number
+          scenario_type?: string
+          seasonal_demand_factors?: Json | null
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+          volume_multiplier?: number
+          wholesale_discount_percent?: number
+          wholesale_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_scenarios_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "cost_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_snapshots: {
+        Row: {
+          actual_costs: Json
+          batch_id: string | null
+          blend_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          planned_costs: Json
+          snapshot_date: string
+          snapshot_stage: string
+          template_id: string | null
+          total_actual_cost: number
+          total_planned_cost: number
+          user_id: string
+          variance: Json
+          variance_amount: number
+          variance_percent: number
+        }
+        Insert: {
+          actual_costs?: Json
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          planned_costs?: Json
+          snapshot_date?: string
+          snapshot_stage: string
+          template_id?: string | null
+          total_actual_cost?: number
+          total_planned_cost?: number
+          user_id: string
+          variance?: Json
+          variance_amount?: number
+          variance_percent?: number
+        }
+        Update: {
+          actual_costs?: Json
+          batch_id?: string | null
+          blend_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          planned_costs?: Json
+          snapshot_date?: string
+          snapshot_stage?: string
+          template_id?: string | null
+          total_actual_cost?: number
+          total_planned_cost?: number
+          user_id?: string
+          variance?: Json
+          variance_amount?: number
+          variance_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_snapshots_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_snapshots_blend_id_fkey"
+            columns: ["blend_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_snapshots_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "cost_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_templates: {
+        Row: {
+          bottle_150cl: number
+          bottle_150cl_price: number
+          bottle_75cl: number
+          bottle_75cl_price: number
+          box_cost: number
+          cap: number
+          created_at: string
+          depreciation_yearly: number
+          description: string | null
+          hourly_rate: number
+          hours_per_batch: number
+          id: string
+          interest_expense_yearly: number
+          is_default: boolean | null
+          juice_per_liter: number
+          label: number
+          monthly_fixed_labor: number
+          monthly_fixed_overhead: number
+          name: string
+          other_per_bottle: number
+          overhead_per_liter: number
+          overhead_percent_of_cogs: number
+          price_inflation_yearly: number
+          sugar_per_kg: number
+          tax_rate: number
+          template_type: string
+          updated_at: string
+          user_id: string
+          wastage_percent: number
+          yeast_per_1000l: number
+          yield_efficiency: number
+        }
+        Insert: {
+          bottle_150cl?: number
+          bottle_150cl_price?: number
+          bottle_75cl?: number
+          bottle_75cl_price?: number
+          box_cost?: number
+          cap?: number
+          created_at?: string
+          depreciation_yearly?: number
+          description?: string | null
+          hourly_rate?: number
+          hours_per_batch?: number
+          id?: string
+          interest_expense_yearly?: number
+          is_default?: boolean | null
+          juice_per_liter?: number
+          label?: number
+          monthly_fixed_labor?: number
+          monthly_fixed_overhead?: number
+          name: string
+          other_per_bottle?: number
+          overhead_per_liter?: number
+          overhead_percent_of_cogs?: number
+          price_inflation_yearly?: number
+          sugar_per_kg?: number
+          tax_rate?: number
+          template_type?: string
+          updated_at?: string
+          user_id: string
+          wastage_percent?: number
+          yeast_per_1000l?: number
+          yield_efficiency?: number
+        }
+        Update: {
+          bottle_150cl?: number
+          bottle_150cl_price?: number
+          bottle_75cl?: number
+          bottle_75cl_price?: number
+          box_cost?: number
+          cap?: number
+          created_at?: string
+          depreciation_yearly?: number
+          description?: string | null
+          hourly_rate?: number
+          hours_per_batch?: number
+          id?: string
+          interest_expense_yearly?: number
+          is_default?: boolean | null
+          juice_per_liter?: number
+          label?: number
+          monthly_fixed_labor?: number
+          monthly_fixed_overhead?: number
+          name?: string
+          other_per_bottle?: number
+          overhead_per_liter?: number
+          overhead_percent_of_cogs?: number
+          price_inflation_yearly?: number
+          sugar_per_kg?: number
+          tax_rate?: number
+          template_type?: string
+          updated_at?: string
+          user_id?: string
+          wastage_percent?: number
+          yeast_per_1000l?: number
+          yield_efficiency?: number
+        }
+        Relationships: []
+      }
       deliveries: {
         Row: {
           created_at: string
@@ -473,6 +898,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      export_templates: {
+        Row: {
+          config: Json
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      filter_presets: {
+        Row: {
+          created_at: string | null
+          filters: Json
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters: Json
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       floor_plan_layouts: {
         Row: {
@@ -765,6 +1244,97 @@ export type Database = {
             columns: ["delivery_id"]
             isOneToOne: false
             referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulation_results: {
+        Row: {
+          avg_ebitda_margin_percent: number
+          avg_gross_margin_percent: number
+          batch_id: string | null
+          blend_id: string | null
+          breakeven_year: number | null
+          created_at: string
+          id: string
+          payback_period_years: number | null
+          roi_percent: number | null
+          scenario_id: string | null
+          simulation_date: string
+          total_cogs: number
+          total_ebit: number
+          total_ebitda: number
+          total_gross_profit: number
+          total_net_income: number
+          total_revenue: number
+          user_id: string
+          yearly_projections: Json
+          years_projected: number
+        }
+        Insert: {
+          avg_ebitda_margin_percent?: number
+          avg_gross_margin_percent?: number
+          batch_id?: string | null
+          blend_id?: string | null
+          breakeven_year?: number | null
+          created_at?: string
+          id?: string
+          payback_period_years?: number | null
+          roi_percent?: number | null
+          scenario_id?: string | null
+          simulation_date?: string
+          total_cogs?: number
+          total_ebit?: number
+          total_ebitda?: number
+          total_gross_profit?: number
+          total_net_income?: number
+          total_revenue?: number
+          user_id: string
+          yearly_projections?: Json
+          years_projected?: number
+        }
+        Update: {
+          avg_ebitda_margin_percent?: number
+          avg_gross_margin_percent?: number
+          batch_id?: string | null
+          blend_id?: string | null
+          breakeven_year?: number | null
+          created_at?: string
+          id?: string
+          payback_period_years?: number | null
+          roi_percent?: number | null
+          scenario_id?: string | null
+          simulation_date?: string
+          total_cogs?: number
+          total_ebit?: number
+          total_ebitda?: number
+          total_gross_profit?: number
+          total_net_income?: number
+          total_revenue?: number
+          user_id?: string
+          yearly_projections?: Json
+          years_projected?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_results_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulation_results_blend_id_fkey"
+            columns: ["blend_id"]
+            isOneToOne: false
+            referencedRelation: "blend_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulation_results_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "cost_scenarios"
             referencedColumns: ["id"]
           },
         ]
