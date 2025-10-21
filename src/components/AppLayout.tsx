@@ -66,11 +66,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                       <DollarSign className="h-4 w-4 mr-2" />
-                      Cost Calculation
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
-                      <Settings2 className="h-4 w-4 mr-2" />
-                      Planning Tool
+                      Cost Management
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                       <Webhook className="h-4 w-4 mr-2" />
@@ -127,11 +123,7 @@ export const AppLayout = ({ children, userRole, userProfile }: AppLayoutProps) =
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(paths.tools.costCalculation())}>
                     <DollarSign className="h-4 w-4 mr-2" />
-                    Cost Calculation
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(paths.tools.planning())}>
-                    <Settings2 className="h-4 w-4 mr-2" />
-                    Planning Tool
+                    Cost Management
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate(paths.tools.webhooks())}>
                     <Webhook className="h-4 w-4 mr-2" />

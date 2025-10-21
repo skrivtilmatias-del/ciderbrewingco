@@ -438,11 +438,7 @@ const Index = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.costCalculation()))}>
                             <DollarSign className="h-4 w-4 mr-2" />
-                            Cost Calculation
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.planning()))}>
-                            <Settings2 className="h-4 w-4 mr-2" />
-                            Economic Planning
+                            Cost Management
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => startTransition(() => navigate(paths.tools.webhooks()))}>
                             <Webhook className="h-4 w-4 mr-2" />

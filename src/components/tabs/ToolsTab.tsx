@@ -45,7 +45,7 @@ export const ToolsTab = ({ batches, blendBatches, toolView }: ToolsTabProps) => 
   }
 
   // Show unified cost management
-  if (toolView === 'cost-calculation' || toolView === 'planning') {
+  if (toolView === 'cost-calculation') {
     return <CostManagementTab />;
   }
 
