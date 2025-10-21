@@ -350,7 +350,7 @@ export const ProductionAnalytics = ({ batches, blendBatches = [], tastingAnalyse
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
               Variety Trends Over Time
             </h3>
-            <ChartContainer config={{}} className="h-[400px]">
+            <ChartContainer config={{}} className="h-[300px]">
               <BarChart data={varietyTrendsChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
